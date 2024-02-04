@@ -1,4 +1,9 @@
-export const plugins = {
-  tailwindcss: {},
-  autoprefixer: {}
+const config = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {}
+  }
 }
+
+// eslint-disable-next-line no-undef
+module.exports = config
