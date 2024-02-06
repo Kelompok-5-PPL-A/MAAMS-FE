@@ -59,6 +59,7 @@ Deployment description here
 4. Naila
 5. Rania
 6. Bagas
+7. Randi
 
 ## License
 
