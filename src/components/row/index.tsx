@@ -10,6 +10,7 @@ export const Row: React.FC<RowProps> = ({ rowNumber, cols }) => {
   const alphabet = 'ABCDE'
   const initialCauses = Array(cols).fill('')
   const [causes, setCauses] = useState<string[]>(initialCauses)
+  const [columns, setCols] = useState<number>(cols)
 
   const handleCauseChange = (index: number, value: string) => {
     const updatedValues = [...causes]
@@ -29,16 +30,16 @@ export const Row: React.FC<RowProps> = ({ rowNumber, cols }) => {
       }
       return newValues
     })
+    setCols(cols)
   }, [cols])
 
   return (
-    <div className='flex justify-content-between items-center'>
+    <div className={`grid grid-cols-${columns} gap-0 items-center my-8`}>
       {causes.map((value, index) => (
         <Cell
           key={alphabet.charAt(index) + rowNumber}
           cellName={alphabet.charAt(index) + rowNumber}
           cause={value}
-          cols={cols}
           onChange={(newValue) => handleCauseChange(index, newValue)}
         ></Cell>
       ))}

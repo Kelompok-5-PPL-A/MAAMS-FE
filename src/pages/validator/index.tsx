@@ -19,7 +19,7 @@ const validator = () => {
 
   return (
     <div>
-      <h1>Sebab:</h1>
+      <h1 className="text-2xl font-bold font-['Poppins'] text-black">Sebab:</h1>
       <CounterButton number={cols} onIncrement={handleIncrement} onDecrement={handleDecrement} />
       <Row rowNumber='1' cols={cols}></Row>
     </div>
