@@ -1,7 +1,12 @@
 import React from 'react'
+import MainLayout from '../layout/MainLayout'
 
 const index = () => {
-  return <div>index</div>
+  return (
+    <MainLayout>
+      <div>Home</div>
+    </MainLayout>
+  )
 }
 
 export default index
