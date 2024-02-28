@@ -1,15 +1,21 @@
 import React, { useState } from 'react'
-import { Row } from '../../components/row' // Update this path if necessary
+import { Row } from '../../components/row'
 import { CounterButton } from '../../components/counterButton'
 import { SubmitButton } from '../../components/submitButton'
 import { CauseStatus } from 'lib/enum'
 
 const Validator = () => {
   const alphabet = 'ABCDE'
+  const [columnCount, setColumnCount] = useState(3)
   const [rows, setRows] = useState([
-    { id: 1, causes: [''], statuses: [CauseStatus.Unchecked], feedbacks: [''], disabled: [false] }
+    {
+      id: 1,
+      causes: ['', '', ''],
+      statuses: [CauseStatus.Unchecked, CauseStatus.Unchecked, CauseStatus.Unchecked],
+      feedbacks: ['', '', ''],
+      disabled: [false, false, false]
+    }
   ])
-  const [columnCount, setColumnCount] = useState(1)
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
   const [allRootFound, setAllRootFound] = useState(false)
 
@@ -17,8 +23,9 @@ const Validator = () => {
     if (!canAdjustColumns) return
 
     setColumnCount((prevCount) => {
-      const newCount = increment ? prevCount + 1 : Math.max(prevCount - 1, 1)
-      return newCount > 5 ? prevCount : newCount
+      let newCount = increment ? prevCount + 1 : prevCount - 1
+      newCount = Math.max(3, Math.min(newCount, 5))
+      return newCount
     })
 
     setRows((prevRows) =>
