@@ -10,10 +10,10 @@ const Validator = () => {
   const [rows, setRows] = useState([
     {
       id: 1,
-      causes: ['', '', ''],
-      statuses: [CauseStatus.Unchecked, CauseStatus.Unchecked, CauseStatus.Unchecked],
-      feedbacks: ['', '', ''],
-      disabled: [false, false, false]
+      causes: Array(3).fill(''),
+      statuses: Array(3).fill(CauseStatus.Unchecked),
+      feedbacks: Array(3).fill(''),
+      disabled: Array(3).fill(false)
     }
   ])
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
