@@ -4,7 +4,7 @@ import MainLayout from '../layout/MainLayout'
 const index = () => {
   return (
     <MainLayout>
-      <a href='/validator'>Tambahkan Analisis</a>
+      <div>Home</div>
     </MainLayout>
   )
 }
