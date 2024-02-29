@@ -10,13 +10,6 @@ export const Row: React.FC<RowProps> = ({ rowNumber, cols }) => {
   const alphabet = 'ABCDE'
   const initialCauses = Array(cols).fill('')
   const [causes, setCauses] = useState<string[]>(initialCauses)
-  const [columns, setCols] = useState<number>(cols)
-
-  const handleCauseChange = (index: number, value: string) => {
-    const updatedValues = [...causes]
-    updatedValues[index] = value
-    setCauses(updatedValues)
-  }
 
   useEffect(() => {
     // Update the number of columns when the 'cols' prop changes
@@ -30,11 +23,25 @@ export const Row: React.FC<RowProps> = ({ rowNumber, cols }) => {
       }
       return newValues
     })
-    setCols(cols)
   }, [cols])
 
+  let gridClass = ''
+  if (cols === 3) {
+    gridClass = 'grid grid-cols-3 gap-0 items-center my-8'
+  } else if (cols === 4) {
+    gridClass = 'grid grid-cols-4 gap-0 items-center my-8'
+  } else {
+    gridClass = 'grid grid-cols-5 gap-0 items-center my-8'
+  }
+
+  const handleCauseChange = (index: number, value: string) => {
+    const updatedValues = [...causes]
+    updatedValues[index] = value
+    setCauses(updatedValues)
+  }
+
   return (
-    <div className={`grid grid-cols-${columns} gap-0 items-center my-8`}>
+    <div className={gridClass}>
       {causes.map((value, index) => (
         <Cell
           key={alphabet.charAt(index) + rowNumber}

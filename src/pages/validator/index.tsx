@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import MainLayout from '../../layout/MainLayout'
 import { CounterButton } from '../../components/counterButton'
 import { Row } from '../../components/row'
 
@@ -18,11 +19,11 @@ const validator = () => {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold font-['Poppins'] text-black">Sebab:</h1>
+    <MainLayout>
+      <h1 className='text-2xl font-bold text-black'>Sebab:</h1>
       <CounterButton number={cols} onIncrement={handleIncrement} onDecrement={handleDecrement} />
       <Row rowNumber='1' cols={cols}></Row>
-    </div>
+    </MainLayout>
   )
 }
 
