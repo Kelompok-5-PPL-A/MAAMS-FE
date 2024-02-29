@@ -1,0 +1,34 @@
+import React from 'react'
+
+interface CounterButtonProps {
+  number: number
+  onIncrement: () => void
+  onDecrement: () => void
+}
+
+export const CounterButton: React.FC<CounterButtonProps> = ({ number, onIncrement, onDecrement }) => {
+  return (
+    <div className='items-center my-2'>
+      <h2 className='text-center text-sm font-bold text-black relative mx-auto mb-2'>Jumlah Kolom (Max 5)</h2>
+      <div className='main-container flex justify-center items-center flex-nowrap relative mx-auto my-0'>
+        <button
+          onClick={onDecrement}
+          className='flex h-10 py-2 px-8 justify-center items-center shrink-0 flex-nowrap rounded-tl-[10px] rounded-tr-none rounded-br-none rounded-bl-[10px] border-solid border border-[#fbc707] relative'
+        >
+          <span className='text-2xl font-bold text-[#fbc707] relative text-center whitespace-nowrap z-[1]'>-</span>
+        </button>
+        <div className='flex h-10 py-2 px-8 justify-center items-center shrink-0 flex-nowrap bg-[#fbc707] relative z-[2]'>
+          <span className='shrink-0 basis-auto text-[14px] font-bold text-black relative text-left whitespace-nowrap z-[3]'>
+            {number}
+          </span>
+        </div>
+        <button
+          onClick={onIncrement}
+          className='flex h-10 py-2 px-8 justify-center items-center shrink-0 flex-nowrap rounded-tl-none rounded-tr-[10px] rounded-br-[10px] rounded-bl-none border-solid border border-[#fbc707] relative z-[4]'
+        >
+          <span className='text-2xl font-bold text-[#fbc707] relative text-center whitespace-nowrap z-[1]'>+</span>
+        </button>
+      </div>
+    </div>
+  )
+}

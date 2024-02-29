@@ -1,7 +1,12 @@
 import React from 'react'
 
 const navbar = () => {
-  return <div>navbar</div>
+  return (
+    <div>
+      <p>Navbar</p>
+      <a href='/validator'>Tambahkan Analisis</a>
+    </div>
+  )
 }
 
 export default navbar
