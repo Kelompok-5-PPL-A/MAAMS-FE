@@ -12,9 +12,7 @@ export const Row: React.FC<RowProps> = ({ rowNumber, cols }) => {
   const [causes, setCauses] = useState<string[]>(initialCauses)
 
   useEffect(() => {
-    // Update the number of columns when the 'cols' prop changes
     setCauses((prevValues) => {
-      // Ensure that the length of the array matches the new 'cols' value
       const newValues = [...prevValues]
       if (cols > prevValues.length) {
         newValues.push(...Array(1).fill(''))
