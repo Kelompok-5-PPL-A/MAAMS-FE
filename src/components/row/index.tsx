@@ -39,15 +39,20 @@ export const Row: React.FC<RowProps> = ({ rowNumber, cols }) => {
   }
 
   return (
-    <div className={gridClass}>
-      {causes.map((value, index) => (
-        <Cell
-          key={alphabet.charAt(index) + rowNumber}
-          cellName={alphabet.charAt(index) + rowNumber}
-          cause={value}
-          onChange={(newValue) => handleCauseChange(index, newValue)}
-        ></Cell>
-      ))}
+    <div>
+      {cols >= 3 && cols <= 5 && (
+        <div className={gridClass} data-testid='row-container'>
+          {causes.map((value, index) => (
+            <div data-testid='cell' key={alphabet.charAt(index) + rowNumber}>
+              <Cell
+                cellName={alphabet.charAt(index) + rowNumber}
+                cause={value}
+                onChange={(newValue) => handleCauseChange(index, newValue)}
+              ></Cell>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
