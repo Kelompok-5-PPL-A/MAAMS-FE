@@ -1,4 +1,3 @@
-// tests/Cell.test.tsx
 import '@testing-library/jest-dom'
 import React from 'react'
 import { render, fireEvent } from '@testing-library/react'
@@ -13,10 +12,8 @@ describe('Cell Component', () => {
     const component = <Cell cellName={cellName} cause={cause} onChange={mockOnChange} />
     const { getByText, getByPlaceholderText } = render(component)
 
-    // Check if the cellName is rendered
     expect(getByText(cellName)).toBeInTheDocument()
 
-    // Check if the cause is rendered in the textarea
     const textareaElement = getByPlaceholderText('Isi sebab...')
     expect(textareaElement).toBeInTheDocument()
     expect(textareaElement).toHaveValue(cause)
@@ -31,10 +28,7 @@ describe('Cell Component', () => {
 
     const textareaElement = getByPlaceholderText('Isi sebab...')
 
-    // Simulate a user typing in the textarea
     fireEvent.change(textareaElement, { target: { value: 'New Cause' } })
-
-    // Check if the onChange handler is called with the correct value
     expect(mockOnChange).toHaveBeenCalledWith('New Cause')
   })
 
@@ -45,7 +39,6 @@ describe('Cell Component', () => {
     const component = <Cell cellName={cellName} onChange={mockOnChange} cause='' />
     const { getByPlaceholderText } = render(component)
 
-    // Check if the cause is initially empty in the textarea
     const textareaElement = getByPlaceholderText('Isi sebab...')
     expect(textareaElement).toBeInTheDocument()
     expect(textareaElement).toHaveValue('')
@@ -57,7 +50,6 @@ describe('Cell Component', () => {
     const component = <Cell cellName='' onChange={mockOnChange} cause='' />
     const { queryByText } = render(component)
 
-    // Check if the cellName is not rendered
     const cellNameElement = queryByText(/^[A-Z]\d+$/)
     expect(cellNameElement).toBeNull()
   })
