@@ -5,6 +5,9 @@ const navbar = () => {
     <div>
       <p>Navbar</p>
       <a href='/validator'>Tambahkan Analisis</a>
+      <div>
+        <a href='/auth'>Check Auth</a>
+      </div>
     </div>
   )
 }
