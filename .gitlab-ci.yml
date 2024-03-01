@@ -5,6 +5,14 @@ stages:
 default:
   image: node:20.11.0
 
+test_development:
+  stage: test
+  only:
+    - development
+  script:
+    - npm install
+    - npm test
+
 test_staging:
   stage: test
   only:
