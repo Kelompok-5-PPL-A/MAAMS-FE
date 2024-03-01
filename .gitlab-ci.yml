@@ -1,5 +1,25 @@
+stages:
+  - test
+  - deploy
+
 default:
   image: node:20.11.0
+
+test_development:
+  stage: test
+  only:
+    - development
+  script:
+    - npm install
+    - npm test
+
+test_staging:
+  stage: test
+  only:
+    - staging
+  script:
+    - npm install
+    - npm test
 
 deploy_staging:
   stage: deploy
@@ -10,6 +30,14 @@ deploy_staging:
     - vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
     - vercel build --token=$VERCEL_TOKEN
     - vercel deploy --prebuilt  --token=$VERCEL_TOKEN
+
+test_production:
+  stage: test
+  only:
+    - main
+  script:
+    - npm install
+    - npm test
 
 deploy_production:
   stage: deploy
