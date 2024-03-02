@@ -46,7 +46,11 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
       toast.success('Analisis berhasil ditambahkan')
       router.push(`/validator/${data.id}`)
     } catch (error: any) {
-      if (error.response) {
+      if (error.response.status == '400') {
+        toast.error('Isi pertanyaan dengan benar')
+      } else if (error.response.status == '401') {
+        toast.error('silakan login kembali')
+      } else if (error.response.data.message) {
         toast.error(error.response.data.message)
       } else if (error.message) {
         toast.error(error.message)
