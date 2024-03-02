@@ -1,22 +1,14 @@
-// import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios'
 
-type LoginResult = {
-  statusCode: number
-  message: string
+const customHeaders = {
+  Accept: '*/*',
+  'Content-Type': 'application/json'
 }
 
-export const login = async (username: string, password: string): Promise<LoginResult> => {
-  // TODO: post login, handle return values through error codes and messages
-  console.log(username, password)
-
-  const response = 'axios post here'
-
-  const result: LoginResult = {
-    statusCode: 200,
-    message: response
+export const login = async (username: string, password: string) => {
+  const config: AxiosRequestConfig = {
+    headers: customHeaders
   }
 
-  console.log(`will post to the following base url: ${process.env.NEXT_PUBLIC_API_BASE_URL}`)
-
-  return result
+  return await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/auth/login/`, { username, password }, config)
 }

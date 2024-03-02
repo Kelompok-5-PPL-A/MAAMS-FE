@@ -1,9 +1,14 @@
 import { useRef, useState, useEffect } from 'react'
-import MainLayout from '../../layout/MainLayout'
+import { useRouter } from 'next/router'
 
+import MainLayout from '../../layout/MainLayout'
 import { login } from '../../actions/auth'
 
+import maams from '../../assets/maams.png'
+
 const Login: React.FC = () => {
+  const router = useRouter()
+
   // Referensi untuk field username, email, password, dan confirm password
   const usernameRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
@@ -16,8 +21,8 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('')
   const [passwordFocus, setPasswordFocus] = useState<boolean>(false)
 
-  //   const [loginMessage, setLoginMessage] = useState("");
-  //   const [isValidLogin, setValidLogin] = useState<boolean>(false);
+  const [loginMessage, setLoginMessage] = useState('')
+  const [isValidLogin, setValidLogin] = useState<boolean>(false)
 
   useEffect(() => {
     if (usernameRef.current) {
@@ -28,25 +33,40 @@ const Login: React.FC = () => {
   const handleUsernameInput = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value
     setUsername(value)
-    console.log(username)
   }
 
   const handlepasswordInput = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value
     setPassword(value)
-    console.log(password)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault()
-
-    // TODO: call login function, handle status and messages appropriately
-    const response = await login(username, password)
-    console.log(response)
+    login(username, password)
+      .then((res) => {
+        console.log(res)
+        if (res.status === 200) {
+          setValidLogin(true)
+          setLoginMessage(res.data.detail)
+          localStorage.setItem('access', res.data.access_token)
+          localStorage.setItem('userData', JSON.stringify(res.data.data))
+          localStorage.setItem('isLoggedIn', 'true')
+          router.push('/')
+        }
+      })
+      .catch((err) => {
+        const message = err.response.data.detail
+        setValidLogin(false)
+        setLoginMessage(message)
+      })
   }
 
   return (
     <MainLayout>
+      <a href='#' className='mb-6 flex items-center justify-center'>
+        <img src={maams.src} className='h-386 w-386' alt='Maams Auth' />
+      </a>
+
       <form onSubmit={handleSubmit} className='w-full max-w-md mx-auto lg:max-w-xl'>
         <h1 className='text-2xl font-bold mb-4 text-center mt-7 mb-7'>Masuk ke akun</h1>
 
@@ -66,7 +86,7 @@ const Login: React.FC = () => {
             ref={usernameRef}
             className={`w-full px-3 py-3 border ${
               usernameFocus ? 'border-blue-500' : 'border-gray-300'
-            } rounded focus:outline-none focus:shadow-outline-blue  focus:outline-none focus:shadow-outline-blue bg-gray-400 bg-[#EDEDED] border-solid border border-[#EDEDED] rounded-[10px] pl-4 text-sm`}
+            } rounded focus:outline-none focus:shadow-outline-blue bg-[#EDEDED] border-solid border border-[#EDEDED] rounded-[10px] pl-4 text-sm`}
           />
         </div>
 
@@ -86,18 +106,14 @@ const Login: React.FC = () => {
             ref={passwordRef}
             className={`w-full px-3 py-3 border ${
               passwordFocus ? 'border-blue-500' : 'border-gray-300'
-            } rounded focus:outline-none focus:shadow-outline-blue focus:outline-none focus:shadow-outline-blue bg-gray-400 bg-[#EDEDED] border-solid border border-[#EDEDED] rounded-[10px] pl-4 text-sm`}
+            } rounded focus:outline-none focus:shadow-outline-blue bg-[#EDEDED] border-solid border border-[#EDEDED] rounded-[10px] pl-4 text-sm`}
           />
         </div>
-        {/* <p className="h-3">
-          {isValidLogin && (
-            <span className="text-red-500 text-sm mt-1">{isValidLogin}</span>
-          )}
-        </p>         */}
+        <p className='h-3'>{!isValidLogin && <span className='text-red-500 text-sm mt-1'>{loginMessage}</span>}</p>
         <div className='flex justify-center'>
           <button
             type='submit'
-            className='w-1/4 bg-blue-500 text-white text-bold p-3 rounded transition duration-300 rounded-[15px] bg-[#FBC707]'
+            className='w-1/4 text-white text-extrabold p-3 rounded transition duration-300 rounded-[15px] bg-[#FBC707]'
           >
             Masuk
           </button>
