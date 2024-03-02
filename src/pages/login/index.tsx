@@ -25,6 +25,14 @@ const Login: React.FC = () => {
   const [isValidLogin, setValidLogin] = useState<boolean>(false)
 
   useEffect(() => {
+    // Prevent users from accessing login page if user is already authenticated
+    const refresh = localStorage.getItem('refresh')
+    if (refresh) {
+      router.push('/')
+    }
+  }, [])
+
+  useEffect(() => {
     if (usernameRef.current) {
       usernameRef.current.focus()
     }
@@ -41,6 +49,7 @@ const Login: React.FC = () => {
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    // TODO: save access token in memory, save refresh token in cookie
     e.preventDefault()
     login(username, password)
       .then((res) => {
@@ -49,6 +58,7 @@ const Login: React.FC = () => {
           setValidLogin(true)
           setLoginMessage(res.data.detail)
           localStorage.setItem('access', res.data.access_token)
+          localStorage.setItem('refresh', res.data.refresh_token)
           localStorage.setItem('userData', JSON.stringify(res.data.data))
           localStorage.setItem('isLoggedIn', 'true')
           router.push('/')
