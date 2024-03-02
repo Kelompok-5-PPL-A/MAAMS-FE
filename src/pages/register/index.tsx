@@ -11,12 +11,10 @@ const Register: React.FC = () => {
   const usernameRef = useRef<HTMLInputElement>(null)
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
-  const ConfirmPaswordRef = useRef<HTMLInputElement>(null)
+  const ConfirmPasswordRef = useRef<HTMLInputElement>(null)
 
   // State untuk menyimpan dan mengelola input username
   const [username, setUsername] = useState('')
-  // const [isValidUsername, setIsValidUsername] = useState<boolean>(false);
-  // const [errUsername, setErrUsername] = useState<string | null>();
   const [usernameFocus, setUsernameFocus] = useState<boolean>(false)
 
   // State untuk menyimpan dan mengelola inpu email
@@ -27,13 +25,21 @@ const Register: React.FC = () => {
   const [password, setpassword] = useState('')
   const [passwordFocus, setPasswordFocus] = useState<boolean>(false)
 
-  // State untuk menyimpan dan mengelola input ConfirmPasword
-  const [ConfirmPasword, setConfirmPasword] = useState('')
-  const [ConfirmPaswordFocus, setConfirmPaswordFocus] = useState<boolean>(false)
+  // State untuk menyimpan dan mengelola input ConfirmPassword
+  const [ConfirmPassword, setConfirmPassword] = useState('')
+  const [ConfirmPasswordFocus, setConfirmPasswordFocus] = useState<boolean>(false)
 
   // State untuk mengelola response msg dan validasi register
-  const [registMessage, setRegistMessage] = useState('')
   const [isRegistered, setRegistered] = useState<boolean>(false)
+  const [registMessage, setRegistMessage] = useState('')
+
+  const [errUsernameMessage, setErrUsernameMessage] = useState('')
+  const [errEmailMessage, setErrEmailMessage] = useState('')
+  const [errPasswordMessage, setErrPasswordMessage] = useState('')
+  const [errConfirmPasswordMessage, setErrConfirmPasswordMessage] = useState('')
+
+  // State untuk menyimpan status pesan kesalahan
+  const [errorOccurred, setErrorOccurred] = useState<boolean>(false)
 
   useEffect(() => {
     if (usernameRef.current) {
@@ -51,42 +57,75 @@ const Register: React.FC = () => {
   const handleUsernameInput = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value
     setUsername(value)
+    // Membersihkan pesan kesalahan saat input berubah
+    setErrUsernameMessage('')
+    setErrorOccurred(false)
   }
   const handleEmailInput = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value
     setuserEmail(value)
+    // Membersihkan pesan kesalahan saat input berubah
+    setErrEmailMessage('')
+    setErrorOccurred(false)
   }
   const handlepasswordInput = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value
     setpassword(value)
+    // Membersihkan pesan kesalahan saat input berubah
+    setErrPasswordMessage('')
+    setErrConfirmPasswordMessage('')
+    setErrorOccurred(false)
   }
-  const handleConfirmPaswordInput = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleConfirmPasswordInput = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value
-    setConfirmPasword(value)
+    setConfirmPassword(value)
+    // Membersihkan pesan kesalahan saat input berubah
+    setErrConfirmPasswordMessage('')
+    setErrorOccurred(false)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
-    // TODO: save access token in memory, save refresh token in cookie
     e.preventDefault()
-    register(username, userEmail, password, ConfirmPasword)
+    register(username, userEmail, password, ConfirmPassword)
       .then((res) => {
-        console.log(res)
-        if (res.status === 200) {
+        console.log('Response from server:', res)
+        if (res.status === 201) {
           setRegistered(true)
           setRegistMessage(res.data.detail)
           localStorage.setItem('access', res.data.access_token)
           localStorage.setItem('refresh', res.data.refresh_token)
           localStorage.setItem('userData', JSON.stringify(res.data.data))
-          localStorage.setItem('isLoggedIn', 'true')
-          router.push('/')
+          // Redirect to login page after 2 seconds
+          setTimeout(() => {
+            router.push('/login')
+          }, 4000)
         }
       })
       .catch((err) => {
-        const message = err.response.data.detail
+        console.error('Response from server:', err)
         setRegistered(false)
-        setRegistMessage(message)
+        let errorMessage = 'An error occurred.'
+
+        if (err.response && err.response.data) {
+          if (err.response.data.username) {
+            errorMessage = err.response.data.username[0]
+            setErrUsernameMessage(errorMessage)
+          } else if (err.response.data.email) {
+            errorMessage = err.response.data.email[0]
+            setErrEmailMessage(errorMessage)
+          } else if (err.response.data.password) {
+            errorMessage = err.response.data.password[0]
+            setErrPasswordMessage(errorMessage)
+            setErrConfirmPasswordMessage(errorMessage)
+          } else {
+            errorMessage = 'Failed to register, please try again.'
+          }
+        }
+        setRegistMessage('Failed to register, please try again.')
+        setErrorOccurred(true)
       })
   }
+
   return (
     <MainLayout>
       <a href='#' className='mb-6 flex items-center justify-center'>
@@ -112,7 +151,11 @@ const Register: React.FC = () => {
               usernameFocus ? 'border-blue-500' : 'border-gray-300'
             } rounded focus:outline-none focus:shadow-outline-blue bg-[#EDEDED] border-solid border border-[#EDEDED] rounded-[10px] pl-4 text-sm`}
           />
-          <p className='h-3'>{isRegistered && <span className='text-red-500 text-sm mt-1'>{registMessage}</span>}</p>
+          {errorOccurred && (
+            <p className='h-3'>
+              <span className='text-red-500 text-sm mt-1'>{errUsernameMessage}</span>
+            </p>
+          )}
         </div>
 
         {/* Email Input */}
@@ -134,7 +177,11 @@ const Register: React.FC = () => {
               userEmailFocus ? 'border-blue-500' : 'border-gray-300'
             } rounded focus:outline-none focus:shadow-outline-blue bg-[#EDEDED] border-solid border border-[#EDEDED] rounded-[10px] pl-4 text-sm`}
           />
-          <p className='h-3'>{isRegistered && <span className='text-red-500 text-sm mt-1'>{registMessage}</span>}</p>
+          {errorOccurred && (
+            <p className='h-3'>
+              <span className='text-red-500 text-sm mt-1'>{errEmailMessage}</span>
+            </p>
+          )}
         </div>
 
         {/* Password Input */}
@@ -156,30 +203,37 @@ const Register: React.FC = () => {
               passwordFocus ? 'border-blue-500' : 'border-gray-300'
             } rounded focus:outline-none focus:shadow-outline-blue bg-[#EDEDED] border-solid border border-[#EDEDED] rounded-[10px] pl-4 text-sm`}
           />
-          <p className='h-3'>{isRegistered && <span className='text-red-500 text-sm mt-1'>{registMessage}</span>}</p>
+          {errorOccurred && (
+            <p className='h-3'>
+              <span className='text-red-500 text-sm mt-1'>{errPasswordMessage}</span>
+            </p>
+          )}
         </div>
 
         {/* Confirm Password Input */}
         <div className='mb-6'>
-          <label htmlFor='ConfirmPasword' className='block text-sm font-medium text-gray-600 mb-3'>
+          <label htmlFor='ConfirmPassword' className='block text-sm font-medium text-gray-600 mb-3'>
             Ulangi Password
           </label>
           <input
             type='password'
-            id='ConfirmPasword'
+            id='ConfirmPassword'
             autoComplete='off'
             placeholder='Password...'
-            onChange={(e) => handleConfirmPaswordInput(e)}
+            onChange={(e) => handleConfirmPasswordInput(e)}
             required
-            onFocus={() => setConfirmPaswordFocus(true)}
-            onBlur={() => setConfirmPaswordFocus(false)}
-            ref={ConfirmPaswordRef}
+            onFocus={() => setConfirmPasswordFocus(true)}
+            onBlur={() => setConfirmPasswordFocus(false)}
+            ref={ConfirmPasswordRef}
             className={`w-full px-3 py-3 border ${
-              ConfirmPaswordFocus ? 'border-blue-500' : 'border-gray-300'
+              ConfirmPasswordFocus ? 'border-blue-500' : 'border-gray-300'
             } rounded focus:outline-none focus:shadow-outline-blue bg-[#EDEDED] border-solid border border-[#EDEDED] rounded-[10px] pl-4 text-sm`}
           />
-
-          <p className='h-3'>{isRegistered && <span className='text-red-500 text-sm mt-1'>{registMessage}</span>}</p>
+          {errorOccurred && (
+            <p className='h-3'>
+              <span className='text-red-500 text-sm mt-1'>{errConfirmPasswordMessage}</span>
+            </p>
+          )}
         </div>
 
         {/* Submit Button */}
@@ -195,7 +249,18 @@ const Register: React.FC = () => {
         {/* Login Link */}
         <div className='flex gap-1 w-full items-center justify-center pt-5'>
           <p className='text-sm text-center'>Sudah Punya Akun?</p>
-          <p className='text-sm text-center text-blue-500 font-medium cursor-pointer hover:underline'>Masuk Ke Akun</p>
+          <p
+            className='text-sm text-center text-blue-500 font-medium cursor-pointer hover:underline'
+            onClick={() => router.push('/login')}
+          >
+            Masuk Ke Akun
+          </p>
+        </div>
+        <div className='flex gap-1 w-full items-center justify-center pt-5'>
+          <p className='h-3'>{isRegistered && <span className='text-green-500 text-xl mt-3'>{registMessage}</span>}</p>
+          <p className='h-3'>
+            {errorOccurred && !isRegistered && <span className='text-red-500 text-xl mt-3'>{registMessage}</span>}
+          </p>
         </div>
       </form>
     </MainLayout>
