@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react'
 import MainLayout from '../../layout/MainLayout'
 import { CounterButton } from '../../components/counterButton'
 import { Row } from '../../components/row'
-import { ValidatorQuestionForm } from 'components/validatorQuestionForm'
+import { ValidatorQuestionForm } from '../../components/validatorQuestionForm'
 import { useRouter } from 'next/router'
 import axios from 'axios'
-import { ValidatorData } from 'components/types/validatorQuestionFormProps'
+import { ValidatorData } from '../../components/types/validatorQuestionFormProps'
 import toast from 'react-hot-toast'
 
 const defaultValidatorData: ValidatorData = {
