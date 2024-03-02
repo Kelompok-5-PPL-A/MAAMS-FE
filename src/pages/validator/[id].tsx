@@ -45,7 +45,7 @@ const ValidatorDetailPage = () => {
         setValidatorData(receivedData)
       } catch (error: any) {
         if (error.response) {
-          toast.error(error.response.data.message)
+          toast.error(error.response.data.detail)
         } else if (error.message) {
           toast.error(error.message)
         }
