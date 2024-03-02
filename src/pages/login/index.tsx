@@ -132,7 +132,7 @@ const Login: React.FC = () => {
         <div className='flex flex-col md:flex-row gap-1 items-center justify-center pt-5'>
           <p className='text-sm text-center md:text-left'>Belum punya akun?</p>
           <p
-            // onClick={showRegisterForm}
+            onClick={() => router.push('/register')}
             className='text-sm text-center md:text-right text-blue-500 font-medium cursor-pointer hover:underline'
           >
             Daftar Sekarang
