@@ -16,5 +16,7 @@ export const login = async (username: string, password: string): Promise<LoginRe
     message: response
   }
 
+  console.log(`will post to the following base url: ${process.env.NEXT_PUBLIC_API_BASE_URL}`)
+
   return result
 }
