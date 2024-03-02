@@ -10,9 +10,9 @@ export const DropdownMode: React.FC<DropdownModeProps> = ({ selectedMode, onChan
   const ref = useRef(null)
 
   useEffect(() => {
-    selectedOption && onChange(selectedOption)
+    setSelectedOption(selectedMode)
     setIsOpen(false)
-  }, [selectedOption])
+  }, [selectedMode])
 
   const handleChange = (value: Mode) => {
     setSelectedOption(value)

@@ -5,7 +5,7 @@ export interface CustomInputProps {
   inputClassName?: string
   errorClassName?: string
   onChange: React.ChangeEventHandler<HTMLInputElement>
-  value: string
+  value?: string | undefined
   children?: ReactNode
   error?: string
   isDisabled?: boolean

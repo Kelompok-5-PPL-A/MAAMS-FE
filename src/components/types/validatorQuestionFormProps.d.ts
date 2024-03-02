@@ -1,5 +1,7 @@
+import Mode from 'constants/mode'
+
 export interface ValidatorQuestionFormProps {
-  id?: string
+  id?: string | string[] | undefined
   validatorData?: ValidatorData
 }
 

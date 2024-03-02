@@ -12,12 +12,21 @@ import { useRouter } from 'next/router'
 
 export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id, validatorData }) => {
   const [question, setQuestion] = useState<string>(validatorData?.question || '')
-  const [mode, setMode] = useState<Mode>(validatorData?.mode || Mode.pribadi)
+  const [mode, setMode] = useState<Mode | undefined>(validatorData?.mode || Mode.pribadi)
   const router = useRouter()
+  const accessToken = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
+  const headers = {
+    Authorization: `Bearer ${accessToken}`
+  }
 
   const handleModeChange = (mode: Mode) => {
     setMode(mode)
     console.log(mode)
+  }
+
+  const handleModeChangeGet = () => {
+    setMode(validatorData?.mode)
+    console.log(validatorData?.mode)
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -25,15 +34,13 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
     try {
       const { data } = await axios({
         method: 'POST',
-        url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/validator/baru`,
+        url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/baru/`,
         data: {
-          mode,
-          question
+          mode: mode,
+          question: question
         },
-        withCredentials: true,
-        headers: {
-          //todo
-        }
+        withCredentials: false,
+        headers: headers
       })
       console.log(question)
       toast.success('Analisis berhasil ditambahkan')
@@ -50,32 +57,42 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
   return (
     <>
       <form className='flex flex-col w-full gap-8' onSubmit={handleSubmit}>
-        <DropdownMode selectedMode={mode} onChange={handleModeChange} />
+        {id ? (
+          <>
+            <DropdownMode selectedMode={validatorData?.mode} onChange={handleModeChangeGet} />
 
-        <h1 className='text-2xl font-bold text-black'>Ingin menganalisis masalah apa hari ini?</h1>
+            <h1 className='text-2xl font-bold text-black'>Ingin menganalisis masalah apa hari ini?</h1>
 
-        <div className='w-full'>
-          {id ? (
-            <CustomInput
-              inputClassName='flex-grow w-full p-4 bg-grey-200 rounded-[10px] shadow border border-zinc-500 justify-start items-center gap-4 inline-flex'
-              placeholder='Isi pertanyaan anda di sini'
-              value={question}
-              isDisabled={true}
-              onChange={(e) => setQuestion(e.target.value)}
-            />
-          ) : (
-            <div className='flex gap-4'>
+            <div className='w-full'>
               <CustomInput
-                inputClassName='flex-grow w-full p-4 bg-white rounded-[10px] shadow border border-zinc-500 justify-start items-center gap-4 inline-flex'
+                inputClassName='flex-grow w-full p-4 bg-grey-200 rounded-[10px] shadow border border-zinc-500 justify-start items-center gap-4 inline-flex'
                 placeholder='Isi pertanyaan anda di sini'
-                value={question}
+                value={validatorData?.question}
+                isDisabled={true}
                 onChange={(e) => setQuestion(e.target.value)}
               />
-
-              <CircularIconButton icon={<Icon as={MdSend} />} type='submit' />
             </div>
-          )}
-        </div>
+          </>
+        ) : (
+          <>
+            <DropdownMode selectedMode={mode} onChange={handleModeChange} />
+
+            <h1 className='text-2xl font-bold text-black'>Ingin menganalisis masalah apa hari ini?</h1>
+
+            <div className='w-full'>
+              <div className='flex gap-4'>
+                <CustomInput
+                  inputClassName='flex-grow w-full p-4 bg-white rounded-[10px] shadow border border-zinc-500 justify-start items-center gap-4 inline-flex'
+                  placeholder='Isi pertanyaan anda di sini'
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                />
+
+                <CircularIconButton icon={<Icon as={MdSend} />} type='submit' />
+              </div>
+            </div>
+          </>
+        )}
       </form>
     </>
   )

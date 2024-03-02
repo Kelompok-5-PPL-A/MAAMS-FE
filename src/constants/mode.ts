@@ -1,6 +1,6 @@
 enum Mode {
-  pribadi = 'Pribadi',
-  pengawasan = 'Pengawasan'
+  pribadi = 'PRIBADI',
+  pengawasan = 'PENGAWASAN'
 }
 
 export default Mode
