@@ -14,7 +14,6 @@ const Navbar = () => {
   useEffect(() => {
     const refresh_token = localStorage.getItem('isLoggedIn')
     setIsLoggedIn(refresh_token === 'true')
-    console.log(localStorage.getItem('userData'))
   }, [])
 
   const toggleMenu = () => {
