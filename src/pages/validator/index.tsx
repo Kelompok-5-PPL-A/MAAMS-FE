@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Row } from '../../components/row'
 import { CounterButton } from '../../components/counterButton'
 import { SubmitButton } from '../../components/submitButton'
@@ -7,53 +7,35 @@ import { CauseStatus } from 'lib/enum'
 const Validator = () => {
   const alphabet = 'ABCDE'
   const [columnCount, setColumnCount] = useState(3)
-  const [rows, setRows] = useState([
-    {
-      id: 1,
-      causes: Array(3).fill(''),
-      statuses: Array(3).fill(CauseStatus.Unchecked),
-      feedbacks: Array(3).fill(''),
-      disabled: Array(3).fill(false)
-    }
-  ])
+  const [rows, setRows] = useState([createInitialRow(1, 3)])
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
-  const [allRootFound, setAllRootFound] = useState(false)
+
+  useEffect(() => {
+    disableValidatedRow()
+  }, [rows.length])
 
   const adjustColumnCount = (increment: boolean) => {
     if (!canAdjustColumns) return
 
     setColumnCount((prevCount) => {
-      let newCount = increment ? prevCount + 1 : prevCount - 1
-      newCount = Math.max(3, Math.min(newCount, 5))
+      const newCount = increment ? Math.min(prevCount + 1, 5) : Math.max(prevCount - 1, 3)
+
+      setRows((prevRows) =>
+        prevRows.map((row) => ({
+          ...row,
+          causes: adjustArraySize(row.causes, newCount, ''),
+          statuses: adjustArraySize(row.statuses, newCount, CauseStatus.Unchecked),
+          feedbacks: adjustArraySize(row.feedbacks, newCount, ''),
+          disabled: adjustArraySize(row.disabled, newCount, false)
+        }))
+      )
+
       return newCount
     })
-
-    setRows((prevRows) =>
-      prevRows.map((row) => {
-        return {
-          ...row,
-          causes: increment ? [...row.causes.slice(0, 5), ''].slice(0, 5) : row.causes.slice(0, -1),
-          statuses: increment
-            ? [...row.statuses.slice(0, 5), CauseStatus.Unchecked].slice(0, 5)
-            : row.statuses.slice(0, -1),
-          feedbacks: increment ? [...row.feedbacks.slice(0, 5), ''].slice(0, 5) : row.feedbacks.slice(0, -1),
-          disabled: increment ? [...row.disabled.slice(0, 5), false].slice(0, 5) : row.disabled.slice(0, -1)
-        }
-      })
-    )
   }
 
   const addRow = () => {
-    setRows((prevRows) => [
-      ...prevRows,
-      {
-        id: prevRows.length + 1,
-        causes: Array(Math.min(columnCount, 5)).fill(''),
-        statuses: Array(Math.min(columnCount, 5)).fill(CauseStatus.Unchecked),
-        feedbacks: Array(Math.min(columnCount, 5)).fill(''),
-        disabled: Array(Math.min(columnCount, 5)).fill(false)
-      }
-    ])
+    setRows((prevRows) => [...prevRows, createInitialRow(rows.length + 1, columnCount)])
   }
 
   const updateCauseAndStatus = (rowId: number, columnIndex: number, newCause: string, newStatus: CauseStatus) => {
@@ -63,7 +45,7 @@ const Validator = () => {
           ? {
               ...row,
               causes: row.causes.map((cause, index) => (index === columnIndex ? newCause : cause)),
-              causeStatuses: row.statuses.map((status, index) => (index === columnIndex ? newStatus : status))
+              statuses: row.statuses.map((status, index) => (index === columnIndex ? newStatus : status))
             }
           : row
       )
@@ -83,60 +65,27 @@ const Validator = () => {
     )
   }
 
+  // TODO : Implement disable column with root cause logic
+
   const submitCauses = async () => {
-    // Dummy-implementation
+    // TODO : Implement submit causes logic with API call
+
+    //For now, causes always correct but not root
     const updatedRows = rows.map((row) => ({
       ...row,
-      statuses: row.statuses.map((status) => (status === CauseStatus.Unchecked ? CauseStatus.CorrectNotRoot : status)),
-      feedbacks: row.feedbacks.map((feedback, index) => `Penyebab pada ${alphabet[index]}${rows.length} sudah tepat`)
+      statuses: row.statuses.map(() => CauseStatus.CorrectNotRoot),
+      feedbacks: row.feedbacks.map((feedback, index) => `Penyebab pada ${alphabet[index]}${row.id} sudah tepat`)
     }))
 
     setRows(updatedRows)
 
-    const allCausesCorrect = updatedRows.every((row) =>
+    const checkAllStatus = updatedRows.every((row) =>
       row.statuses.every((status) => status === CauseStatus.CorrectNotRoot || status === CauseStatus.CorrectRoot)
     )
 
-    // Check if all root causes are found
-    let rootCauseCounts = 0
-    updatedRows.forEach((row) => {
-      row.statuses.forEach((status) => {
-        if (status === CauseStatus.CorrectRoot) {
-          rootCauseCounts++
-        }
-      })
-    })
+    setCanAdjustColumns(!checkAllStatus)
 
-    const newAllRootFound = rootCauseCounts === columnCount
-
-    setAllRootFound(newAllRootFound)
-    setCanAdjustColumns(!allCausesCorrect)
-
-    // Disable all column with root cause
-    const columnsWithRootCause: number[] = []
-    updatedRows.forEach((row) => {
-      row.statuses.forEach((status, index) => {
-        if (status === CauseStatus.CorrectRoot) {
-          columnsWithRootCause.push(index)
-        }
-      })
-    })
-
-    setRows((prevRows) =>
-      prevRows.map((row) => ({
-        ...row,
-        disabled: row.disabled.map((disable, index) => (columnsWithRootCause.includes(index) ? true : disable))
-      }))
-    )
-
-    // Disable the last row and not allow adding new row if all root causes are found
-    if (newAllRootFound) {
-      disableValidatedRow()
-    }
-
-    // Add new row if all causes are correct and not all root causes are found
-    // Disable the last row if all causes are correct
-    if (allCausesCorrect && !newAllRootFound) {
+    if (checkAllStatus) {
       addRow()
       disableValidatedRow()
     }
@@ -171,13 +120,31 @@ const Validator = () => {
           ))}
         </div>
       ))}
-      {!allRootFound && (
+      {
         <div className='flex justify-center mt-4'>
           <SubmitButton onClick={() => submitCauses()} disabled={isSubmitDisabled} label='Kirim Sebab' />
         </div>
-      )}
+      }
     </div>
   )
 }
 
+function createInitialRow(id: number, cols: number) {
+  return {
+    id,
+    causes: Array(cols).fill(''),
+    statuses: Array(cols).fill(CauseStatus.Unchecked),
+    feedbacks: Array(cols).fill(''),
+    disabled: Array(cols).fill(false)
+  }
+}
+
+function adjustArraySize<T>(array: T[], size: number, defaultValue: T): T[] {
+  const currentSize = array.length
+  if (size > currentSize) {
+    return [...array, ...Array(size - currentSize).fill(defaultValue)]
+  } else {
+    return array.slice(0, size)
+  }
+}
 export default Validator
