@@ -1,5 +1,15 @@
+stages:
+  - test
+  - deploy
+
 default:
   image: node:20.11.0
+
+test:
+  stage: test
+  script:
+    - npm install
+    - npm test
 
 deploy_staging:
   stage: deploy

@@ -1,3 +1,4 @@
+import MainLayout from '../../layout/MainLayout'
 import React, { useState, useEffect } from 'react'
 import { Row } from '../../components/row'
 import { CounterButton } from '../../components/counterButton'
@@ -94,8 +95,8 @@ const Validator = () => {
   const isSubmitDisabled = rows.some((row) => row.causes.some((cause) => cause.trim() === ''))
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold font-['Poppins'] text-black">Causes:</h1>
+    <MainLayout>
+      <h1 className='text-2xl font-bold text-black'>Sebab:</h1>
       <CounterButton
         number={columnCount}
         onIncrement={() => adjustColumnCount(true)}
@@ -125,7 +126,7 @@ const Validator = () => {
           <SubmitButton onClick={() => submitCauses()} disabled={isSubmitDisabled} label='Kirim Sebab' />
         </div>
       }
-    </div>
+    </MainLayout>
   )
 }
 

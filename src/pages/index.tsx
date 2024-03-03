@@ -1,12 +1,11 @@
 import React from 'react'
+import MainLayout from '../layout/MainLayout'
 
 const index = () => {
   return (
-    <div>
-      <h1>
-        <a href='/validator'>Tambahkan Analisis</a>
-      </h1>
-    </div>
+    <MainLayout>
+      <div>Home</div>
+    </MainLayout>
   )
 }
 
