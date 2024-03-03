@@ -3,6 +3,8 @@ import { render, fireEvent, within } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import ValidatorPage from '../../pages/validator'
 
+jest.mock('next/router', () => require('next-router-mock'))
+
 describe('ValidatorPage Page Tests', () => {
   test('renders validatorPage page with CounterButton and initial Row', () => {
     const { getByText, getAllByTestId } = render(<ValidatorPage />)
