@@ -1,0 +1,46 @@
+import { CustomInputProps } from 'components/types/customInput'
+import React from 'react'
+import { Input, InputGroup, Icon } from '@chakra-ui/react'
+import { WarningTwoIcon } from '@chakra-ui/icons'
+
+export const CustomInput: React.FC<CustomInputProps> = ({
+  placeholder,
+  label,
+  labelClassName,
+  inputClassName,
+  errorClassName,
+  onChange,
+  value,
+  children,
+  error,
+  isDisabled
+}) => {
+  const getIcon = () => {
+    if (error) {
+      return <Icon as={WarningTwoIcon} color='red.500' />
+    } else {
+      return null
+    }
+  }
+
+  return (
+    <div className='space-y-4 w-full'>
+      {!!label && <label className={`${labelClassName}`}>{label}</label>}
+      <InputGroup>
+        <Input
+          placeholder={placeholder}
+          onChange={onChange}
+          value={value}
+          className={`${inputClassName}`}
+          disabled={isDisabled}
+          variant={isDisabled ? 'filled' : 'outline'}
+        />
+        {children}
+      </InputGroup>
+      <div className='flex items-center gap-4'>
+        {getIcon()}
+        {!!error && <label className={`${errorClassName}`}>{error}</label>}
+      </div>
+    </div>
+  )
+}
