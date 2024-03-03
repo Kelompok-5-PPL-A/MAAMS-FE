@@ -1,49 +1,77 @@
 import React from 'react'
-import { render, fireEvent } from '@testing-library/react'
+import { render, fireEvent, within } from '@testing-library/react'
 import '@testing-library/jest-dom'
 
 import ValidatorPage from '../../pages/validator'
 
-test('renders validator page with CounterButton and Row', () => {
-  const { getByText, getByTestId } = render(<ValidatorPage />)
+describe('ValidatorPage Page Tests', () => {
+  test('renders validatorPage page with CounterButton and initial Row', () => {
+    const { getByText, getAllByTestId } = render(<ValidatorPage />)
 
-  expect(getByText('Sebab:')).toBeInTheDocument()
-  expect(getByText('Jumlah Kolom (Max 5)')).toBeInTheDocument()
-  expect(getByTestId('row-container')).toBeInTheDocument()
-})
+    expect(getByText('Sebab:')).toBeInTheDocument()
+    expect(getByText('3')).toBeInTheDocument()
+    expect(getAllByTestId('row-container')).toHaveLength(1) // Initial row count
+  })
 
-test('increments and decrements columns on button clicks', () => {
-  const { getByText } = render(<ValidatorPage />)
+  test('increments and decrements columns on button clicks', async () => {
+    const { getByText, findAllByPlaceholderText } = render(<ValidatorPage />)
 
-  expect(getByText('3')).toBeInTheDocument()
+    const incrementButton = getByText('+')
+    fireEvent.click(incrementButton)
+    expect(getByText('4')).toBeInTheDocument()
 
-  fireEvent.click(getByText('+'))
-  expect(getByText('4')).toBeInTheDocument()
+    const placeholders = await findAllByPlaceholderText('Isi sebab..')
+    expect(placeholders.length).toBeGreaterThan(0)
 
-  fireEvent.click(getByText('-'))
-  expect(getByText('3')).toBeInTheDocument()
-})
+    const decrementButton = getByText('-')
+    fireEvent.click(decrementButton)
+    expect(getByText('3')).toBeInTheDocument()
+  })
 
-test('does not allow incrementing beyond 5 columns', () => {
-  const { getByText } = render(<ValidatorPage />)
+  test('does not allow incrementing beyond 5 columns', () => {
+    const { getByText } = render(<ValidatorPage />)
 
-  fireEvent.click(getByText('+'))
-  fireEvent.click(getByText('+'))
-  fireEvent.click(getByText('+'))
-  fireEvent.click(getByText('+'))
-  expect(getByText('5')).toBeInTheDocument()
+    const incrementButton = getByText('+')
+    for (let i = 0; i < 5; i++) {
+      fireEvent.click(incrementButton)
+    }
+    expect(getByText('5')).toBeInTheDocument()
 
-  fireEvent.click(getByText('+'))
-  expect(getByText('5')).toBeInTheDocument()
-})
+    fireEvent.click(incrementButton) // Attempt to increment beyond the limit
+    fireEvent.click(incrementButton)
+    expect(getByText('5')).toBeInTheDocument() // Confirm the column count does not exceed 5
+  })
 
-test('does not allow decrementing below 3 columns', () => {
-  const { getByText } = render(<ValidatorPage />)
+  test('does not allow decrementing below 3 columns', () => {
+    const { getByText } = render(<ValidatorPage />)
 
-  fireEvent.click(getByText('-'))
-  fireEvent.click(getByText('-'))
-  expect(getByText('3')).toBeInTheDocument()
+    const decrementButton = getByText('-')
+    for (let i = 0; i < 3; i++) {
+      fireEvent.click(decrementButton)
+    }
+    expect(getByText('3')).toBeInTheDocument()
 
-  fireEvent.click(getByText('-'))
-  expect(getByText('3')).toBeInTheDocument()
+    fireEvent.click(decrementButton)
+    fireEvent.click(decrementButton)
+    expect(getByText('3')).toBeInTheDocument()
+  })
+
+  test('adds a new row on submitting causes with correct feedback', async () => {
+    const { getByText, findAllByText, getAllByTestId } = render(<ValidatorPage />)
+
+    const cells = getAllByTestId('cell')
+    for (const cell of cells) {
+      const input = within(cell).getByPlaceholderText('Isi sebab..') as HTMLInputElement
+      fireEvent.change(input, { target: { value: 'Some cause' } })
+    }
+
+    const submitButton = getByText('Kirim Sebab')
+    fireEvent.click(submitButton)
+
+    const feedbackMessages = await findAllByText(/Penyebab pada [ABCDE]\d sudah tepat/)
+    expect(feedbackMessages.length).toBeGreaterThan(0)
+
+    const rows = getAllByTestId('row-container')
+    expect(rows).toHaveLength(2)
+  })
 })
