@@ -7,29 +7,23 @@ import { register } from '../../actions/auth'
 const Register: React.FC = () => {
   const router = useRouter()
 
-  // Referensi untuk field username, email, password, dan confirm password
   const usernameRef = useRef<HTMLInputElement>(null)
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
   const ConfirmPasswordRef = useRef<HTMLInputElement>(null)
 
-  // State untuk menyimpan dan mengelola input username
   const [username, setUsername] = useState('')
   const [usernameFocus, setUsernameFocus] = useState<boolean>(false)
 
-  // State untuk menyimpan dan mengelola inpu email
   const [userEmail, setuserEmail] = useState('')
   const [userEmailFocus, setuserEmailFocus] = useState<boolean>(false)
 
-  // State untuk menyimpan dan mengelola input password
   const [password, setpassword] = useState('')
   const [passwordFocus, setPasswordFocus] = useState<boolean>(false)
 
-  // State untuk menyimpan dan mengelola input ConfirmPassword
   const [ConfirmPassword, setConfirmPassword] = useState('')
   const [ConfirmPasswordFocus, setConfirmPasswordFocus] = useState<boolean>(false)
 
-  // State untuk mengelola response msg dan validasi register
   const [isRegistered, setRegistered] = useState<boolean>(false)
   const [registMessage, setRegistMessage] = useState('')
 
@@ -38,7 +32,6 @@ const Register: React.FC = () => {
   const [errPasswordMessage, setErrPasswordMessage] = useState('')
   const [errConfirmPasswordMessage, setErrConfirmPasswordMessage] = useState('')
 
-  // State untuk menyimpan status pesan kesalahan
   const [errorOccurred, setErrorOccurred] = useState<boolean>(false)
 
   useEffect(() => {
@@ -47,7 +40,6 @@ const Register: React.FC = () => {
     }
   }, [])
   useEffect(() => {
-    // Prevent users from accessing login page if user is already authenticated
     const refresh = localStorage.getItem('refresh')
     if (refresh) {
       router.push('/')
@@ -57,21 +49,18 @@ const Register: React.FC = () => {
   const handleUsernameInput = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value
     setUsername(value)
-    // Membersihkan pesan kesalahan saat input berubah
     setErrUsernameMessage('')
     setErrorOccurred(false)
   }
   const handleEmailInput = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value
     setuserEmail(value)
-    // Membersihkan pesan kesalahan saat input berubah
     setErrEmailMessage('')
     setErrorOccurred(false)
   }
   const handlepasswordInput = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value
     setpassword(value)
-    // Membersihkan pesan kesalahan saat input berubah
     setErrPasswordMessage('')
     setErrConfirmPasswordMessage('')
     setErrorOccurred(false)
@@ -79,7 +68,6 @@ const Register: React.FC = () => {
   const handleConfirmPasswordInput = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value
     setConfirmPassword(value)
-    // Membersihkan pesan kesalahan saat input berubah
     setErrConfirmPasswordMessage('')
     setErrorOccurred(false)
   }
@@ -95,7 +83,6 @@ const Register: React.FC = () => {
           localStorage.setItem('access', res.data.access_token)
           localStorage.setItem('refresh', res.data.refresh_token)
           localStorage.setItem('userData', JSON.stringify(res.data.data))
-          // Redirect to login page after 2 seconds
           setTimeout(() => {
             router.push('/login')
           }, 4000)
@@ -158,7 +145,6 @@ const Register: React.FC = () => {
           )}
         </div>
 
-        {/* Email Input */}
         <div className='mb-4'>
           <label htmlFor='email' className='block text-sm font-medium text-gray-600 mb-3'>
             Email
@@ -184,7 +170,6 @@ const Register: React.FC = () => {
           )}
         </div>
 
-        {/* Password Input */}
         <div className='mb-4'>
           <label htmlFor='password' className='block text-sm font-medium text-gray-600 mb-3'>
             Password
@@ -210,7 +195,6 @@ const Register: React.FC = () => {
           )}
         </div>
 
-        {/* Confirm Password Input */}
         <div className='mb-6'>
           <label htmlFor='ConfirmPassword' className='block text-sm font-medium text-gray-600 mb-3'>
             Ulangi Password
@@ -236,7 +220,6 @@ const Register: React.FC = () => {
           )}
         </div>
 
-        {/* Submit Button */}
         <div className='flex justify-center'>
           <button
             type='submit'
@@ -246,7 +229,6 @@ const Register: React.FC = () => {
           </button>
         </div>
 
-        {/* Login Link */}
         <div className='flex gap-1 w-full items-center justify-center pt-5'>
           <p className='text-sm text-center'>Sudah Punya Akun?</p>
           <p
