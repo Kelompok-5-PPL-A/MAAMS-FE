@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Cell } from '../cell' // Ensure this path matches your project structure
-import { CauseStatus } from 'lib/enum' // Ensure this enum is correctly imported
+import { Cell } from '../cell'
+import { CauseStatus } from 'lib/enum'
 
 interface RowProps {
   rowNumber: number
@@ -42,27 +42,33 @@ export const Row: React.FC<RowProps> = ({
     onCauseAndStatusChanges(causeIndex, newValue, newStatus)
   }
 
-  const gridStyle = {
-    display: 'grid',
-    gridTemplateColumns: `repeat(${cols}, 1fr)`,
-    gap: '10px',
-    alignItems: 'center',
-    margin: '20px 0'
+  let gridClass = ''
+  if (cols === 3) {
+    gridClass = 'grid grid-cols-3 gap-0 items-center my-8'
+  } else if (cols === 4) {
+    gridClass = 'grid grid-cols-4 gap-0 items-center my-8'
+  } else {
+    gridClass = 'grid grid-cols-5 gap-0 items-center my-8'
   }
 
   return (
-    <div style={gridStyle}>
-      {localCauses.map((cause, index) => (
-        <Cell
-          key={`${rowNumber}-${index}`}
-          cellName={`${alphabet[index]}${rowNumber}`}
-          cause={localCauses[index]}
-          onChange={(newValue) => handleLocalCauseChange(index, newValue, localCauseStatuses[index])}
-          causeStatus={localCauseStatuses[index]}
-          disabled={disabledCells[index]}
-          placeholder={disabledCells[index] ? '' : 'Enter a cause.. '}
-        />
-      ))}
+    <div>
+      {cols >= 3 && cols <= 5 && (
+        <div className={gridClass} data-testid='row-container'>
+          {causes.map((cause, index) => (
+            <div data-testid='cell' key={`${alphabet[index]}${rowNumber}`}>
+              <Cell
+                cellName={`${alphabet[index]}${rowNumber}`}
+                cause={cause}
+                onChange={(newValue) => handleLocalCauseChange(index, newValue, localCauseStatuses[index])}
+                causeStatus={causeStatuses[index]}
+                disabled={disabledCells[index]}
+                placeholder={disabledCells[index] ? '' : 'Isi sebab...'}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

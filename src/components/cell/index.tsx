@@ -1,5 +1,5 @@
 import React from 'react'
-import { CauseStatus } from 'lib/enum' // Adjust the import path as necessary
+import { CauseStatus } from 'lib/enum'
 
 interface CellProps {
   cellName: string
@@ -20,14 +20,14 @@ export const Cell: React.FC<CellProps> = ({
   const getOutlineClass = (status: CauseStatus) => {
     switch (status) {
       case CauseStatus.Incorrect:
-        return 'border-2 border-red-500'
+        return 'border-red-500'
       case CauseStatus.CorrectNotRoot:
-        return 'border-2 border-green-500'
+        return 'border-green-500'
       case CauseStatus.CorrectRoot:
-        return 'border-2 border-purple-500'
+        return 'border-purple-500'
       case CauseStatus.Unchecked:
       default:
-        return 'border-2 border-black'
+        return 'border-black'
     }
   }
 
@@ -35,15 +35,15 @@ export const Cell: React.FC<CellProps> = ({
 
   return (
     <div className='flex flex-col items-center justify-center relative'>
-      <div className='relative w-full mt-[-1px] font-bold text-black text-2xl leading-10 mb-2 whitespace-nowrap'>
+      <div className='relative w-fit mt-[-1.00px] font-bold text-black text-2xl leading-10 mb-2 whitespace-nowrap'>
         {cellName}
       </div>
       <textarea
         value={cause}
         onChange={(event) => onChange(event.target.value)}
-        rows={5}
+        rows={1}
         maxLength={148}
-        className={`w-full text-xs resize-none items-center bg-[#ececec] border-solid border ${outlineClass} relative z-[1] my-2 py-2 px-4`}
+        className={`w-full h-22 text-xs resize-none flex pt-4 px-4 pb-16 items-center bg-[#ececec] border-solid border ${outlineClass} relative z-[1]`}
         placeholder={placeholder}
         disabled={disabled}
       ></textarea>
