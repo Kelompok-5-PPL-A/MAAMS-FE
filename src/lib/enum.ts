@@ -1,6 +1,6 @@
 export enum CauseStatus {
-  Unchecked = 'Unchecked',
-  Incorrect = 'Incorrect',
-  CorrectNotRoot = 'CorrectNotRoot',
-  CorrectRoot = 'CorrectRoot'
+  Incorrect = 'INCORRECT',
+  CorrectNotRoot = 'CORRECT_NOT_ROOT',
+  CorrectRoot = 'CORRECT_ROOT',
+  Unchecked = 'UNCHECKED'
 }
