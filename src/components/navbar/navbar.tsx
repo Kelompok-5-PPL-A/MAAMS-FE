@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 import { logout } from '../../actions/auth'
+import toast from 'react-hot-toast'
 
 const Navbar = () => {
   const router = useRouter()
-  const [logoutMessage, setLogoutMessage] = useState('')
 
   const logoutUser = async () => {
     const refresh_token = localStorage.getItem('refresh')
@@ -16,9 +16,19 @@ const Navbar = () => {
         .then(() => {
           localStorage.clear()
           axios.defaults.headers.common['Authorization'] = null
-          setLogoutMessage('Logout berhasil.')
+          toast.success('Logout successful', {
+            style: {
+              fontSize: '1rem',
+              backgroundColor: '#4CAF50',
+              color: '#FFFFFF',
+              border: '2px solid #388E3C',
+              borderRadius: '10px',
+              padding: '20px',
+              boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)'
+            },
+            className: 'unique-toast'
+          })
           setTimeout(() => {
-            setLogoutMessage('')
             router.push('/login')
           }, 2000)
         })
@@ -36,7 +46,6 @@ const Navbar = () => {
         <a href='#' onClick={logoutUser}>
           logout
         </a>
-        {logoutMessage && <p className='text-lg text-green-500 '>{logoutMessage}</p>}
       </div>
     </div>
   )

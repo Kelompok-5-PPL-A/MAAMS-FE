@@ -3,6 +3,7 @@ import maams from '../../assets/maams.png'
 import Navbar from '../../components/navbar/navbar'
 import { useRouter } from 'next/router'
 import { register } from '../../actions/auth'
+import { toast } from 'react-hot-toast'
 
 const Register: React.FC = () => {
   const router = useRouter()
@@ -23,9 +24,6 @@ const Register: React.FC = () => {
 
   const [ConfirmPassword, setConfirmPassword] = useState('')
   const [ConfirmPasswordFocus, setConfirmPasswordFocus] = useState<boolean>(false)
-
-  const [isRegistered, setRegistered] = useState<boolean>(false)
-  const [registMessage, setRegistMessage] = useState('')
 
   const [errUsernameMessage, setErrUsernameMessage] = useState('')
   const [errEmailMessage, setErrEmailMessage] = useState('')
@@ -82,8 +80,18 @@ const Register: React.FC = () => {
       .then((res) => {
         console.log('Response from server:', res)
         if (res.status === 201) {
-          setRegistered(true)
-          setRegistMessage(res.data.detail)
+          toast.success('User registered successfully.', {
+            style: {
+              fontSize: '1rem',
+              backgroundColor: '#4CAF50',
+              color: '#FFFFFF',
+              border: '2px solid #388E3C',
+              borderRadius: '10px',
+              padding: '20px',
+              boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)'
+            },
+            className: 'unique-toast'
+          })
           setTimeout(() => {
             router.push('/login')
           }, 2500)
@@ -109,7 +117,18 @@ const Register: React.FC = () => {
             errorMessage = 'Failed to register, please try again.'
           }
         }
-        setRegistMessage('Failed to register, please try again.')
+        toast.error('Failed to register, please try again. ', {
+          style: {
+            fontSize: '1rem',
+            backgroundColor: '#FF7043',
+            color: '#FFFFFF',
+            border: '2px solid #D84315',
+            borderRadius: '10px',
+            padding: '20px',
+            boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)'
+          },
+          className: 'unique-toast'
+        })
         setErrorOccurred(true)
       })
   }
@@ -241,14 +260,7 @@ const Register: React.FC = () => {
               Masuk Ke Akun
             </p>
           </div>
-          <div className='flex gap-1 w-full items-center justify-center pt-5'>
-            <p className='h-3'>
-              {isRegistered && <span className='text-green-500 text-xl mt-3'>{registMessage}</span>}
-            </p>
-            <p className='h-3'>
-              {errorOccurred && !isRegistered && <span className='text-red-500 text-xl mt-3'>{registMessage}</span>}
-            </p>
-          </div>
+          <div className='flex gap-1 w-full items-center justify-center pt-5'></div>
         </form>
       </div>
     </>
