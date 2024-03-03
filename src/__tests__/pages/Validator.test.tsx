@@ -1,7 +1,6 @@
 import React from 'react'
 import { render, fireEvent, within } from '@testing-library/react'
 import '@testing-library/jest-dom'
-
 import ValidatorPage from '../../pages/validator'
 
 describe('ValidatorPage Page Tests', () => {
