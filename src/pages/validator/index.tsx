@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { Row } from '../../components/row'
 import { CounterButton } from '../../components/counterButton'
 import { SubmitButton } from '../../components/submitButton'
-import { CauseStatus } from 'lib/enum'
+import { CauseStatus } from '../../lib/enum'
 
 const Validator = () => {
   const alphabet = 'ABCDE'

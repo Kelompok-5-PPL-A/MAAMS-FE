@@ -1,5 +1,5 @@
 import React from 'react'
-import { CauseStatus } from 'lib/enum'
+import { CauseStatus } from '../../lib/enum'
 
 interface CellProps {
   cellName: string

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Cell } from '../cell'
-import { CauseStatus } from 'lib/enum'
+import { CauseStatus } from '../../lib/enum'
 
 interface RowProps {
   rowNumber: number
@@ -63,7 +63,7 @@ export const Row: React.FC<RowProps> = ({
                 onChange={(newValue) => handleLocalCauseChange(index, newValue, localCauseStatuses[index])}
                 causeStatus={causeStatuses[index]}
                 disabled={disabledCells[index]}
-                placeholder={disabledCells[index] ? '' : 'Isi sebab...'}
+                placeholder={disabledCells[index] ? '' : 'Isi sebab..'}
               />
             </div>
           ))}
