@@ -17,8 +17,9 @@ test_secondary_prod:
     - coldfix
   script:
     - npm install --global vercel
+    - vercel pull --yes --environment=production --token=$VERCEL_TOKEN_STAGING
     - vercel build --prod --token=$VERCEL_TOKEN_STAGING
-    - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN_STAGING
+    - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN_STAGING --scope=maams-staging
 
 deploy_staging:
   stage: deploy
