@@ -70,9 +70,9 @@ describe('Navbar component', () => {
   it('toggles menu when menu button is clicked on mobile layout', () => {
     global.innerWidth = 480
 
-    const { getByRole } = render(<Navbar />)
+    const { getByTestId } = render(<Navbar />)
 
-    const menuButton = getByRole('button', { name: /menu/i })
+    const menuButton = getByTestId('menu-button')
     fireEvent.click(menuButton)
 
     expect(menuButton).toHaveAttribute('aria-expanded', 'true')
