@@ -67,13 +67,18 @@ describe('Navbar component', () => {
     expect(getByText('Login')).toBeInTheDocument()
   })
 
-  it('toggles menu when menu button is clicked on mobile layout', () => {
+  it('toggles menu when menu button is clicked on mobile layout', async () => {
     global.innerWidth = 480
 
-    const { getByTestId } = render(<Navbar />)
+    const { container } = render(<Navbar />)
 
-    const menuButton = getByTestId('menu-button')
-    fireEvent.click(menuButton)
+    const menuButton = container.querySelector(
+      'button[aria-controls="navbar-dropdown"][aria-expanded="false"][class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200"]'
+    )
+
+    if (menuButton) {
+      fireEvent.click(menuButton)
+    }
 
     expect(menuButton).toHaveAttribute('aria-expanded', 'true')
 
