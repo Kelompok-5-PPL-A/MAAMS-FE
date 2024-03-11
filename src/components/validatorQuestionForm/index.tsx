@@ -9,28 +9,35 @@ import { Icon } from '@chakra-ui/react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
+import { refreshToken, logout } from '../../actions/auth'
 
 export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id, validatorData }) => {
   const [question, setQuestion] = useState<string>(validatorData?.question || '')
   const [mode, setMode] = useState<Mode | undefined>(validatorData?.mode || Mode.pribadi)
   const router = useRouter()
-  const accessToken = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
+  const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
+  const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
   const headers = {
-    Authorization: `Bearer ${accessToken}`
+    Authorization: `Bearer ${access}`
   }
 
   const handleModeChange = (mode: Mode) => {
     setMode(mode)
-    console.log(mode)
   }
 
   const handleModeChangeGet = () => {
     setMode(validatorData?.mode)
-    console.log(validatorData?.mode)
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+
+    // check missing input
+    if (!question) {
+      toast.error('Pertanyaan harus diisi')
+      return
+    }
+
     try {
       const { data } = await axios({
         method: 'POST',
@@ -42,14 +49,33 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
         withCredentials: false,
         headers: headers
       })
-      console.log(question)
-      toast.success('Analisis berhasil ditambahkan')
+      toast.success('Analisis berhasil ditambahkan', {
+        style: {
+          fontSize: '1rem',
+          backgroundColor: '#4CAF50',
+          color: '#FFFFFF',
+          border: '2px solid #388E3C',
+          borderRadius: '10px',
+          padding: '20px',
+          boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)'
+        },
+        className: 'unique-toast'
+      })
       router.push(`/validator/${data.id}`)
     } catch (error: any) {
-      if (error.response.status == '400') {
-        toast.error('Isi pertanyaan dengan benar')
-      } else if (error.response.status == '401') {
-        toast.error('silakan login kembali')
+      if (refresh != null && error.response.status == '401') {
+        // refresh token to get new token
+        // Check if refresh token is valid
+        try {
+          const responseRefresh = await refreshToken(refresh)
+          window.localStorage.setItem('access', responseRefresh.data.access)
+          toast.error('Terjadinya pembaharuan. Silakan coba lagi')
+          router.reload()
+        } catch {
+          toast.error('Silakan login terlebih dahulu')
+          logout(refresh)
+          router.push('/login')
+        }
       } else if (error.response.data.message) {
         toast.error(error.response.data.message)
       } else if (error.message) {

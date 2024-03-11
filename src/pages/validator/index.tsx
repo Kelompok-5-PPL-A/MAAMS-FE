@@ -5,14 +5,25 @@ import { CounterButton } from '../../components/counterButton'
 import { SubmitButton } from '../../components/submitButton'
 import { CauseStatus } from '../../lib/enum'
 import { ValidatorQuestionForm } from '../../components/validatorQuestionForm'
+import toast from 'react-hot-toast'
+import { useRouter } from 'next/router'
 
 const ValidatorAddPage = () => {
   const alphabet = 'ABCDE'
+  const router = useRouter()
   const [columnCount, setColumnCount] = useState(3)
   const [rows, setRows] = useState([createInitialRow(1, 3)])
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
+  const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
 
   useEffect(() => {
+    // handle if user not logged in
+    if (!refresh) {
+      toast.error('silakan login terlebih dahulu')
+      router.push('/login')
+      return
+    }
+
     disableValidatedRow()
   }, [rows.length])
 
