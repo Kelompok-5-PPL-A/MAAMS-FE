@@ -80,21 +80,10 @@ const Register: React.FC = () => {
       .then((res) => {
         console.log('Response from server:', res)
         if (res.status === 201) {
-          toast.success('User registered successfully.', {
-            style: {
-              fontSize: '1rem',
-              backgroundColor: '#4CAF50',
-              color: '#FFFFFF',
-              border: '2px solid #388E3C',
-              borderRadius: '10px',
-              padding: '20px',
-              boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)'
-            },
-            className: 'unique-toast'
-          })
+          toast.success('User registered successfully.')
           setTimeout(() => {
             router.push('/login')
-          }, 2500)
+          }, 1000)
         }
       })
       .catch((err) => {
@@ -116,18 +105,7 @@ const Register: React.FC = () => {
             errorMessage = 'Failed to register, please try again.'
           }
         }
-        toast.error('Failed to register, please try again. ', {
-          style: {
-            fontSize: '1rem',
-            backgroundColor: '#FF7043',
-            color: '#FFFFFF',
-            border: '2px solid #D84315',
-            borderRadius: '10px',
-            padding: '20px',
-            boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)'
-          },
-          className: 'unique-toast'
-        })
+        toast.error('Failed to register, please try again. ')
         setErrorOccurred(true)
       })
   }
