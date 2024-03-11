@@ -32,62 +32,49 @@ const ValidatorDetailPage = () => {
   const [columnCount, setColumnCount] = useState(3)
   const [rows, setRows] = useState([createInitialRow(1, 3)])
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
-  const [redirected, setRedirected] = useState(false)
 
   useEffect(() => {
-    const getQuestionData = async (id: string | string[] | undefined) => {
-      try {
-        // handle if user not logged in
-        if (!refresh) {
-          if (!redirected) {
-            toast.error('silakan login terlebih dahulu')
-            router.push('/login')
-            setRedirected(true)
-          }
-          return
+    getQuestionData()
+  }, [id])
+
+  const getQuestionData = async () => {
+    if (!id) return
+
+    if (!refresh) {
+      toast.error('silakan login terlebih dahulu')
+      router.push('/login')
+      return
+    }
+
+    try {
+      const response = await axios({
+        method: 'GET',
+        url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/${id}/`,
+        withCredentials: false,
+        headers: headers
+      })
+      const receivedData: ValidatorData = response.data
+      setValidatorData(receivedData)
+    } catch (error: any) {
+      if (refresh != null && error.response.status == '401') {
+        try {
+          const responseRefresh = await refreshToken(refresh)
+          window.localStorage.setItem('access', responseRefresh.data.access)
+          router.reload()
+        } catch {
+          toast.error('Sesi anda telah berakhir. Silakan login kembali')
+          logout(refresh)
+          router.push('/login')
         }
-        if (!id) {
-          // If id is not available, don't make the request
-          return
-        }
-        const response = await axios({
-          method: 'GET',
-          url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/${id}/`,
-          withCredentials: false,
-          headers: headers
-        })
-        const receivedData: ValidatorData = response.data
-        setValidatorData(receivedData)
-      } catch (error: any) {
-        if (refresh != null && error.response.status == '401') {
-          // refresh token to get new token
-          // Check if refresh token is valid
-          try {
-            const responseRefresh = await refreshToken(refresh)
-            window.localStorage.setItem('access', responseRefresh.data.access)
-            router.reload()
-          } catch {
-            toast.error('silakan login terlebih dahulu')
-            if (!redirected) {
-              router.push('/login')
-              logout(refresh)
-              setRedirected(true)
-            }
-          }
-        } else if (error.response && !redirected) {
-          // if forbidden user
-          toast.error(error.response.data.detail)
-          router.push('/')
-          setRedirected(true)
-        } else if (error.message && !redirected) {
-          toast.error(error.message)
-          router.push('/')
-          setRedirected(true)
-        }
+      } else if (error.response) {
+        toast.error(error.response.data.detail)
+        router.push('/')
+      } else if (error.message) {
+        toast.error(error.message)
+        router.push('/')
       }
     }
-    getQuestionData(id)
-  }, [id, setValidatorData, redirected, refresh])
+  }
 
   useEffect(() => {
     disableValidatedRow()

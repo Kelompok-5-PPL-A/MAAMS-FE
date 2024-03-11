@@ -32,7 +32,6 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    // check missing input
     if (!question) {
       toast.error('Pertanyaan harus diisi')
       return
@@ -64,15 +63,13 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
       router.push(`/validator/${data.id}`)
     } catch (error: any) {
       if (refresh != null && error.response.status == '401') {
-        // refresh token to get new token
-        // Check if refresh token is valid
         try {
           const responseRefresh = await refreshToken(refresh)
           window.localStorage.setItem('access', responseRefresh.data.access)
-          toast.error('Terjadinya pembaharuan. Silakan coba lagi')
+          toast.error('Sesi anda telah diperbaharui. Silakan coba lagi')
           router.reload()
         } catch {
-          toast.error('Silakan login terlebih dahulu')
+          toast.error('Sesi anda telah berakhir. Silakan login kembali')
           logout(refresh)
           router.push('/login')
         }

@@ -5,7 +5,7 @@ import { CounterButton } from '../../components/counterButton'
 import { SubmitButton } from '../../components/submitButton'
 import { CauseStatus } from '../../lib/enum'
 import { ValidatorQuestionForm } from '../../components/validatorQuestionForm'
-import toast from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/router'
 
 const ValidatorAddPage = () => {
@@ -17,7 +17,6 @@ const ValidatorAddPage = () => {
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
 
   useEffect(() => {
-    // handle if user not logged in
     if (!refresh) {
       toast.error('silakan login terlebih dahulu')
       router.push('/login')
