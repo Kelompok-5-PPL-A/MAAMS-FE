@@ -84,42 +84,27 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
   return (
     <>
       <form className='flex flex-col w-full gap-8' onSubmit={handleSubmit}>
-        {id ? (
-          <>
-            <DropdownMode selectedMode={validatorData?.mode} onChange={handleModeChangeGet} />
+        <>
+          <DropdownMode
+            selectedMode={id ? validatorData?.mode : mode}
+            onChange={id ? handleModeChangeGet : handleModeChange}
+          />
 
-            <h1 className='text-2xl font-bold text-black'>Ingin menganalisis masalah apa hari ini?</h1>
+          <h1 className='text-2xl font-bold text-black'>Ingin menganalisis masalah apa hari ini?</h1>
 
-            <div className='w-full'>
+          <div className='w-full'>
+            <div className='flex gap-4'>
               <CustomInput
                 inputClassName='flex-grow w-full p-4 bg-grey-200 rounded-[10px] shadow border border-zinc-500 justify-start items-center gap-4 inline-flex'
                 placeholder='Isi pertanyaan anda di sini'
-                value={validatorData?.question}
-                isDisabled={true}
+                value={id ? validatorData?.question : question}
+                isDisabled={id ? true : false}
                 onChange={(e) => setQuestion(e.target.value)}
               />
+              {id ? <></> : <CircularIconButton id='submit-question' icon={<Icon as={MdSend} />} type='submit' />}
             </div>
-          </>
-        ) : (
-          <>
-            <DropdownMode selectedMode={mode} onChange={handleModeChange} />
-
-            <h1 className='text-2xl font-bold text-black'>Ingin menganalisis masalah apa hari ini?</h1>
-
-            <div className='w-full'>
-              <div className='flex gap-4'>
-                <CustomInput
-                  inputClassName='flex-grow w-full p-4 bg-white rounded-[10px] shadow border border-zinc-500 justify-start items-center gap-4 inline-flex'
-                  placeholder='Isi pertanyaan anda di sini'
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                />
-
-                <CircularIconButton icon={<Icon as={MdSend} />} type='submit' />
-              </div>
-            </div>
-          </>
-        )}
+          </div>
+        </>
       </form>
     </>
   )
