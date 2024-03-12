@@ -8,6 +8,7 @@ interface CellProps {
   causeStatus: CauseStatus
   disabled: boolean
   placeholder: string
+  feedback?: string
 }
 export const Cell: React.FC<CellProps> = ({
   cellName,
@@ -15,7 +16,8 @@ export const Cell: React.FC<CellProps> = ({
   onChange,
   causeStatus,
   disabled = false,
-  placeholder
+  placeholder,
+  feedback
 }) => {
   const getOutlineClass = (status: CauseStatus) => {
     switch (status) {
@@ -33,6 +35,33 @@ export const Cell: React.FC<CellProps> = ({
 
   const outlineClass = getOutlineClass(causeStatus)
 
+  const renderFeedback = () => {
+    let emoji = ''
+    let color = ''
+    switch (causeStatus) {
+      case CauseStatus.CorrectRoot:
+        emoji = '✅'
+        color = 'purple'
+        break
+      case CauseStatus.CorrectNotRoot:
+        emoji = '✅'
+        color = 'green'
+        break
+      case CauseStatus.Incorrect:
+        emoji = '❌'
+        color = 'red'
+        break
+      default:
+        return null // No feedback for unchecked or default status
+    }
+
+    return (
+      <div className='feedback-text mt-4' style={{ color: color }}>
+        {emoji} {feedback}
+      </div>
+    )
+  }
+
   return (
     <div className='flex flex-col items-center justify-center relative'>
       <div className='relative w-fit mt-[-1.00px] font-bold text-black text-2xl leading-10 mb-2 whitespace-nowrap'>
@@ -47,6 +76,7 @@ export const Cell: React.FC<CellProps> = ({
         placeholder={placeholder}
         disabled={disabled}
       ></textarea>
+      {feedback && renderFeedback()}
     </div>
   )
 }
