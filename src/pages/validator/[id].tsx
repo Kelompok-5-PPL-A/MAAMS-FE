@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 import Mode from 'constants/mode'
 import { SubmitButton } from '../../components/submitButton'
 import { CauseStatus } from '../../lib/enum'
+import { refreshToken, logout } from '../../actions/auth'
 
 const defaultValidatorData: ValidatorData = {
   question: '',
@@ -22,9 +23,10 @@ const ValidatorDetailPage = () => {
   const router = useRouter()
   const id = router.query.id
   const [validatorData, setValidatorData] = useState<ValidatorData>(defaultValidatorData)
-  const accessToken = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
+  const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
+  const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
   const headers = {
-    Authorization: `Bearer ${accessToken}`
+    Authorization: `Bearer ${access}`
   }
   const alphabet = 'ABCDE'
   const [columnCount, setColumnCount] = useState(3)
@@ -32,33 +34,47 @@ const ValidatorDetailPage = () => {
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
 
   useEffect(() => {
-    const getQuestionData = async (id: string | string[] | undefined) => {
-      try {
-        if (!id) {
-          console.log(id)
-          // If id is not available, don't make the request
-          return
+    getQuestionData()
+  }, [id])
+
+  const getQuestionData = async () => {
+    if (!id) return
+
+    if (!refresh) {
+      toast.error('silakan login terlebih dahulu')
+      router.push('/login')
+      return
+    }
+
+    try {
+      const response = await axios({
+        method: 'GET',
+        url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/${id}/`,
+        withCredentials: false,
+        headers: headers
+      })
+      const receivedData: ValidatorData = response.data
+      setValidatorData(receivedData)
+    } catch (error: any) {
+      if (refresh != null && error.response.status == '401') {
+        try {
+          const responseRefresh = await refreshToken(refresh)
+          window.localStorage.setItem('access', responseRefresh.data.access)
+          router.reload()
+        } catch {
+          toast.error('Sesi anda telah berakhir. Silakan login kembali')
+          logout(refresh)
+          router.push('/login')
         }
-        const response = await axios({
-          method: 'GET',
-          url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/${id}/`,
-          withCredentials: false,
-          headers: headers
-        })
-        const receivedData: ValidatorData = response.data
-        console.log(receivedData)
-        setValidatorData(receivedData)
-      } catch (error: any) {
-        if (error.response) {
-          toast.error(error.response.data.detail)
-        } else if (error.message) {
-          toast.error(error.message)
-        }
+      } else if (error.response) {
+        toast.error(error.response.data.detail)
+        router.push('/')
+      } else if (error.message) {
+        toast.error(error.message)
         router.push('/')
       }
     }
-    getQuestionData(id)
-  }, [id, setValidatorData])
+  }
 
   useEffect(() => {
     disableValidatedRow()
@@ -164,12 +180,8 @@ const ValidatorDetailPage = () => {
               onCauseAndStatusChanges={(causeIndex: number, newValue: string, newStatus: CauseStatus) =>
                 updateCauseAndStatus(row.id, causeIndex, newValue, newStatus)
               }
+              feedbacks={row.feedbacks}
             />
-            {row.feedbacks.map((feedback, feedbackIndex) => (
-              <div key={`${row.id}-feedback-${feedbackIndex}`} className='feedback-message'>
-                {feedback}
-              </div>
-            ))}
           </div>
         ))}
         {

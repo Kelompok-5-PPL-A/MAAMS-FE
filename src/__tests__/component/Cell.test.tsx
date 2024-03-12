@@ -9,6 +9,7 @@ describe('Cell Component', () => {
   const cellName = 'A1'
   const cause = 'Example Cause'
   const placeholder = 'Enter cause..'
+  const feedback = 'This is a feedback'
 
   test('renders cell with correct cellName, cause, and placeholder', () => {
     const component = (
@@ -157,6 +158,62 @@ describe('Cell Component', () => {
     const { getByPlaceholderText } = render(component)
 
     expect(getByPlaceholderText(newPlaceholder)).toBeInTheDocument()
+  })
+
+  test.each([
+    { status: CauseStatus.CorrectRoot, expectedEmoji: '☑️', expectedColor: 'purple' },
+    { status: CauseStatus.CorrectNotRoot, expectedEmoji: '✅', expectedColor: 'green' },
+    { status: CauseStatus.Incorrect, expectedEmoji: '❌', expectedColor: 'red' }
+  ])('displays $expectedEmoji with $expectedColor color for $status', ({ status, expectedEmoji, expectedColor }) => {
+    const component = (
+      <Cell
+        cellName={cellName}
+        cause={cause}
+        onChange={() => {}}
+        causeStatus={status}
+        disabled={false}
+        placeholder={placeholder}
+        feedback={feedback}
+      />
+    )
+    const { getByText } = render(component)
+
+    const feedbackElement = getByText(new RegExp(`${expectedEmoji} ${feedback}`))
+    expect(feedbackElement).toBeInTheDocument()
+    expect(feedbackElement).toHaveStyle(`color: ${expectedColor}`)
+  })
+
+  test('does not display feedback if none is provided', () => {
+    const component = (
+      <Cell
+        cellName={cellName}
+        cause={cause}
+        onChange={() => {}}
+        causeStatus={CauseStatus.CorrectRoot}
+        disabled={false}
+        placeholder={placeholder}
+      />
+    )
+    const { queryByText } = render(component)
+
+    expect(queryByText(new RegExp(`${feedback}`))).not.toBeInTheDocument()
+  })
+
+  test('feedback does not appear for unchecked status', () => {
+    const component = (
+      <Cell
+        cellName={cellName}
+        cause={cause}
+        onChange={() => {}}
+        causeStatus={CauseStatus.Unchecked}
+        disabled={false}
+        placeholder={placeholder}
+        feedback={feedback}
+      />
+    )
+    const { queryByText } = render(component)
+
+    expect(queryByText(new RegExp(`☑️|✅|❌`))).not.toBeInTheDocument()
   })
 
   test('renders correctly with enabled input', () => {
