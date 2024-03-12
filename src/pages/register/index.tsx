@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import maams from '../../assets/maams.png'
 import Navbar from '../../components/navbar/navbar'
 import { useRouter } from 'next/router'
@@ -87,9 +87,7 @@ const Register: React.FC = () => {
         }
       })
       .catch((err) => {
-        console.error('Response from server:', err)
         let errorMessage = 'An error occurred.'
-
         if (err.response && err.response.data) {
           if (err.response.data.username) {
             errorMessage = err.response.data.username[0]
@@ -223,6 +221,7 @@ const Register: React.FC = () => {
             <button
               type='submit'
               className='w-1/4 text-white text-extrabold p-3 rounded transition duration-300 rounded-[15px] bg-[#FBC707]'
+              data-testid='register-button'
             >
               Buat Akun
             </button>
