@@ -36,3 +36,15 @@ export const logout = async (refresh_token: string) => {
     config
   )
 }
+
+export const refreshToken = async (refresh_token: string) => {
+  const config: AxiosRequestConfig = {
+    headers: customHeaders
+  }
+
+  return await axios.post(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/token/refresh/`,
+    { refresh: refresh_token },
+    config
+  )
+}
