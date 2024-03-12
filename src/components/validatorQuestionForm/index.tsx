@@ -9,28 +9,34 @@ import { Icon } from '@chakra-ui/react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
+import { refreshToken, logout } from '../../actions/auth'
 
 export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id, validatorData }) => {
   const [question, setQuestion] = useState<string>(validatorData?.question || '')
   const [mode, setMode] = useState<Mode | undefined>(validatorData?.mode || Mode.pribadi)
   const router = useRouter()
-  const accessToken = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
+  const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
+  const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
   const headers = {
-    Authorization: `Bearer ${accessToken}`
+    Authorization: `Bearer ${access}`
   }
 
   const handleModeChange = (mode: Mode) => {
     setMode(mode)
-    console.log(mode)
   }
 
   const handleModeChangeGet = () => {
     setMode(validatorData?.mode)
-    console.log(validatorData?.mode)
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+
+    if (!question) {
+      toast.error('Pertanyaan harus diisi')
+      return
+    }
+
     try {
       const { data } = await axios({
         method: 'POST',
@@ -42,16 +48,31 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
         withCredentials: false,
         headers: headers
       })
-      console.log(question)
-      toast.success('Analisis berhasil ditambahkan')
+      toast.success('Analisis berhasil ditambahkan', {
+        style: {
+          fontSize: '1rem',
+          backgroundColor: '#4CAF50',
+          color: '#FFFFFF',
+          border: '2px solid #388E3C',
+          borderRadius: '10px',
+          padding: '20px',
+          boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)'
+        },
+        className: 'unique-toast'
+      })
       router.push(`/validator/${data.id}`)
     } catch (error: any) {
-      if (error.response.status == '400') {
-        toast.error('Isi pertanyaan dengan benar')
-      } else if (error.response.status == '401') {
-        toast.error('silakan login kembali')
-      } else if (error.response.data.message) {
-        toast.error(error.response.data.message)
+      if (refresh != null && error.response.status == '401') {
+        try {
+          const responseRefresh = await refreshToken(refresh)
+          window.localStorage.setItem('access', responseRefresh.data.access)
+          toast.error('Sesi anda telah diperbaharui. Silakan coba lagi')
+          router.reload()
+        } catch {
+          toast.error('Sesi anda telah berakhir. Silakan login kembali')
+          logout(refresh)
+          router.push('/login')
+        }
       } else if (error.message) {
         toast.error(error.message)
       }
@@ -61,42 +82,27 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
   return (
     <>
       <form className='flex flex-col w-full gap-8' onSubmit={handleSubmit}>
-        {id ? (
-          <>
-            <DropdownMode selectedMode={validatorData?.mode} onChange={handleModeChangeGet} />
+        <>
+          <DropdownMode
+            selectedMode={id ? validatorData?.mode : mode}
+            onChange={id ? handleModeChangeGet : handleModeChange}
+          />
 
-            <h1 className='text-2xl font-bold text-black'>Ingin menganalisis masalah apa hari ini?</h1>
+          <h1 className='text-2xl font-bold text-black'>Ingin menganalisis masalah apa hari ini?</h1>
 
-            <div className='w-full'>
+          <div className='w-full'>
+            <div className='flex gap-4'>
               <CustomInput
                 inputClassName='flex-grow w-full p-4 bg-grey-200 rounded-[10px] shadow border border-zinc-500 justify-start items-center gap-4 inline-flex'
                 placeholder='Isi pertanyaan anda di sini'
-                value={validatorData?.question}
-                isDisabled={true}
+                value={id ? validatorData?.question : question}
+                isDisabled={id ? true : false}
                 onChange={(e) => setQuestion(e.target.value)}
               />
+              {id ? <></> : <CircularIconButton id='submit-question' icon={<Icon as={MdSend} />} type='submit' />}
             </div>
-          </>
-        ) : (
-          <>
-            <DropdownMode selectedMode={mode} onChange={handleModeChange} />
-
-            <h1 className='text-2xl font-bold text-black'>Ingin menganalisis masalah apa hari ini?</h1>
-
-            <div className='w-full'>
-              <div className='flex gap-4'>
-                <CustomInput
-                  inputClassName='flex-grow w-full p-4 bg-white rounded-[10px] shadow border border-zinc-500 justify-start items-center gap-4 inline-flex'
-                  placeholder='Isi pertanyaan anda di sini'
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                />
-
-                <CircularIconButton icon={<Icon as={MdSend} />} type='submit' />
-              </div>
-            </div>
-          </>
-        )}
+          </div>
+        </>
       </form>
     </>
   )
