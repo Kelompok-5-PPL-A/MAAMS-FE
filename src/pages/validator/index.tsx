@@ -126,12 +126,8 @@ const ValidatorAddPage = () => {
               onCauseAndStatusChanges={(causeIndex: number, newValue: string, newStatus: CauseStatus) =>
                 updateCauseAndStatus(row.id, causeIndex, newValue, newStatus)
               }
+              feedbacks={row.feedbacks}
             />
-            {row.feedbacks.map((feedback, feedbackIndex) => (
-              <div key={`${row.id}-feedback-${feedbackIndex}`} className='feedback-message'>
-                {feedback}
-              </div>
-            ))}
           </div>
         ))}
         {
