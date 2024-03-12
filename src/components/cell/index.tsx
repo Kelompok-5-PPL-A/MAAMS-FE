@@ -40,7 +40,9 @@ export const Cell: React.FC<CellProps> = ({
       </div>
       <textarea
         value={cause}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) => {
+          !disabled && onChange(event.target.value)
+        }}
         rows={1}
         maxLength={148}
         className={`w-full h-22 text-xs resize-none flex pt-4 px-4 pb-16 items-center bg-[#ececec] border-solid border ${outlineClass} relative z-[1]`}

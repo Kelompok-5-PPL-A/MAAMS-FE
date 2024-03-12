@@ -158,4 +158,64 @@ describe('Cell Component', () => {
 
     expect(getByPlaceholderText(newPlaceholder)).toBeInTheDocument()
   })
+
+  test('renders correctly with enabled input', () => {
+    const cellName = 'A1'
+    const cause = 'Test Cause'
+    const onChangeMock = jest.fn()
+    const causeStatus = CauseStatus.Unchecked
+    const disabled = false
+    const placeholder = 'Test Placeholder'
+
+    const { getByText, getByPlaceholderText } = render(
+      <Cell
+        cellName={cellName}
+        cause={cause}
+        onChange={onChangeMock}
+        causeStatus={causeStatus}
+        disabled={disabled}
+        placeholder={placeholder}
+      />
+    )
+
+    const cellNameElement = getByText(cellName)
+    const textareaElement = getByPlaceholderText(placeholder)
+
+    expect(cellNameElement).toBeInTheDocument()
+    expect(textareaElement).toBeInTheDocument()
+    expect(textareaElement).not.toBeDisabled()
+
+    fireEvent.change(textareaElement, { target: { value: 'New Value' } })
+    expect(onChangeMock).toHaveBeenCalledWith('New Value')
+  })
+
+  test('renders correctly with disabled input', () => {
+    const cellName = 'A1'
+    const cause = 'Test Cause'
+    const onChangeMock = jest.fn()
+    const causeStatus = CauseStatus.Unchecked
+    const disabled = true
+    const placeholder = 'Test Placeholder'
+
+    const { getByText, getByPlaceholderText } = render(
+      <Cell
+        cellName={cellName}
+        cause={cause}
+        onChange={onChangeMock}
+        causeStatus={causeStatus}
+        disabled={disabled}
+        placeholder={placeholder}
+      />
+    )
+
+    const cellNameElement = getByText(cellName)
+    const textareaElement = getByPlaceholderText(placeholder)
+
+    expect(cellNameElement).toBeInTheDocument()
+    expect(textareaElement).toBeInTheDocument()
+    expect(textareaElement).toBeDisabled()
+
+    fireEvent.change(textareaElement, { target: { value: 'New Value' } })
+    expect(onChangeMock).not.toHaveBeenCalled()
+  })
 })
