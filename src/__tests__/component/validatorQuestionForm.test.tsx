@@ -1,10 +1,11 @@
 /* eslint-disable */
 import { ValidatorQuestionForm } from '../../components/validatorQuestionForm'
 import axios from 'axios'
-import { render, fireEvent, waitFor } from '@testing-library/react'
+import { render, fireEvent, waitFor, getByText } from '@testing-library/react'
 import React from 'react'
 import '@testing-library/jest-dom'
 import MockAdapter from 'axios-mock-adapter'
+import { toast } from 'react-hot-toast'
 
 jest.mock('axios')
 
@@ -12,6 +13,10 @@ jest.mock('next/router', () => ({
   useRouter: () => ({
     push: jest.fn()
   })
+}))
+
+jest.mock('react-hot-toast', () => ({
+  error: jest.fn()
 }))
 
 jest.mock('../../actions/auth', () => ({
@@ -56,7 +61,7 @@ describe('ValidatorQuestionForm Component', () => {
   test('displays error when question is not filled', async () => {
     jest.requireMock('next/router').useRouter().push('/')
 
-    render(<ValidatorQuestionForm />)
+    const { getByText } = render(<ValidatorQuestionForm />)
     const submitButton = document.getElementById('submit-question')
 
     if (submitButton !== null) {
@@ -64,6 +69,9 @@ describe('ValidatorQuestionForm Component', () => {
     }
 
     await waitFor(() => {
+      setTimeout(() => {
+        expect(getByText('Pertanyaan harus diisi')).toBeInTheDocument()
+      }, 2000)
       expect(axios).not.toHaveBeenCalled()
     })
   })

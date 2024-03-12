@@ -2,7 +2,6 @@
 
 # environment
 .env
-.env.test
 
 # dependencies
 /node_modules
