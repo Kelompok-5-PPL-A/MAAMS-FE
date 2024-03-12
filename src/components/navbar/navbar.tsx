@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import axios from 'axios'
 import { logout } from '../../actions/auth'
 import toast from 'react-hot-toast'
+import { UserDataProps } from '../types/userData'
 
 const Navbar = () => {
   const router = useRouter()
@@ -10,9 +11,12 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userData, setUserData] = useState<UserDataProps | null>(null)
 
   useEffect(() => {
     const refresh_token = localStorage.getItem('isLoggedIn')
+    setUserData(JSON.parse(localStorage.getItem('userData')!))
+    console.log(JSON.parse(localStorage.getItem('userData')!))
     setIsLoggedIn(refresh_token === 'true')
   }, [])
 
@@ -102,7 +106,7 @@ const Navbar = () => {
                     id='dropdownNavbarLink'
                     className='flex md:items-center justify-between w-full py-2 md:px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:p-0 md:w-auto '
                   >
-                    Username
+                    {userData?.username || 'Username'}
                     <svg
                       className='w-2.5 h-2.5 ms-2.5'
                       aria-hidden='true'
