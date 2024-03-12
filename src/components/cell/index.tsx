@@ -1,12 +1,67 @@
 import React from 'react'
+import { CauseStatus } from '../../lib/enum'
 
 interface CellProps {
   cellName: string
   cause: string
   onChange: (value: string) => void
+  causeStatus: CauseStatus
+  disabled: boolean
+  placeholder: string
+  feedback?: string
 }
+export const Cell: React.FC<CellProps> = ({
+  cellName,
+  cause,
+  onChange,
+  causeStatus,
+  disabled,
+  placeholder,
+  feedback
+}) => {
+  const getOutlineClass = (status: CauseStatus) => {
+    switch (status) {
+      case CauseStatus.Incorrect:
+        return 'border-red-500'
+      case CauseStatus.CorrectNotRoot:
+        return 'border-green-500'
+      case CauseStatus.CorrectRoot:
+        return 'border-purple-500'
+      case CauseStatus.Unchecked:
+      default:
+        return 'border-black'
+    }
+  }
 
-export const Cell: React.FC<CellProps> = ({ cellName, cause, onChange }) => {
+  const outlineClass = getOutlineClass(causeStatus)
+
+  const renderFeedback = () => {
+    let emoji = ''
+    let color = ''
+    switch (causeStatus) {
+      case CauseStatus.CorrectRoot:
+        emoji = '☑️'
+        color = 'purple'
+        break
+      case CauseStatus.CorrectNotRoot:
+        emoji = '✅'
+        color = 'green'
+        break
+      case CauseStatus.Incorrect:
+        emoji = '❌'
+        color = 'red'
+        break
+      default:
+        return null // No feedback for unchecked or default status
+    }
+
+    return (
+      <div className='feedback-text mt-4' style={{ color: color }}>
+        {emoji} {feedback}
+      </div>
+    )
+  }
+
   return (
     <div className='flex flex-col items-center justify-center relative'>
       <div className='relative w-fit mt-[-1.00px] font-bold text-black text-2xl leading-10 mb-2 whitespace-nowrap'>
@@ -14,12 +69,14 @@ export const Cell: React.FC<CellProps> = ({ cellName, cause, onChange }) => {
       </div>
       <textarea
         value={cause}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(event) => onChange(event.target.value)}
         rows={1}
         maxLength={148}
-        className='w-full h-22 text-xs resize-none flex pt-4 px-4 pb-16 items-center bg-[#ececec] border-solid border border-[#000] relative z-[1]'
-        placeholder='Isi sebab...'
+        className={`w-full h-22 text-xs resize-none flex pt-4 px-4 pb-16 items-center bg-[#ececec] border-solid border ${outlineClass} relative z-[1]`}
+        placeholder={placeholder}
+        disabled={disabled}
       ></textarea>
+      {feedback && renderFeedback()}
     </div>
   )
 }
