@@ -10,17 +10,7 @@ test:
   script:
     - npm install
     - npm test
-
-test_secondary_prod:
-  stage: deploy
-  only:
-    - coldfix
-  script:
-    - npm install --global vercel
-    - vercel pull --yes --environment=production --token=$VERCEL_TOKEN_STAGING
-    - vercel build --prod --token=$VERCEL_TOKEN_STAGING
-    - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN_STAGING --scope=$VERCEL_ORG_ID
-
+    
 deploy_staging:
   stage: deploy
   only:
@@ -29,7 +19,7 @@ deploy_staging:
     - npm install --global vercel
     - vercel pull --yes --environment=production --token=$VERCEL_TOKEN_STAGING
     - vercel build --prod --token=$VERCEL_TOKEN_STAGING
-    - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN_STAGING
+    - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN_STAGING --scope=$VERCEL_ORG_ID
 
 deploy_production:
   stage: deploy
