@@ -99,7 +99,6 @@ const Register: React.FC = () => {
       })
       .catch((err) => {
         console.error('Response from server:', err)
-        setRegistered(false)
         let errorMessage = 'An error occurred.'
 
         if (err.response && err.response.data) {
