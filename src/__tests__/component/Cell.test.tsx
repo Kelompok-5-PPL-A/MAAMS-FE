@@ -161,7 +161,7 @@ describe('Cell Component', () => {
   })
 
   test.each([
-    { status: CauseStatus.CorrectRoot, expectedEmoji: '✅', expectedColor: 'purple' },
+    { status: CauseStatus.CorrectRoot, expectedEmoji: '☑️', expectedColor: 'purple' },
     { status: CauseStatus.CorrectNotRoot, expectedEmoji: '✅', expectedColor: 'green' },
     { status: CauseStatus.Incorrect, expectedEmoji: '❌', expectedColor: 'red' }
   ])('displays $expectedEmoji with $expectedColor color for $status', ({ status, expectedEmoji, expectedColor }) => {
@@ -213,6 +213,6 @@ describe('Cell Component', () => {
     )
     const { queryByText } = render(component)
 
-    expect(queryByText(new RegExp(`✅|❌`))).not.toBeInTheDocument()
+    expect(queryByText(new RegExp(`☑️|✅|❌`))).not.toBeInTheDocument()
   })
 })
