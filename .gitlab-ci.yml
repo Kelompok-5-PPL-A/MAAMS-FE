@@ -1,4 +1,3 @@
----
 stages:
   - test
   - sonarqube-check
@@ -8,10 +7,20 @@ default:
   image: node:20.11.0
 
 test:
+  image: node:latest
   stage: test
-  script:
+  before_script:
     - npm install
-    - npm test
+  script:
+    - npm run test:ci
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
+  artifacts:
+    paths:
+      - coverage/
+    when: always
+    reports:
+      junit:
+        - junit.xml
 
 sonarqube-check:
   image:
