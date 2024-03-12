@@ -15,7 +15,7 @@ export const Cell: React.FC<CellProps> = ({
   cause,
   onChange,
   causeStatus,
-  disabled = false,
+  disabled,
   placeholder,
   feedback
 }) => {
@@ -40,7 +40,7 @@ export const Cell: React.FC<CellProps> = ({
     let color = ''
     switch (causeStatus) {
       case CauseStatus.CorrectRoot:
-        emoji = '✅'
+        emoji = '☑️'
         color = 'purple'
         break
       case CauseStatus.CorrectNotRoot:
