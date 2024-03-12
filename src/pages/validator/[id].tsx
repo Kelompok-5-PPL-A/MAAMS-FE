@@ -1,16 +1,64 @@
-import MainLayout from '../../layout/MainLayout'
 import React, { useState, useEffect } from 'react'
-import { Row } from '../../components/row'
+import MainLayout from '../../layout/MainLayout'
 import { CounterButton } from '../../components/counterButton'
+import { Row } from '../../components/row'
+import { ValidatorQuestionForm } from '../../components/validatorQuestionForm'
+import { useRouter } from 'next/router'
+import axios from 'axios'
+import { ValidatorData } from '../../components/types/validatorQuestionFormProps'
+import toast from 'react-hot-toast'
+import Mode from 'constants/mode'
 import { SubmitButton } from '../../components/submitButton'
 import { CauseStatus } from '../../lib/enum'
-import { ValidatorQuestionForm } from '../../components/validatorQuestionForm'
 
-const ValidatorAddPage = () => {
+const defaultValidatorData: ValidatorData = {
+  question: '',
+  mode: Mode.pribadi,
+  created_at: '',
+  username: ''
+}
+
+const ValidatorDetailPage = () => {
+  const router = useRouter()
+  const id = router.query.id
+  const [validatorData, setValidatorData] = useState<ValidatorData>(defaultValidatorData)
+  const accessToken = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
+  const headers = {
+    Authorization: `Bearer ${accessToken}`
+  }
   const alphabet = 'ABCDE'
   const [columnCount, setColumnCount] = useState(3)
   const [rows, setRows] = useState([createInitialRow(1, 3)])
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
+
+  useEffect(() => {
+    const getQuestionData = async (id: string | string[] | undefined) => {
+      try {
+        if (!id) {
+          console.log(id)
+          // If id is not available, don't make the request
+          return
+        }
+        const response = await axios({
+          method: 'GET',
+          url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/${id}/`,
+          withCredentials: false,
+          headers: headers
+        })
+        const receivedData: ValidatorData = response.data
+        console.log(receivedData)
+        setValidatorData(receivedData)
+      } catch (error: any) {
+        if (error.response) {
+          toast.error(error.response.data.detail)
+        } else if (error.message) {
+          toast.error(error.message)
+        }
+        router.push('/')
+      }
+    }
+    getQuestionData(id)
+  }, [id, setValidatorData])
 
   useEffect(() => {
     disableValidatedRow()
@@ -72,7 +120,7 @@ const ValidatorAddPage = () => {
   const submitCauses = async () => {
     // TODO : Implement submit causes logic with API call
 
-    //For now, causes always correct but not root
+    //For dummy implementation, causes always correct but not root
     const updatedRows = rows.map((row) => ({
       ...row,
       statuses: row.statuses.map(() => CauseStatus.CorrectNotRoot),
@@ -98,7 +146,7 @@ const ValidatorAddPage = () => {
   return (
     <MainLayout>
       <div className='flex flex-col w-full gap-8'>
-        <ValidatorQuestionForm />
+        <ValidatorQuestionForm id={id} validatorData={validatorData} />
         <h1 className='text-2xl font-bold text-black'>Sebab:</h1>
         <CounterButton
           number={columnCount}
@@ -153,4 +201,4 @@ function adjustArraySize<T>(array: T[], size: number, defaultValue: T): T[] {
   }
 }
 
-export default ValidatorAddPage
+export default ValidatorDetailPage

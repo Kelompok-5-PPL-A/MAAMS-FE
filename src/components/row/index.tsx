@@ -1,27 +1,46 @@
 import React, { useState, useEffect } from 'react'
 import { Cell } from '../cell'
+import { CauseStatus } from '../../lib/enum'
 
 interface RowProps {
-  rowNumber: string
+  rowNumber: number
   cols: number
+  causes: string[]
+  causeStatuses: CauseStatus[]
+  disabledCells: boolean[]
+  onCauseAndStatusChanges: (causeIndex: number, newValue: string, newStatus: CauseStatus) => void
 }
 
-export const Row: React.FC<RowProps> = ({ rowNumber, cols }) => {
+export const Row: React.FC<RowProps> = ({
+  rowNumber,
+  cols,
+  causes,
+  causeStatuses,
+  disabledCells,
+  onCauseAndStatusChanges
+}) => {
   const alphabet = 'ABCDE'
-  const initialCauses = Array(cols).fill('')
-  const [causes, setCauses] = useState<string[]>(initialCauses)
+  const [localCauses, setLocalCauses] = useState<string[]>(causes)
+  const [localCauseStatuses, setLocalCauseStatuses] = useState<CauseStatus[]>(causeStatuses)
 
   useEffect(() => {
-    setCauses((prevValues) => {
-      const newValues = [...prevValues]
-      if (cols > prevValues.length) {
-        newValues.push(...Array(1).fill(''))
-      } else if (cols < prevValues.length) {
-        newValues.pop()
-      }
-      return newValues
-    })
-  }, [cols])
+    setLocalCauses(causes.slice(0, cols).concat(Array(Math.max(cols - causes.length, 0)).fill('')))
+    setLocalCauseStatuses(
+      causeStatuses.slice(0, cols).concat(Array(Math.max(cols - causeStatuses.length, 0)).fill(CauseStatus.Unchecked))
+    )
+  }, [cols, causes, causeStatuses])
+
+  const handleLocalCauseChange = (causeIndex: number, newValue: string, newStatus: CauseStatus) => {
+    const updatedCauses = [...localCauses]
+    updatedCauses[causeIndex] = newValue
+    setLocalCauses(updatedCauses)
+
+    const updatedStatuses = [...localCauseStatuses]
+    updatedStatuses[causeIndex] = newStatus
+    setLocalCauseStatuses(updatedStatuses)
+
+    onCauseAndStatusChanges(causeIndex, newValue, newStatus)
+  }
 
   let gridClass = ''
   if (cols === 3) {
@@ -32,23 +51,20 @@ export const Row: React.FC<RowProps> = ({ rowNumber, cols }) => {
     gridClass = 'grid grid-cols-5 gap-0 items-center my-8'
   }
 
-  const handleCauseChange = (index: number, value: string) => {
-    const updatedValues = [...causes]
-    updatedValues[index] = value
-    setCauses(updatedValues)
-  }
-
   return (
     <div>
       {cols >= 3 && cols <= 5 && (
         <div className={gridClass} data-testid='row-container'>
-          {causes.map((value, index) => (
-            <div data-testid='cell' key={alphabet.charAt(index) + rowNumber}>
+          {causes.map((cause, index) => (
+            <div data-testid='cell' key={`${alphabet[index]}${rowNumber}`}>
               <Cell
-                cellName={alphabet.charAt(index) + rowNumber}
-                cause={value}
-                onChange={(newValue) => handleCauseChange(index, newValue)}
-              ></Cell>
+                cellName={`${alphabet[index]}${rowNumber}`}
+                cause={cause}
+                onChange={(newValue) => handleLocalCauseChange(index, newValue, localCauseStatuses[index])}
+                causeStatus={causeStatuses[index]}
+                disabled={disabledCells[index]}
+                placeholder={disabledCells[index] ? '' : 'Isi sebab..'}
+              />
             </div>
           ))}
         </div>
