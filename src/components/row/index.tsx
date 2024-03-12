@@ -9,6 +9,7 @@ interface RowProps {
   causeStatuses: CauseStatus[]
   disabledCells: boolean[]
   onCauseAndStatusChanges: (causeIndex: number, newValue: string, newStatus: CauseStatus) => void
+  feedbacks: string[]
 }
 
 export const Row: React.FC<RowProps> = ({
@@ -17,7 +18,8 @@ export const Row: React.FC<RowProps> = ({
   causes,
   causeStatuses,
   disabledCells,
-  onCauseAndStatusChanges
+  onCauseAndStatusChanges,
+  feedbacks
 }) => {
   const alphabet = 'ABCDE'
   const [localCauses, setLocalCauses] = useState<string[]>(causes)
@@ -64,6 +66,7 @@ export const Row: React.FC<RowProps> = ({
                 causeStatus={causeStatuses[index]}
                 disabled={disabledCells[index]}
                 placeholder={disabledCells[index] ? '' : 'Isi sebab..'}
+                feedback={feedbacks[index]}
               />
             </div>
           ))}

@@ -10,6 +10,7 @@ describe('Row Component', () => {
   const causes = ['', '', '']
   const causeStatuses = [CauseStatus.Unchecked, CauseStatus.Unchecked, CauseStatus.Unchecked]
   const disabledCells = [false, false, false]
+  const feedbacks = ['Feedback 1', 'Feedback 2', 'Feedback 3']
   const mockOnCauseAndStatusChanges = jest.fn()
 
   test('renders correctly with the given number of columns, causes, and statuses', () => {
@@ -21,6 +22,7 @@ describe('Row Component', () => {
         causeStatuses={causeStatuses}
         disabledCells={disabledCells}
         onCauseAndStatusChanges={mockOnCauseAndStatusChanges}
+        feedbacks={feedbacks}
       />
     )
 
@@ -39,6 +41,7 @@ describe('Row Component', () => {
         causeStatuses={causeStatuses}
         disabledCells={disabledCellsTest}
         onCauseAndStatusChanges={mockOnCauseAndStatusChanges}
+        feedbacks={feedbacks}
       />
     )
 
@@ -59,6 +62,7 @@ describe('Row Component', () => {
         causeStatuses={Array(invalidCols).fill(CauseStatus.Unchecked)}
         disabledCells={Array(invalidCols).fill(false)}
         onCauseAndStatusChanges={mockOnCauseAndStatusChanges}
+        feedbacks={Array(invalidCols).fill('')}
       />
     )
 
@@ -77,6 +81,7 @@ describe('Row Component', () => {
         causeStatuses={initialStatuses}
         disabledCells={disabledCells}
         onCauseAndStatusChanges={mockOnCauseAndStatusChanges}
+        feedbacks={feedbacks}
       />
     )
 

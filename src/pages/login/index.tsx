@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 import MainLayout from '../../layout/MainLayout'
@@ -53,7 +53,7 @@ const Login: React.FC = () => {
     e.preventDefault()
     login(username, password)
       .then((res) => {
-        console.log(res)
+        // TODO: refactor token management logic
         if (res.status === 200) {
           setValidLogin(true)
           setLoginMessage(res.data.detail)

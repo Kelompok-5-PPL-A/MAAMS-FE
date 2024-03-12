@@ -10,7 +10,7 @@ test:
   script:
     - npm install
     - npm test
-
+    
 deploy_staging:
   stage: deploy
   only:
@@ -19,7 +19,7 @@ deploy_staging:
     - npm install --global vercel
     - vercel pull --yes --environment=production --token=$VERCEL_TOKEN_STAGING
     - vercel build --prod --token=$VERCEL_TOKEN_STAGING
-    - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN_STAGING
+    - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN_STAGING --scope=$VERCEL_ORG_ID
 
 deploy_production:
   stage: deploy
