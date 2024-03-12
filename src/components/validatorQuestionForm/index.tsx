@@ -73,8 +73,6 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
           logout(refresh)
           router.push('/login')
         }
-      } else if (error.response.data.message) {
-        toast.error(error.response.data.message)
       } else if (error.message) {
         toast.error(error.message)
       }
