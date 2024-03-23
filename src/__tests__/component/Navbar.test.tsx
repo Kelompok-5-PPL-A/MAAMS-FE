@@ -96,4 +96,27 @@ describe('Navbar component', () => {
     expect(getByText('Edit Profile')).toBeInTheDocument()
     expect(getByText('Sign out')).toBeInTheDocument()
   })
+
+  it('renders Analisis Publik button when user is logged in and is_superuser', () => {
+    const { getByText } = render(<Navbar />)
+    localStorage.setItem('isLoggedIn', 'true')
+    localStorage.setItem('isSuperUser', 'true')
+
+    expect(getByText('Analisis Publik')).toBeInTheDocument()
+  })
+
+  it('does not render Analisis Publik button when user is logged in but not is_superuser', () => {
+    const { queryByText } = render(<Navbar />)
+    localStorage.setItem('isLoggedIn', 'true')
+    localStorage.setItem('isSuperUser', 'false')
+
+    expect(queryByText('Analisis Publik')).toBeNull()
+  })
+
+  it('does not render Analisis Publik button when user is not logged in', () => {
+    const { queryByText } = render(<Navbar />)
+    localStorage.setItem('isLoggedIn', 'false')
+
+    expect(queryByText('Analisis Publik')).toBeNull()
+  })
 })
