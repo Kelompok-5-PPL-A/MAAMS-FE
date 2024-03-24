@@ -1,0 +1,3 @@
+interface ActionDotsProps {
+  onClick: () => void
+}
