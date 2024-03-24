@@ -11,6 +11,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isSuperUser, setIsSuperUser] = useState(false)
   const [userData, setUserData] = useState<UserDataProps | null>(null)
 
   useEffect(() => {
@@ -18,6 +19,7 @@ const Navbar = () => {
     setUserData(JSON.parse(localStorage.getItem('userData')!))
     console.log(JSON.parse(localStorage.getItem('userData')!))
     setIsLoggedIn(refresh_token === 'true')
+    setIsSuperUser(userData ? userData.is_superuser : false)
   }, [])
 
   const toggleMenu = () => {
@@ -100,6 +102,16 @@ const Navbar = () => {
                     Riwayat
                   </a>
                 </li>
+                {isSuperUser && (
+                  <li>
+                    <a
+                      href='#'
+                      className='block py-2 text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:p-0'
+                    >
+                      Analisis Publik
+                    </a>
+                  </li>
+                )}
                 <li className='relative'>
                   <button
                     onClick={toggleDropdown}
