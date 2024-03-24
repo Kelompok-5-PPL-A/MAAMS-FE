@@ -18,17 +18,17 @@ describe('FAQ component', () => {
   })
 
   it('toggles answers on click', () => {
-    const { getByText } = render(<FAQ />)
+    const { getByText, queryByText } = render(<FAQ />)
 
     const question1 = getByText('Apa itu MAAMS?')
     fireEvent.click(question1)
 
-    const answer1 = getByText(
-      'Aplikasi ini berfokus pada validasi sebab-sebab masalah yang dimasukkan oleh pengguna. Dengan menggunakan algoritma analisis, MAAMS akan memeriksa dan mengonfirmasi sebab-sebab yang mungkin mendasari masalah tersebut. Melalui proses ini, MAAMS membantu pengguna untuk menemukan akar dari masalah dengan lebih tepat.'
-    )
+    const answer1PartialText =
+      /Dengan menggunakan algoritma analisis, MAAMS akan memeriksa dan mengonfirmasi sebab-sebab /
+    const answer1 = getByText(answer1PartialText)
     expect(answer1).toBeInTheDocument()
 
     fireEvent.click(question1)
-    expect(answer1).not.toBeInTheDocument()
+    expect(queryByText(answer1PartialText)).not.toBeInTheDocument()
   })
 })
