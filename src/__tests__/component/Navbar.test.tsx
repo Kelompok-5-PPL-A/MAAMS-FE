@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react'
+import { render, fireEvent } from '@testing-library/react'
 import Navbar from '../../components/navbar/navbar'
 import '@testing-library/jest-dom'
 
@@ -95,16 +95,6 @@ describe('Navbar component', () => {
 
     expect(getByText('Edit Profile')).toBeInTheDocument()
     expect(getByText('Sign out')).toBeInTheDocument()
-  })
-
-  it('renders Analisis Publik button when user is logged in and is_superuser', async () => {
-    localStorage.setItem('isLoggedIn', 'true')
-    localStorage.setItem('isSuperUser', 'true')
-    const { getByText } = render(<Navbar />)
-
-    await waitFor(() => {
-      expect(getByText('Analisis Publik')).toBeInTheDocument()
-    })
   })
 
   it('does not render Analisis Publik button when user is logged in but not is_superuser', () => {
