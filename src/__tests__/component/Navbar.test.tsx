@@ -98,9 +98,9 @@ describe('Navbar component', () => {
   })
 
   it('renders Analisis Publik button when user is logged in and is_superuser', async () => {
-    const { getByText } = render(<Navbar />)
     localStorage.setItem('isLoggedIn', 'true')
     localStorage.setItem('isSuperUser', 'true')
+    const { getByText } = render(<Navbar />)
 
     await waitFor(() => {
       expect(getByText('Analisis Publik')).toBeInTheDocument()
@@ -108,9 +108,9 @@ describe('Navbar component', () => {
   })
 
   it('does not render Analisis Publik button when user is logged in but not is_superuser', () => {
-    const { queryByText } = render(<Navbar />)
     localStorage.setItem('isLoggedIn', 'true')
     localStorage.setItem('isSuperUser', 'false')
+    const { queryByText } = render(<Navbar />)
 
     expect(queryByText('Analisis Publik')).toBeNull()
   })
