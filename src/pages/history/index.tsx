@@ -1,12 +1,7 @@
 import React from 'react'
 import MainLayout from '../../layout/MainLayout'
 import Section from '../../components/sectionHistory'
-
-interface Item {
-  title: string
-  timestamp: string
-  mode: string
-}
+import { Item } from 'components/types/historyPage'
 
 const History: React.FC = () => {
   // Dummy data

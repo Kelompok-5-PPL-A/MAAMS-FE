@@ -1,3 +1,4 @@
+import { ActionDotsProps } from 'components/types/actionDots'
 import React from 'react'
 
 const ActionDots: React.FC<ActionDotsProps> = ({ onClick }) => {

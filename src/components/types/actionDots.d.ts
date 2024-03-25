@@ -1,3 +1,3 @@
-interface ActionDotsProps {
+export interface ActionDotsProps {
   onClick: () => void
 }

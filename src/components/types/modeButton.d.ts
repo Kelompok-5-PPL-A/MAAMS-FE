@@ -1,3 +1,3 @@
-interface ModeButtonProps {
+export interface ModeButtonProps {
   mode: string
 }

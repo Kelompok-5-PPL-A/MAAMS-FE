@@ -1,3 +1,4 @@
+import { ModeButtonProps } from 'components/types/modeButton'
 import React from 'react'
 
 const ModeButton: React.FC<ModeButtonProps> = ({ mode }) => {
