@@ -1,7 +1,13 @@
 import { PaginationProps } from 'components/types/pagination'
-import React from 'react'
+import React, { useState } from 'react'
 
 const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
+  const [hovered, setHovered] = useState(false)
+
+  const handleEllipsisClick = () => {
+    onPageChange(currentPage + 1)
+    setHovered(false)
+  }
   const goToPreviousPage = () => {
     if (currentPage > 1) {
       onPageChange(currentPage - 1)
@@ -22,7 +28,6 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
     if (showElipsis && totalPages - currentPage <= 3) {
       maxButtonsToShow = 3
     }
-
     // max range button display
     let startPage = Math.max(1, currentPage - Math.floor(maxButtonsToShow / 2))
     const endPage = Math.min(totalPages - 2, startPage + maxButtonsToShow - 1)
@@ -53,8 +58,12 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
         <button
           key='ellipsis'
           type='button'
-          className='min-h-[38px] min-w-[38px] flex justify-center items-center text-gray-800 py-2 px-3 text-sm rounded-lg focus:outline-none bg-gray-200 font-bold hover:bg-gray-400 focus:bg-gray-300'
-          onClick={() => onPageChange(currentPage + 1)}
+          className={`min-h-[38px] min-w-[38px] flex justify-center items-center text-gray-800 py-2 px-3 text-sm rounded-lg focus:outline-none bg-gray-200 font-bold ${
+            hovered ? 'hover:bg-gray-400' : ''
+          } ${hovered ? 'focus:bg-gray-300' : ''}`}
+          onClick={handleEllipsisClick}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
           data-testid='ellipsis-button'
         >
           ...
