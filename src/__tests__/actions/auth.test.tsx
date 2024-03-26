@@ -2,12 +2,11 @@ import axios from 'axios'
 import MockAdapter from 'axios-mock-adapter'
 import { login, register, logout, refreshToken } from '../../actions/auth'
 
-// Membuat instance axios mock
 const mock = new MockAdapter(axios)
 
 describe('Authentication API', () => {
   afterEach(() => {
-    mock.reset() // Reset konfigurasi mock setelah setiap pengujian
+    mock.reset()
   })
 
   it('should login successfully', async () => {
