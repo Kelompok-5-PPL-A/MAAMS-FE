@@ -31,7 +31,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
           placeholder={placeholder}
           onChange={onChange}
           value={value}
-          className={`${inputClassName}`}
+          className={`${inputClassName} disabled:text-black`}
           disabled={isDisabled}
           variant={isDisabled ? 'filled' : 'outline'}
         />
