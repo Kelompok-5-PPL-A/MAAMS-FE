@@ -26,6 +26,19 @@ describe('DropdownMode Component', () => {
     expect(queryByText(Mode.pengawasan)).not.toBeInTheDocument()
   })
 
+  test('should close dropdown when clicked outside', () => {
+    const selectedMode = Mode.pribadi
+    const onChange = jest.fn()
+    const { queryByText, getByText } = render(<DropdownMode selectedMode={selectedMode} onChange={onChange} />)
+    const dropdownButton = getByText(selectedMode)
+
+    fireEvent.click(dropdownButton)
+    expect(queryByText(Mode.pengawasan)).toBeInTheDocument()
+
+    fireEvent.mouseDown(document.body)
+    expect(queryByText(Mode.pengawasan)).not.toBeInTheDocument()
+  })
+
   test('calls onChange when an option is selected', () => {
     const selectedMode = Mode.pribadi
     const onChange = jest.fn()
