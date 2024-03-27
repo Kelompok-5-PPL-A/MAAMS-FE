@@ -26,12 +26,12 @@ export const CustomInput: React.FC<CustomInputProps> = ({
   return (
     <div className='space-y-4 w-full'>
       {!!label && <label className={`${labelClassName}`}>{label}</label>}
-      <InputGroup>
+      <InputGroup className='border-zinc-500'>
         <Input
           placeholder={placeholder}
           onChange={onChange}
           value={value}
-          className={`${inputClassName}`}
+          className={`${inputClassName} disabled:text-black`}
           disabled={isDisabled}
           variant={isDisabled ? 'filled' : 'outline'}
         />
