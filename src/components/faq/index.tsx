@@ -44,7 +44,7 @@ const FAQ: React.FC = () => {
   }
 
   return (
-    <div className='flex flex-col justify-center items-center w-full gap-8 px-8'>
+    <div className='flex flex-col justify-center items-center w-full gap-8 px-8 my-8'>
       <p className='text-3xl font-bold text-center text-black'>FAQ</p>
       <div className='w-full'>
         {faqData.map((faq, index) => (
