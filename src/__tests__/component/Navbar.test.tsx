@@ -99,7 +99,7 @@ describe('Navbar component', () => {
 
   it('does not render Analisis Publik button when user is logged in but not is_superuser', () => {
     localStorage.setItem('isLoggedIn', 'true')
-    localStorage.setItem('isSuperUser', 'false')
+    localStorage.setItem('isStaff', 'false')
     const { queryByText } = render(<Navbar />)
 
     expect(queryByText('Analisis Publik')).toBeNull()

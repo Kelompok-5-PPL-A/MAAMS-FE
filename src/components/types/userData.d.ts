@@ -3,7 +3,7 @@ export interface UserDataProps {
   email: string
   first_name: string
   is_active: boolean
-  is_superuser: boolean
+  is_staff: boolean
   last_name: string
   username: string
   uuid: string

@@ -11,7 +11,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [isSuperUser, setIsSuperUser] = useState(false)
+  const [isStaff, setIsStaff] = useState(false)
   const [userData, setUserData] = useState<UserDataProps | null>(null)
 
   useEffect(() => {
@@ -19,7 +19,7 @@ const Navbar = () => {
     setUserData(JSON.parse(localStorage.getItem('userData')!))
     console.log(JSON.parse(localStorage.getItem('userData')!))
     setIsLoggedIn(refresh_token === 'true')
-    setIsSuperUser(userData ? userData.is_superuser : false)
+    setIsStaff(userData ? userData.is_staff : false)
   }, [])
 
   const toggleMenu = () => {
@@ -102,7 +102,7 @@ const Navbar = () => {
                     Riwayat
                   </a>
                 </li>
-                {isSuperUser && (
+                {isStaff && (
                   <li>
                     <a
                       href='#'
