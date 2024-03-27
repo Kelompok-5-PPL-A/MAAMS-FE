@@ -49,7 +49,12 @@ const FAQ: React.FC = () => {
       <div className='w-full'>
         {faqData.map((faq, index) => (
           <div key={index} className='bg-yellow-200 rounded-md p-6 mb-4 shadow-md border border-yellow-500'>
-            <div onClick={() => toggleAnswer(index)} className='flex justify-between items-center cursor-pointer'>
+            <button
+              onClick={() => toggleAnswer(index)}
+              className='flex justify-between items-center cursor-pointer w-full text-left p-0 border-none bg-transparent'
+              aria-expanded={activeIndices.includes(index)}
+              aria-controls={`faq-answer-${index}`}
+            >
               <p className='text-lg text-black'>
                 <strong>{faq.question}</strong>
               </p>
@@ -63,7 +68,7 @@ const FAQ: React.FC = () => {
               >
                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
               </svg>
-            </div>
+            </button>
             {activeIndices.includes(index) && (
               <>
                 <hr className='my-4 border-gray-400' />
