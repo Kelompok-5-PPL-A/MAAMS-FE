@@ -11,6 +11,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isStaff, setIsStaff] = useState(false)
   const [userData, setUserData] = useState<UserDataProps | null>(null)
 
   useEffect(() => {
@@ -19,6 +20,10 @@ const Navbar = () => {
     console.log(JSON.parse(localStorage.getItem('userData')!))
     setIsLoggedIn(refresh_token === 'true')
   }, [])
+
+  useEffect(() => {
+    setIsStaff(userData?.is_staff || false)
+  }, [userData])
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -94,12 +99,22 @@ const Navbar = () => {
               <ul className='flex flex-col font-bold md:items-center md:justify-center p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-white md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-[#FBC707]'>
                 <li>
                   <a
-                    href='#'
+                    href='/history'
                     className='block py-2 text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:p-0'
                   >
                     Riwayat
                   </a>
                 </li>
+                {isStaff && (
+                  <li>
+                    <a
+                      href='/history/analisisPublik'
+                      className='block py-2 text-gray-900 hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:p-0'
+                    >
+                      Analisis Publik
+                    </a>
+                  </li>
+                )}
                 <li className='relative'>
                   <button
                     onClick={toggleDropdown}
