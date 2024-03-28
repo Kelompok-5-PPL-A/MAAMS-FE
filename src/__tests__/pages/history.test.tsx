@@ -5,7 +5,9 @@ import '@testing-library/jest-dom'
 
 // Mock useRouter from next/router
 jest.mock('next/router', () => ({
-  useRouter: jest.fn()
+  useRouter: () => ({
+    push: jest.fn()
+  })
 }))
 
 describe('History component', () => {
@@ -16,7 +18,6 @@ describe('History component', () => {
     expect(historyTitle.textContent).toBe('Riwayat Analisis')
   })
 
-  //sudah termasuk 7 hari dan lebih lama
   test('renders past week section', () => {
     render(<History />)
     const pastWeekSection = screen.getByTestId('7 hari terakhir-section')
