@@ -24,19 +24,18 @@ const History: React.FC = () => {
       if (!refresh) {
         toast.error('Silakan login terlebih dahulu')
         router.push('/login')
-        console.log('login bosque')
       }
       try {
         const [lastWeekResponse, olderResponse] = await Promise.all([
           axios({
             method: 'GET',
-            url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/?count=3`,
+            url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/?count=3&time_range=last_week`,
             withCredentials: false,
             headers: headers
           }),
           axios({
             method: 'GET',
-            url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/?count=3`,
+            url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/?count=3&time_range=older`,
             withCredentials: false,
             headers: headers
           })

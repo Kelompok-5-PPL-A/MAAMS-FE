@@ -28,7 +28,7 @@ const LastWeek: React.FC = () => {
       try {
         const lastWeekResponse = await axios({
           method: 'GET',
-          url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/?count=5&p=${currentPage}`,
+          url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/?count=5&p=${currentPage}&time_range=last_week`,
           withCredentials: false,
           headers: headers
         })
