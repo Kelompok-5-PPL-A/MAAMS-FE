@@ -23,13 +23,13 @@ const AnalisisPublik: React.FC = () => {
         const [lastWeekResponse, olderResponse] = await Promise.all([
           axios({
             method: 'GET',
-            url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/pengawasan/?count=3&p=1`,
+            url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/pengawasan/?count=3&time_range=last_week`,
             withCredentials: false,
             headers: headers
           }),
           axios({
             method: 'GET',
-            url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/pengawasan/?count=3&p=2`,
+            url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/pengawasan/?count=3&time_range=older`,
             withCredentials: false,
             headers: headers
           })
