@@ -4,11 +4,11 @@ import Section from '../../components/sectionHistory'
 import { Item } from 'components/types/historyPage'
 import axios from 'axios'
 import { formatTimestamp } from '../../utils/dateFormatter'
-import { logout, refreshToken } from '../../actions/auth'
-import { useRouter } from 'next/router' // Menggunakan useRouter dari next/router
+import { logout, refreshToken } from 'actions/auth'
+import router from 'next/router'
 import toast from 'react-hot-toast'
 
-const History: React.FC = () => {
+const AnalisisPublik: React.FC = () => {
   const [lastweek, setLastWeek] = useState<Item[]>([])
   const [older, setOlder] = useState<Item[]>([])
   const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
@@ -17,25 +17,19 @@ const History: React.FC = () => {
     Authorization: `Bearer ${access}`
   }
 
-  const router = useRouter()
-
   useEffect(() => {
     const fetchData = async () => {
-      if (!refresh) {
-        toast.error('Silakan login terlebih dahulu')
-        router.push('/login')
-      }
       try {
         const [lastWeekResponse, olderResponse] = await Promise.all([
           axios({
             method: 'GET',
-            url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/?count=3&time_range=last_week`,
+            url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/pengawasan/?count=3&time_range=last_week`,
             withCredentials: false,
             headers: headers
           }),
           axios({
             method: 'GET',
-            url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/?count=3&time_range=older`,
+            url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/pengawasan/?count=3&time_range=older`,
             withCredentials: false,
             headers: headers
           })
@@ -93,11 +87,16 @@ const History: React.FC = () => {
         <h1 data-testid='history-title' className='text-2xl font-bold mb-4 text-center mt-7 mb-7'>
           Riwayat Analisis
         </h1>
-        <Section title='7 hari terakhir' items={lastweek} seeMoreLink={'/history/lastWeek'} showModeButton={true} />
-        <Section title='Lebih lama' items={older} seeMoreLink={'/history/pastWeek'} showModeButton={true} />
+        <Section
+          title='7 hari terakhir'
+          items={lastweek}
+          seeMoreLink={'/analisisPublik/lastWeek'}
+          showModeButton={false}
+        />
+        <Section title='Lebih lama' items={older} seeMoreLink={'/analisisPublik/pastWeek'} showModeButton={false} />
       </div>
     </MainLayout>
   )
 }
 
-export default History
+export default AnalisisPublik
