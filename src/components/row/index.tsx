@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Cell } from '../cell'
 import { CauseStatus } from '../../lib/enum'
+import { RowProps } from 'components/types/row'
 
 export const Row: React.FC<RowProps> = ({
   rowNumber,
