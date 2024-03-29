@@ -4,13 +4,14 @@ import Footer from '../components/footer/footer'
 
 type MainLayoutProps = {
   children: ReactNode
+  marginOverride?: string
 }
 
-const MainLayout = ({ children }: MainLayoutProps) => {
+const MainLayout = ({ children, marginOverride = 'm-10' }: MainLayoutProps) => {
   return (
     <div>
       <Navbar />
-      <div className='min-h-screen m-10'>{children}</div>
+      <div className={`min-h-screen ${marginOverride}`}>{children}</div>
       <Footer />
     </div>
   )

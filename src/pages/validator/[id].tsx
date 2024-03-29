@@ -64,6 +64,7 @@ const ValidatorDetailPage = () => {
         } catch {
           toast.error('Sesi anda telah berakhir. Silakan login kembali')
           logout(refresh)
+          localStorage.clear()
           router.push('/login')
         }
       } else if (error.response) {

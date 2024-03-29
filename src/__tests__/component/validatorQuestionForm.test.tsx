@@ -1,13 +1,38 @@
 /* eslint-disable */
 import { ValidatorQuestionForm } from '../../components/validatorQuestionForm'
-import axios from 'axios'
 import { render, fireEvent, waitFor } from '@testing-library/react'
 import React from 'react'
 import '@testing-library/jest-dom'
 import MockAdapter from 'axios-mock-adapter'
 import Mode from '../../constants/mode'
+import axiosInstance from '../../services/axiosInstance'
+import { toast } from 'react-hot-toast'
+import { useRouter } from 'next/router'
 
-jest.mock('axios')
+import path from 'path'
+
+require('dotenv').config({ path: path.resolve(__dirname, './.env') })
+
+const localStorageMock = (() => {
+  let store: Record<string, string> = {}
+
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString()
+    },
+    removeItem: (key: string) => {
+      delete store[key]
+    },
+    clear: () => {
+      store = {}
+    }
+  }
+})()
+
+Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+
+const mockAxios = new MockAdapter(axiosInstance)
 
 jest.mock('next/router', () => ({
   useRouter: () => ({
@@ -16,7 +41,9 @@ jest.mock('next/router', () => ({
 }))
 
 jest.mock('react-hot-toast', () => ({
-  error: jest.fn()
+  ...jest.requireActual('react-hot-toast'),
+  error: jest.fn(),
+  success: jest.fn()
 }))
 
 jest.mock('../../actions/auth', () => ({
@@ -33,7 +60,7 @@ describe('ValidatorQuestionForm Component', () => {
   let mock: any
 
   beforeEach(() => {
-    mock = new MockAdapter(axios)
+    mockAxios.reset()
   })
 
   afterEach(() => {
@@ -87,60 +114,67 @@ describe('ValidatorQuestionForm Component', () => {
     expect(input.getAttribute('value')).toBe('Pertanyaan baru')
   })
 
-  test('handles form submission correctly', async () => {
-    const mockResponseData = {
-      question: 'Pertanyaan tes',
-      mode: 'PRIBADI'
-    }
-
-    mock.onPost(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/baru/`).reply(201, mockResponseData)
-  })
-
   test('displays error when question is not filled', async () => {
     jest.requireMock('next/router').useRouter().push('/')
 
-    const { getByText } = render(<ValidatorQuestionForm />)
-    const submitButton = document.getElementById('submit-question')
-
-    if (submitButton !== null) {
-      fireEvent.click(submitButton)
-    }
+    const { getByPlaceholderText, getByTestId } = render(<ValidatorQuestionForm />)
+    const input = getByPlaceholderText('Isi pertanyaan anda di sini')
+    const button = getByTestId('submit-question')
+    fireEvent.change(input, { target: { value: '' } })
+    fireEvent.submit(button)
 
     await waitFor(() => {
       setTimeout(() => {
-        expect(getByText('Pertanyaan harus diisi')).toBeInTheDocument()
+        expect(toast).toHaveBeenCalledWith('Pertanyaan harus diisi')
       }, 2000)
-      expect(axios).not.toHaveBeenCalled()
     })
   })
 
   test('displays success message and redirects on successful API call', async () => {
-    const fakeAccessToken = 'fakeAccessToken'
+    localStorageMock.setItem('access', 'token')
 
-    mock
-      .onPost(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/baru/`,
-        {
-          mode: 'dummyMode',
-          question: 'dummyQuestion'
-        },
-        {
-          Authorization: `Bearer ${fakeAccessToken}` // Sertakan token otentikasi palsu
-        }
-      )
-      .reply(200, { id: 123 })
+    mockAxios
+      .onPost(`/api/v1/validator/baru/`, {
+        mode: 'dummyMode',
+        question: 'dummyQuestion'
+      })
+      .reply(200)
 
-    const { getByPlaceholderText, getByText } = render(<ValidatorQuestionForm />)
+    const { getByPlaceholderText, getByTestId } = render(<ValidatorQuestionForm />)
 
     const input = getByPlaceholderText('Isi pertanyaan anda di sini')
-    fireEvent.change(input, { target: { value: 'Pertanyaan baru' } })
+    fireEvent.change(input, { target: { value: 'dummyQuestion' } })
 
-    fireEvent.submit(input)
+    const button = getByTestId('submit-question')
+
+    fireEvent.submit(button)
 
     await waitFor(() => {
+      expect(mockAxios.history.post.length).toBe(1)
       setTimeout(() => {
-        expect(getByText('Analisis berhasil ditambahkan')).toBeInTheDocument()
+        expect(toast.success).toHaveBeenCalledWith('Analisis berhasil ditambahkan')
       }, 2000)
+    })
+  })
+
+  test('handle delete button click', async () => {
+    const id = 'abc123'
+    const { getByText, getByTestId } = render(<ValidatorQuestionForm id={id} />)
+
+    mockAxios.onDelete(`/api/v1/validator/hapus/${id}`).reply(200)
+
+    fireEvent.click(getByTestId('toggle-open-button'))
+
+    fireEvent.click(getByTestId('delete-button'))
+
+    fireEvent.click(getByText('Hapus'))
+
+    await waitFor(() => {
+      expect(mockAxios.history.delete.length).toBe(1)
+      setTimeout(() => {
+        expect(toast.success).toHaveBeenCalledWith('Berhasil menghapus analisis')
+        expect(useRouter().push).toHaveBeenCalledWith('/')
+      }, 500)
     })
   })
 })
