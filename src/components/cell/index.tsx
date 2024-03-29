@@ -1,15 +1,7 @@
 import React from 'react'
 import { CauseStatus } from '../../lib/enum'
+import { CellProps } from 'components/types/cell'
 
-interface CellProps {
-  cellName: string
-  cause: string
-  onChange: (value: string) => void
-  causeStatus: CauseStatus
-  disabled: boolean
-  placeholder: string
-  feedback?: string
-}
 export const Cell: React.FC<CellProps> = ({
   cellName,
   cause,
