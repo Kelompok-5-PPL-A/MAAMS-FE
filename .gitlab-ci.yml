@@ -27,7 +27,7 @@ sonarqube-check:
     name: sonarsource/sonar-scanner-cli:latest
     entrypoint: [""]
   only:
-    - main
+    - staging
   stage: sonarqube-check
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
