@@ -54,6 +54,7 @@ const History: React.FC = () => {
         }))
 
         const processedOlderData = olderData.results.map((item: any) => ({
+          id: item.id,
           title: item.question,
           timestamp: formatTimestamp(item.created_at),
           mode: item.mode,
