@@ -4,4 +4,5 @@ export interface ItemListHistoryProps {
   mode: string
   showModeButton?: boolean
   user: string
+  idQuestion: string | string[]
 }

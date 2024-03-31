@@ -30,6 +30,7 @@ const Section: React.FC<SectionHistoryProps & { seeMoreLink?: string; showModeBu
       </div>
       {items.map((item, index) => (
         <ListItem
+          idQuestion={item.id}
           key={index}
           title={item.title}
           timestamp={item.timestamp}
