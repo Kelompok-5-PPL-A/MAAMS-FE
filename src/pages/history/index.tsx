@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import MainLayout from '../../layout/MainLayout'
 import Section from '../../components/sectionHistory'
-import { Item } from 'components/types/historyPage'
+import { Item } from '../../components/types/historyPage'
 import axios from 'axios'
 import { formatTimestamp } from '../../utils/dateFormatter'
 import { logout, refreshToken } from '../../actions/auth'
@@ -46,6 +46,7 @@ const History: React.FC = () => {
 
         // Process the data
         const processedLastWeekData = lastWeekData.results.map((item: any) => ({
+          id: item.id,
           title: item.question,
           timestamp: formatTimestamp(item.created_at),
           mode: item.mode,
@@ -53,6 +54,7 @@ const History: React.FC = () => {
         }))
 
         const processedOlderData = olderData.results.map((item: any) => ({
+          id: item.id,
           title: item.question,
           timestamp: formatTimestamp(item.created_at),
           mode: item.mode,
