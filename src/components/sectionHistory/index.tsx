@@ -8,7 +8,6 @@ const Section: React.FC<SectionHistoryProps & { seeMoreLink?: string; showModeBu
   seeMoreLink,
   showModeButton
 }) => {
-  console.log(items)
   return (
     <ul data-testid={`${title}-section`} role={title} className='divide-yellow-300 m-12'>
       <div className='flex justify-between'>
