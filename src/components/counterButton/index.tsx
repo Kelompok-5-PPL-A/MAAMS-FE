@@ -1,10 +1,5 @@
+import { CounterButtonProps } from 'components/types/counterButton'
 import React from 'react'
-
-interface CounterButtonProps {
-  number: number
-  onIncrement: () => void
-  onDecrement: () => void
-}
 
 export const CounterButton: React.FC<CounterButtonProps> = ({ number, onIncrement, onDecrement }) => {
   const textStyle = 'text-2xl font-bold relative text-center whitespace-nowrap z-[1]'
