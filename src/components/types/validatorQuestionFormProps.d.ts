@@ -10,4 +10,5 @@ export interface ValidatorData {
   mode: Mode
   username: string
   created_at: string
+  id?: string | string[] | undefined
 }
