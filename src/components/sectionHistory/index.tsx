@@ -3,13 +3,9 @@ import ListItem from '../itemListHistory'
 import { SectionHistoryProps } from '../types/sectionHistory'
 import router from 'next/router'
 
-const Section: React.FC<SectionHistoryProps & { seeMoreLink?: string; showModeButton?: boolean }> = ({
-  title,
-  items,
-  seeMoreLink,
-  showModeButton,
-  keyword
-}) => {
+const Section: React.FC<
+  SectionHistoryProps & { seeMoreLink?: string; showModeButton?: boolean; showDeleteButton?: boolean }
+> = ({ title, items, seeMoreLink, showModeButton, keyword, showDeleteButton }) => {
   const handleSeeMore = (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault()
     router.push({
@@ -17,6 +13,8 @@ const Section: React.FC<SectionHistoryProps & { seeMoreLink?: string; showModeBu
       query: { keyword: encodeURIComponent(keyword) } // Pass keyword as query parameter
     })
   }
+
+  console.log(items)
 
   return (
     <ul data-testid={`${title}-section`} role={title} className='divide-yellow-300 m-12'>
@@ -37,6 +35,7 @@ const Section: React.FC<SectionHistoryProps & { seeMoreLink?: string; showModeBu
           mode={item.mode}
           user={item.user}
           showModeButton={showModeButton}
+          showDeleteButton={showDeleteButton}
         />
       ))}
     </ul>
