@@ -46,7 +46,7 @@ export const DeleteButton = ({ idQuestion }: DeleteButtonProps) => {
         <div
           onClick={() => setIsOpen(!isOpen)}
           data-testid='toggle-open-button'
-          className={`cursor-pointer px-4 py-2 text-md font-bold flex items-center justify-between`}
+          className={`cursor-pointer py-2 text-md font-bold flex items-center justify-between`}
         >
           <button className='w-fit h-fit' type='button'>
             <HiDotsVertical className='w-4 h-4' />

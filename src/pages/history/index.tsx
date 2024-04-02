@@ -81,6 +81,7 @@ const History: React.FC = () => {
             seeMoreLink={'/history/lastWeek'}
             showModeButton={true}
             keyword={keyword}
+            showDeleteButton={true}
           />
         )}
         {older.length > 0 && (
@@ -90,6 +91,7 @@ const History: React.FC = () => {
             seeMoreLink={'/history/pastWeek'}
             showModeButton={true}
             keyword={keyword}
+            showDeleteButton={true}
           />
         )}
       </div>
