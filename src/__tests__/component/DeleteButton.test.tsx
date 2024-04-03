@@ -66,13 +66,14 @@ global.localStorage = new LocalStorageMock()
 
 describe('DeleteButton', () => {
   const idQuestion = 'exampleId'
+  const pathname = 'example'
 
   it('should render without errors', () => {
-    render(<DeleteButton idQuestion={idQuestion} />)
+    render(<DeleteButton idQuestion={idQuestion} pathname={pathname} />)
   })
 
   it('should open dropdown menu on button click', () => {
-    const { getByTestId } = render(<DeleteButton idQuestion={idQuestion} />)
+    const { getByTestId } = render(<DeleteButton idQuestion={idQuestion} pathname={pathname} />)
 
     const toggleButton = getByTestId('toggle-open-button')
     fireEvent.click(toggleButton)
@@ -82,7 +83,7 @@ describe('DeleteButton', () => {
   })
 
   it('should close dropdown when clicked outside', () => {
-    const { getByTestId } = render(<DeleteButton idQuestion={idQuestion} />)
+    const { getByTestId } = render(<DeleteButton idQuestion={idQuestion} pathname={pathname} />)
 
     const toggleButton = getByTestId('toggle-open-button')
     fireEvent.click(toggleButton)
@@ -101,7 +102,33 @@ describe('DeleteButton', () => {
     jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
     jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
 
-    const { getByTestId, getByText } = render(<DeleteButton idQuestion={idQuestion} />)
+    const { getByTestId, getByText } = render(<DeleteButton idQuestion={idQuestion} pathname={pathname} />)
+
+    const toggleButton = getByTestId('toggle-open-button')
+    fireEvent.click(toggleButton)
+
+    const deleteAnalysis = getByTestId('delete-button')
+    fireEvent.click(deleteAnalysis)
+
+    fireEvent.click(getByText('Hapus'))
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Berhasil menghapus analisis')
+      }, 2000)
+    })
+  })
+
+  it('should delete successfully from history page', async () => {
+    const mockResponseData = {
+      message: 'Analisis berhasil dihapus'
+    }
+    mockedAxios.delete.mockResolvedValue({ data: mockResponseData })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    const { getByTestId, getByText } = render(<DeleteButton idQuestion={idQuestion} pathname='/history' />)
 
     const toggleButton = getByTestId('toggle-open-button')
     fireEvent.click(toggleButton)
@@ -126,7 +153,7 @@ describe('DeleteButton', () => {
     }
     mockedAxios.delete.mockRejectedValueOnce({ response: errorResponse })
 
-    const { getByTestId, getByText } = render(<DeleteButton idQuestion={idQuestion} />)
+    const { getByTestId, getByText } = render(<DeleteButton idQuestion={idQuestion} pathname={pathname} />)
 
     const toggleButton = getByTestId('toggle-open-button')
     fireEvent.click(toggleButton)

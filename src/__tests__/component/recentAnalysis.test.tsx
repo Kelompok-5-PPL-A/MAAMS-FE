@@ -3,6 +3,7 @@ import { render, waitFor, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import RecentAnalysis from '../../components/recentAnalysis'
 import axiosInstance from '../../services/axiosInstance'
+import toast from 'react-hot-toast'
 
 jest.mock('../../services/axiosInstance')
 const mockedAxios = axiosInstance as jest.Mocked<typeof axiosInstance>
@@ -60,6 +61,24 @@ describe('Recent Analysis component', () => {
     render(<RecentAnalysis />)
     await waitFor(() => {
       expect(screen.getByText('Analisis Terbaru')).toBeInTheDocument()
+    })
+  })
+
+  it('show toast when failed to get data', async () => {
+    const errorResponse = {
+      response: {
+        request: {
+          responseText: 'Gagal menambahkan analisis'
+        }
+      }
+    }
+    mockedAxios.get.mockRejectedValueOnce({ data: errorResponse })
+
+    render(<RecentAnalysis />)
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Gagal menambahkan analisis')
+      }, 2000)
     })
   })
 
