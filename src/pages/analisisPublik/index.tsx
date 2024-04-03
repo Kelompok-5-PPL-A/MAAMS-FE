@@ -4,7 +4,7 @@ import Section from '../../components/sectionHistory'
 import { Item } from 'components/types/historyPage'
 import axios from 'axios'
 import { formatTimestamp } from '../../utils/dateFormatter'
-import { logout, refreshToken } from 'actions/auth'
+import { logout, refreshToken } from '../../actions/auth'
 import router from 'next/router'
 import toast from 'react-hot-toast'
 

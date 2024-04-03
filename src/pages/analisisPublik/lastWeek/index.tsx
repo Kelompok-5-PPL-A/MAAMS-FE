@@ -6,7 +6,7 @@ import { Item } from 'components/types/historyPage'
 import axios from 'axios'
 import { formatTimestamp } from '../../../utils/dateFormatter'
 import router from 'next/router'
-import { logout, refreshToken } from 'actions/auth'
+import { logout, refreshToken } from '../../../actions/auth'
 import toast from 'react-hot-toast'
 
 const LastWeekPublik: React.FC = () => {
