@@ -68,7 +68,7 @@ describe('Recent Analysis component', () => {
     const errorResponse = {
       response: {
         request: {
-          responseText: 'Gagal menambahkan analisis'
+          responseText: 'Gagal mengambil data'
         }
       }
     }
@@ -77,7 +77,7 @@ describe('Recent Analysis component', () => {
     render(<RecentAnalysis />)
     await waitFor(() => {
       setTimeout(() => {
-        expect(toast).toHaveBeenCalledWith('Gagal menambahkan analisis')
+        expect(toast).toHaveBeenCalledWith('Gagal mengambil data')
       }, 2000)
     })
   })
