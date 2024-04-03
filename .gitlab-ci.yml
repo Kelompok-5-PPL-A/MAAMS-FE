@@ -21,6 +21,8 @@ test:
     reports:
       junit:
         - junit.xml
+  tags:
+    - runner-randi
 
 sonarqube-check:
   image:

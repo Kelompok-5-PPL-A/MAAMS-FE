@@ -89,7 +89,7 @@ const PastWeek: React.FC = () => {
           Riwayat Analisis
         </h1>
         <SearchBar keyword={keyword} onSubmit={handleSubmit} onChange={(value) => setKeyword(value)}></SearchBar>
-        <Section title='Lebih lama' items={older} showModeButton={true} keyword='' />
+        <Section title='Lebih lama' items={older} showModeButton={true} showDeleteButton={true} keyword='' />
         {totalPages >= 1 && (
           <Pagination currentPage={currentPage} onPageChange={handlePageChange} totalPages={totalPages}></Pagination>
         )}

@@ -17,7 +17,6 @@ const Navbar = () => {
   useEffect(() => {
     const refresh_token = localStorage.getItem('isLoggedIn')
     setUserData(JSON.parse(localStorage.getItem('userData')!))
-    console.log(JSON.parse(localStorage.getItem('userData')!))
     setIsLoggedIn(refresh_token === 'true')
   }, [])
 
