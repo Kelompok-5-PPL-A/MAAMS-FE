@@ -77,7 +77,7 @@ const PastWeekPublik: React.FC = () => {
         <h1 data-testid='history-title' className='text-2xl font-bold mb-4 text-center mt-7 mb-7'>
           Riwayat Analisis
         </h1>
-        <Section title='lebih lama' items={older} showModeButton={false} />
+        <Section title='7 hari terakhir' items={older} showModeButton={false} keyword={''} />
         {totalPages >= 1 && (
           <Pagination currentPage={currentPage} onPageChange={handlePageChange} totalPages={totalPages}></Pagination>
         )}

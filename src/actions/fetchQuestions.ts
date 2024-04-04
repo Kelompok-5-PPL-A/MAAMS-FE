@@ -1,0 +1,36 @@
+import axios from 'axios'
+import { formatTimestamp } from '../utils/dateFormatter'
+import { Item } from 'components/types/historyPage'
+
+interface CustomHeader {
+  [key: string]: string
+}
+
+export const fetchQuestions = async (headers: CustomHeader, time_range: string, additional_param: string) => {
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/${additional_param}&time_range=${time_range}`
+
+  const [response] = await Promise.all([
+    axios({
+      method: 'GET',
+      url: url,
+      withCredentials: false,
+      headers: headers
+    })
+  ])
+
+  const data = response.data
+
+  // Process the data
+  const processedData: Item[] = data.results.map((item: any) => ({
+    id: item.id,
+    title: item.question,
+    timestamp: formatTimestamp(item.created_at),
+    mode: item.mode,
+    user: item.username
+  }))
+
+  return {
+    count: data.count,
+    processedData: processedData
+  }
+}

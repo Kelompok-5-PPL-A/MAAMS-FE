@@ -11,6 +11,8 @@
 
 # testing
 /coverage
+.scannerwork
+junit.xml
 
 # next.js
 /.next/

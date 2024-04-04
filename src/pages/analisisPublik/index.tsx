@@ -92,8 +92,15 @@ const AnalisisPublik: React.FC = () => {
           items={lastweek}
           seeMoreLink={'/analisisPublik/lastWeek'}
           showModeButton={false}
+          keyword={''}
         />
-        <Section title='Lebih lama' items={older} seeMoreLink={'/analisisPublik/pastWeek'} showModeButton={false} />
+        <Section
+          title='Lebih lama'
+          items={older}
+          seeMoreLink={'/analisisPublik/pastWeek'}
+          showModeButton={false}
+          keyword={''}
+        />
       </div>
     </MainLayout>
   )
