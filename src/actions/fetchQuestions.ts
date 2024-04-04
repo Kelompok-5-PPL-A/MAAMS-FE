@@ -6,19 +6,22 @@ interface CustomHeader {
   [key: string]: string
 }
 
+interface historyData {
+  count: number
+  previous: string
+  next: string
+  results: Item[]
+}
+
 export const fetchQuestions = async (headers: CustomHeader, time_range: string, additional_param: string) => {
   const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/${additional_param}&time_range=${time_range}`
 
-  const [response] = await Promise.all([
-    axios({
-      method: 'GET',
-      url: url,
-      withCredentials: false,
-      headers: headers
-    })
-  ])
+  const response = await axios.get(url, {
+    withCredentials: false,
+    headers: headers
+  })
 
-  const data = response.data
+  const data: historyData = response.data
 
   // Process the data
   const processedData: Item[] = data.results.map((item: any) => ({

@@ -33,6 +33,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ keyword, onChange, onSubmi
         />
         <button
           onClick={onSubmit}
+          data-testid='search-button'
           className='flex justify-center items-center px-4 py-3.5 bg-yellow-400 rounded-tl-none rounded-tr-[10px] rounded-br-[10px] rounded-bl-none border border-yellow-400 border-solid'
         >
           <img
