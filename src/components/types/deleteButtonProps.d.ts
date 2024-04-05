@@ -1,3 +1,4 @@
 export interface DeleteButtonProps {
-  idQuestion: string | string[]
+  idQuestion: string | string[] | undefined
+  pathname: string
 }

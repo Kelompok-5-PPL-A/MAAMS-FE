@@ -8,7 +8,7 @@ import axiosInstance from '../../services/axiosInstance'
 import toast from 'react-hot-toast'
 import router from 'next/router'
 
-export const DeleteButton = ({ idQuestion }: DeleteButtonProps) => {
+export const DeleteButton = ({ idQuestion, pathname }: DeleteButtonProps) => {
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const ref = useRef(null)
   const handleModalDeleteOpen = () => setIsModalDeleteOpen(!isModalDeleteOpen)
@@ -26,7 +26,7 @@ export const DeleteButton = ({ idQuestion }: DeleteButtonProps) => {
     try {
       await axiosInstance.delete(`/api/v1/validator/hapus/${idQuestion}/`)
       toast.success('Berhasil menghapus analisis')
-      if (router.pathname === '/history') {
+      if (pathname === '/history') {
         router.reload()
       } else {
         router.push('/history')

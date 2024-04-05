@@ -3,6 +3,7 @@ import { ItemListHistoryProps } from '../types/itemListHistory'
 import ModeButton from '../modeButton/index'
 import { DeleteButton } from '../../components/deleteButton'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 
 const ListItem: React.FC<ItemListHistoryProps & { showModeButton?: boolean }> = ({
   title,
@@ -22,7 +23,7 @@ const ListItem: React.FC<ItemListHistoryProps & { showModeButton?: boolean }> = 
         </div>
       </Link>
       <div className='hidden shrink-0 sm:flex sm:flex-col sm:items-end z-10 justify-end'>
-        {showDeleteButton && <DeleteButton idQuestion={idQuestion} />}
+        {showDeleteButton && <DeleteButton idQuestion={idQuestion} pathname={useRouter().pathname} />}
         <p className='text-sm leading-6 text-gray-500 mt-4 '>{timestamp}</p>
       </div>
     </li>
