@@ -11,6 +11,8 @@ import Mode from '../../constants/mode'
 import { SubmitButton } from '../../components/submitButton'
 import { CauseStatus } from '../../lib/enum'
 import { refreshToken, logout } from '../../actions/auth'
+import { UserDataProps } from 'components/types/userData'
+import { ValidatorAdminHeader } from 'components/validatorAdminHeader'
 
 const defaultValidatorData: ValidatorData = {
   question: '',
@@ -33,9 +35,20 @@ const ValidatorDetailPage = () => {
   const [rows, setRows] = useState([createInitialRow(1, 3)])
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
 
+  const [isStaff, setIsStaff] = useState(false)
+  const [userData, setUserData] = useState<UserDataProps | null>(null)
+
   useEffect(() => {
     getQuestionData()
   }, [id])
+
+  useEffect(() => {
+    setUserData(JSON.parse(localStorage.getItem('userData')!))
+  }, [])
+
+  useEffect(() => {
+    setIsStaff(userData?.is_staff || false)
+  }, [userData])
 
   const getQuestionData = async () => {
     if (!id) return
@@ -163,13 +176,19 @@ const ValidatorDetailPage = () => {
   return (
     <MainLayout>
       <div className='flex flex-col w-full gap-8'>
-        <ValidatorQuestionForm id={id} validatorData={validatorData} />
+        {isStaff ? (
+          <ValidatorAdminHeader id={id} validatorData={validatorData} />
+        ) : (
+          <ValidatorQuestionForm id={id} validatorData={validatorData} />
+        )}
         <h1 className='text-2xl font-bold text-black'>Sebab:</h1>
-        <CounterButton
-          number={columnCount}
-          onIncrement={() => adjustColumnCount(true)}
-          onDecrement={() => adjustColumnCount(false)}
-        />
+        {!isStaff && (
+          <CounterButton
+            number={columnCount}
+            onIncrement={() => adjustColumnCount(true)}
+            onDecrement={() => adjustColumnCount(false)}
+          />
+        )}
         {rows.map((row) => (
           <div key={row.id}>
             <Row
@@ -177,7 +196,7 @@ const ValidatorDetailPage = () => {
               cols={columnCount}
               causes={row.causes}
               causeStatuses={row.statuses}
-              disabledCells={row.disabled}
+              disabledCells={isStaff ? Array(columnCount).fill(true) : row.disabled}
               onCauseAndStatusChanges={(causeIndex: number, newValue: string, newStatus: CauseStatus) =>
                 updateCauseAndStatus(row.id, causeIndex, newValue, newStatus)
               }
@@ -185,11 +204,11 @@ const ValidatorDetailPage = () => {
             />
           </div>
         ))}
-        {
+        {!isStaff && (
           <div className='flex justify-center mt-4'>
             <SubmitButton onClick={() => submitCauses()} disabled={isSubmitDisabled} label='Kirim Sebab' />
           </div>
-        }
+        )}
       </div>
     </MainLayout>
   )
