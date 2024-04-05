@@ -32,12 +32,12 @@ const RecentAnalysis: React.FC = () => {
     }
 
     setIsLoggedIn(refresh_token === 'true')
-    handleGet()
+    if (refresh_token === 'true') handleGet()
   }, [])
 
   return (
     <>
-      {isLoggedIn && recentData?.id != null && (
+      {isLoggedIn && recentData?.id && (
         <div className='flex flex-col justify-center items-center w-full gap-8 px-8 my-8'>
           <p className='text-3xl font-bold text-center text-black'>Analisis Terbaru</p>
           <div className='w-full'>
