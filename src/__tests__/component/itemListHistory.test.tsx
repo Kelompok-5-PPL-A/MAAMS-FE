@@ -3,7 +3,6 @@ import { render, fireEvent } from '@testing-library/react'
 import ListItem from '../../components/itemListHistory'
 import '@testing-library/jest-dom'
 
-// Mocking axiosInstance and router
 jest.mock('../../services/axiosInstance', () => ({
   delete: jest.fn()
 }))
@@ -56,11 +55,7 @@ describe('ListItem Component', () => {
 
     fireEvent.click(getByTestId('toggle-open-button'))
     fireEvent.click(getByTestId('delete-button'))
-
-    // Modal should be displayed
     expect(getByText('Apakah Anda yakin ingin menghapus analisis ini?')).toBeInTheDocument()
-
-    // Simulate delete action
     fireEvent.click(getByText('Hapus'))
   })
 

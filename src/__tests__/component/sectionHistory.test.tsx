@@ -34,10 +34,7 @@ describe('Section Component', () => {
   })
   it('renders section with items correctly', () => {
     const items = [{ id: 1, title: 'Item 1', timestamp: '2024-03-25', mode: 'read', user: 'User 1' }]
-
     const { getByText } = render(<Section title='History' items={items} keyword='' seeMoreLink='/some-link' />)
-
-    // Ensure each item title renders
     expect(getByText('Item 1')).toBeInTheDocument()
   })
 
@@ -47,21 +44,14 @@ describe('Section Component', () => {
     const { getByTestId, queryByText } = render(
       <Section title='History' items={items} keyword='' seeMoreLink='/some-link' />
     )
-
-    // Ensure section title renders
     expect(getByTestId('History-section')).toBeInTheDocument()
-
-    // Ensure no item is rendered
     expect(queryByText('Item 1')).toBeNull()
     expect(queryByText('Item 2')).toBeNull()
   })
 
   it('renders ListItem component with correct props', () => {
     const items = [{ id: 1, title: 'Item 1', timestamp: '2024-03-25', mode: 'read', user: 'User 1' }]
-
     const { getByText } = render(<Section title='History' items={items} keyword='' />)
-
-    // Ensure ListItem component renders with correct props
     expect(getByText('Item 1')).toBeInTheDocument()
   })
 })
