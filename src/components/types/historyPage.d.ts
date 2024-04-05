@@ -3,4 +3,5 @@ export interface Item {
   timestamp: string
   mode: string
   user: string
+  id: string
 }

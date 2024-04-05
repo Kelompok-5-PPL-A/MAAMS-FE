@@ -2,6 +2,10 @@
 
 MAAMS or Mencari Akar-Akar Masalah Sosial is a web application that aims to help people to find the root of social problems. This project is part of the Software Engineering Project course at the University of Indonesia.
 
+## SonarQube Link
+
+[https://sonarqube.cs.ui.ac.id/dashboard?id=maams-ppl_maams-fe_AY3\_\_Q1Hk9qxTTGJIDMw](https://sonarqube.cs.ui.ac.id/dashboard?id=maams-ppl_maams-fe_AY3__Q1Hk9qxTTGJIDMw)
+
 ## Development
 
 1. Clone the repository (SSH)

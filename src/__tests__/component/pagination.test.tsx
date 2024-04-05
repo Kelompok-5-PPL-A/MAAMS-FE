@@ -78,4 +78,49 @@ describe('Pagination Component', () => {
     fireEvent.click(ellipsisButton)
     expect(onPageChangeMock).toHaveBeenCalledWith(4)
   })
+
+  // Menambahkan pengujian untuk mencakup baris 30-39
+  it('calls onPageChange with correct page number when there is only one page', () => {
+    const { getByText } = render(<Pagination currentPage={1} totalPages={1} onPageChange={onPageChangeMock} />)
+
+    fireEvent.click(getByText('1'))
+    expect(onPageChangeMock).toHaveBeenCalledWith(1)
+  })
+
+  it('applies hover styles when hovering over the ellipsis button', () => {
+    const { getByTestId } = render(<Pagination currentPage={3} totalPages={10} onPageChange={onPageChangeMock} />)
+
+    const ellipsisButton = getByTestId('ellipsis-button')
+    fireEvent.mouseEnter(ellipsisButton)
+
+    expect(ellipsisButton).toHaveClass('hover:bg-gray-400')
+    expect(ellipsisButton).toHaveClass('focus:bg-gray-300')
+  })
+
+  it('removes hover styles when mouse leaves the ellipsis button', () => {
+    const { getByTestId } = render(<Pagination currentPage={3} totalPages={10} onPageChange={onPageChangeMock} />)
+
+    const ellipsisButton = getByTestId('ellipsis-button')
+    fireEvent.mouseEnter(ellipsisButton)
+    fireEvent.mouseLeave(ellipsisButton)
+
+    expect(ellipsisButton).not.toHaveClass('hover:bg-gray-400')
+    expect(ellipsisButton).not.toHaveClass('focus:bg-gray-300')
+  })
+
+  it('calls onPageChange with correct page number on second to last page button click', () => {
+    const { getByText } = render(<Pagination currentPage={4} totalPages={5} onPageChange={onPageChangeMock} />)
+
+    const secondToLastPageButton = getByText('4')
+    fireEvent.click(secondToLastPageButton)
+    expect(onPageChangeMock).toHaveBeenCalledWith(4)
+  })
+
+  it('calls onPageChange with correct page number on last page button click', () => {
+    const { getByText } = render(<Pagination currentPage={5} totalPages={5} onPageChange={onPageChangeMock} />)
+
+    const lastPageButton = getByText('5')
+    fireEvent.click(lastPageButton)
+    expect(onPageChangeMock).toHaveBeenCalledWith(5)
+  })
 })
