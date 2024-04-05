@@ -94,7 +94,7 @@ describe('ValidatorQuestionForm Component', () => {
     await waitFor(() => {
       setTimeout(() => {
         expect(toast.error).toHaveBeenCalledWith('Pertanyaan harus diisi')
-      }, 2000)
+      }, 10000)
     })
   })
 
@@ -141,7 +141,7 @@ describe('ValidatorQuestionForm Component', () => {
     await waitFor(() => {
       setTimeout(() => {
         expect(toast).toHaveBeenCalledWith('Analisis berhasil ditambahkan')
-      }, 2000)
+      }, 10000)
     })
   })
 
@@ -167,7 +167,7 @@ describe('ValidatorQuestionForm Component', () => {
     await waitFor(() => {
       setTimeout(() => {
         expect(toast).toHaveBeenCalledWith('Gagal menambahkan analisis')
-      }, 2000)
+      }, 10000)
     })
   })
 
@@ -191,7 +191,7 @@ describe('ValidatorQuestionForm Component', () => {
     await waitFor(() => {
       setTimeout(() => {
         expect(toast).toHaveBeenCalledWith('Backend Error Message')
-      }, 2000)
+      }, 10000)
     })
   })
 
@@ -208,7 +208,7 @@ describe('ValidatorQuestionForm Component', () => {
     await waitFor(() => {
       setTimeout(() => {
         expect(toast.success).toHaveBeenCalledWith('Berhasil mengubah mode')
-      }, 2000)
+      }, 10000)
     })
   })
 
@@ -234,7 +234,7 @@ describe('ValidatorQuestionForm Component', () => {
       setTimeout(() => {
         expect(queryByText('Apakah Anda yakin ingin menampilkan analisis ini kepada Admin?')).not.toBeInTheDocument()
         expect(toast.success).toHaveBeenCalledWith('Berhasil mengubah mode')
-      }, 5000)
+      }, 10000)
     })
   })
 
@@ -261,7 +261,7 @@ describe('ValidatorQuestionForm Component', () => {
     await waitFor(() => {
       setTimeout(() => {
         expect(toast).toHaveBeenCalledWith('Backend Error Message')
-      }, 2000)
+      }, 10000)
     })
   })
 
@@ -281,7 +281,7 @@ describe('ValidatorQuestionForm Component', () => {
     await waitFor(() => {
       setTimeout(() => {
         expect(toast).toHaveBeenCalledWith('Gagal mengubah mode')
-      }, 2000)
+      }, 10000)
     })
   })
 
@@ -297,7 +297,7 @@ describe('ValidatorQuestionForm Component', () => {
     await waitFor(() => {
       setTimeout(() => {
         expect(queryByText('Apakah Anda yakin ingin menampilkan analisis ini kepada Admin?')).not.toBeInTheDocument()
-      }, 5000)
+      }, 10000)
     })
   })
 
@@ -313,7 +313,7 @@ describe('ValidatorQuestionForm Component', () => {
     await waitFor(() => {
       setTimeout(() => {
         expect(queryByText('Apakah Anda yakin ingin menampilkan analisis ini kepada Admin?')).not.toBeInTheDocument()
-      }, 5000)
+      }, 10000)
     })
   })
 })

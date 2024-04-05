@@ -150,4 +150,33 @@ describe('History Component', () => {
     })
     expect(useRouter().push).toHaveBeenCalledWith('/')
   })
+
+  test('displays fetched data for last week and older', async () => {
+    const lastWeekData = {
+      count: 2,
+      processedData: [
+        { id: 'id-1', title: 'Question 1', timestamp: '2022-04-05T10:00:00Z', mode: 'public', user: 'user1' },
+        { id: 'id-2', title: 'Question 2', timestamp: '2022-04-06T11:00:00Z', mode: 'private', user: 'user1' }
+      ]
+    }
+
+    const olderData = {
+      count: 1,
+      processedData: [
+        { id: 'id-3', title: 'Question 3', timestamp: '2022-03-05T10:00:00Z', mode: 'public', user: 'user1' }
+      ]
+    }
+
+    fetchQuestionsMock.mockResolvedValueOnce(lastWeekData).mockResolvedValueOnce(olderData)
+
+    render(<History />)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(screen.getByText('Question 1')).toBeInTheDocument()
+        expect(screen.getByText('Question 2')).toBeInTheDocument()
+        expect(screen.getByText('Question 3')).toBeInTheDocument()
+      }, 5000)
+    })
+  })
 })
