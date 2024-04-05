@@ -37,7 +37,6 @@ describe('fetchQuestions function', () => {
       }
     ]
 
-    // Mock axios.get to return a resolved promise with mockData
     mockedAxios.get.mockResolvedValueOnce({ data: mockData })
     const result = await fetchQuestions(mockHeaders, mockTimeRange, mockAdditionalParam)
 
@@ -57,11 +56,7 @@ describe('fetchQuestions function', () => {
 
   it('should throw an error when the fetching process fails', async () => {
     const errorMessage = 'Failed to fetch questions'
-
-    // Mock axios.get to return a rejected promise with an error object
     mockedAxios.get.mockRejectedValueOnce(new Error(errorMessage))
-
-    // Ensure that fetchQuestions throws the error
     await expect(fetchQuestions(mockHeaders, mockTimeRange, mockAdditionalParam)).rejects.toThrow(errorMessage)
   })
 })
