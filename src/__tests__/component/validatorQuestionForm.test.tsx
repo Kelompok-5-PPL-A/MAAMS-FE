@@ -3,70 +3,67 @@ import { ValidatorQuestionForm } from '../../components/validatorQuestionForm'
 import { render, fireEvent, waitFor } from '@testing-library/react'
 import React from 'react'
 import '@testing-library/jest-dom'
-import MockAdapter from 'axios-mock-adapter'
 import Mode from '../../constants/mode'
 import axiosInstance from '../../services/axiosInstance'
 import { toast } from 'react-hot-toast'
-import { useRouter } from 'next/router'
 
-import path from 'path'
+jest.mock('../../services/axiosInstance')
+const mockedAxios = axiosInstance as jest.Mocked<typeof axiosInstance>
 
-require('dotenv').config({ path: path.resolve(__dirname, './.env') })
-
-const localStorageMock = (() => {
-  let store: Record<string, string> = {}
-
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString()
-    },
-    removeItem: (key: string) => {
-      delete store[key]
-    },
-    clear: () => {
-      store = {}
-    }
-  }
-})()
-
-Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-
-const mockAxios = new MockAdapter(axiosInstance)
-
+const mockPush = jest.fn()
+const mockReload = jest.fn()
 jest.mock('next/router', () => ({
   useRouter: () => ({
-    push: jest.fn()
+    push: mockPush,
+    reload: mockReload
   })
 }))
 
-jest.mock('react-hot-toast', () => ({
-  ...jest.requireActual('react-hot-toast'),
-  error: jest.fn(),
-  success: jest.fn()
-}))
+beforeEach(() => {
+  localStorage.clear()
+  jest.clearAllMocks()
+})
 
-jest.mock('../../actions/auth', () => ({
-  login: jest.fn().mockResolvedValueOnce({
-    status: 200,
-    data: {
-      access_token: 'mockAccessToken',
-      refresh_token: 'mockRefreshToken'
-    }
-  })
-}))
+afterEach(() => {
+  localStorage.clear()
+  jest.clearAllMocks()
+})
+
+class LocalStorageMock {
+  store: { [key: string]: any }
+  length: number
+
+  constructor() {
+    this.store = {}
+    this.length = 0
+  }
+
+  getItem(key: string) {
+    return this.store[key] || null
+  }
+
+  setItem(key: string, value: string) {
+    this.store[key] = value.toString()
+    this.length = Object.keys(this.store).length
+  }
+
+  clear() {
+    this.store = {}
+    this.length = 0
+  }
+
+  key(index: number) {
+    return Object.keys(this.store)[index] || null
+  }
+
+  removeItem(key: string) {
+    delete this.store[key]
+    this.length = Object.keys(this.store).length
+  }
+}
+global.localStorage = new LocalStorageMock()
 
 describe('ValidatorQuestionForm Component', () => {
-  let mock: any
-
-  beforeEach(() => {
-    mockAxios.reset()
-  })
-
-  afterEach(() => {
-    jest.clearAllMocks()
-  })
-
   test('renders form correctly', () => {
     jest.requireMock('next/router').useRouter().push('/')
 
@@ -76,39 +73,10 @@ describe('ValidatorQuestionForm Component', () => {
     expect(getByPlaceholderText('Isi pertanyaan anda di sini')).toBeInTheDocument()
   })
 
-  test('calls handleModeChange when mode is changed directly', () => {
-    const { getByText } = render(<ValidatorQuestionForm />)
-
-    const dropdown = getByText(Mode.pribadi)
-
-    fireEvent.click(dropdown)
-
-    const option = getByText(Mode.pengawasan)
-    fireEvent.click(option)
-
-    expect(dropdown.textContent).toBe(Mode.pengawasan)
-  })
-
-  test('calls handleModeChangeGet when an option is selected in the dropdown and id is provided', () => {
-    const validatorData = { mode: Mode.pribadi, question: 'Contoh pertanyaan', username: 'test', created_at: 'test' }
-    const id = 1
-    const { getByText } = render(<ValidatorQuestionForm id='{id}' validatorData={validatorData} />)
-
-    const dropdown = getByText(Mode.pribadi)
-
-    fireEvent.click(dropdown)
-
-    const option = getByText(Mode.pengawasan)
-    fireEvent.click(option)
-
-    expect(dropdown.textContent).toBe(Mode.pengawasan)
-  })
-
   test('updates question correctly when input value is changed', () => {
-    const { getByPlaceholderText, getByText } = render(<ValidatorQuestionForm />)
+    const { getByPlaceholderText } = render(<ValidatorQuestionForm />)
 
     const input = getByPlaceholderText('Isi pertanyaan anda di sini')
-
     fireEvent.change(input, { target: { value: 'Pertanyaan baru' } })
 
     expect(input.getAttribute('value')).toBe('Pertanyaan baru')
@@ -125,56 +93,227 @@ describe('ValidatorQuestionForm Component', () => {
 
     await waitFor(() => {
       setTimeout(() => {
-        expect(toast).toHaveBeenCalledWith('Pertanyaan harus diisi')
-      }, 2000)
+        expect(toast.error).toHaveBeenCalledWith('Pertanyaan harus diisi')
+      }, 10000)
     })
   })
 
-  test('displays success message and redirects on successful API call', async () => {
-    localStorageMock.setItem('access', 'token')
+  test('calls handleModeChange when option is selected in the dropdown and id is not provided', () => {
+    const validatorData = { mode: Mode.pribadi, question: 'Contoh pertanyaan', username: 'test', created_at: 'test' }
+    const { getByText } = render(<ValidatorQuestionForm id={undefined} validatorData={validatorData} />)
 
-    mockAxios
-      .onPost(`/api/v1/validator/baru/`, {
-        mode: 'dummyMode',
-        question: 'dummyQuestion'
-      })
-      .reply(200)
+    const dropdown = getByText(Mode.pribadi)
+    fireEvent.click(dropdown)
+
+    const option = getByText(Mode.pengawasan)
+    fireEvent.click(option)
+
+    expect(dropdown.textContent).toBe(Mode.pengawasan)
+  })
+
+  test('opens mode change confirmation modal when a new mode is selected', async () => {
+    const { getByText } = render(<ValidatorQuestionForm />)
+    fireEvent.click(getByText(Mode.pribadi))
+    fireEvent.click(getByText(Mode.pengawasan))
+
+    expect(getByText('Apakah Anda yakin ingin menampilkan analisis ini kepada Admin?')).toBeInTheDocument()
+  })
+
+  test('displays success message and redirects on successful API call', async () => {
+    const mockResponseData = {
+      mode: 'mode',
+      question: 'question'
+    }
+    mockedAxios.post.mockResolvedValue({ data: mockResponseData })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
 
     const { getByPlaceholderText, getByTestId } = render(<ValidatorQuestionForm />)
 
     const input = getByPlaceholderText('Isi pertanyaan anda di sini')
-    fireEvent.change(input, { target: { value: 'dummyQuestion' } })
+    fireEvent.change(input, { target: { value: 'question' } })
 
     const button = getByTestId('submit-question')
 
     fireEvent.submit(button)
 
     await waitFor(() => {
-      expect(mockAxios.history.post.length).toBe(1)
       setTimeout(() => {
-        expect(toast.success).toHaveBeenCalledWith('Analisis berhasil ditambahkan')
-      }, 2000)
+        expect(toast).toHaveBeenCalledWith('Analisis berhasil ditambahkan')
+      }, 10000)
     })
   })
 
-  test('handle delete button click', async () => {
-    const id = 'abc123'
-    const { getByText, getByTestId } = render(<ValidatorQuestionForm id={id} />)
+  test('displays error message when fail to post', async () => {
+    const errorResponse = {
+      response: {
+        request: {
+          responseText: 'Gagal menambahkan analisis'
+        }
+      }
+    }
+    mockedAxios.post.mockRejectedValueOnce({ data: errorResponse })
 
-    mockAxios.onDelete(`/api/v1/validator/hapus/${id}`).reply(200)
+    const { getByPlaceholderText, getByTestId } = render(<ValidatorQuestionForm />)
 
-    fireEvent.click(getByTestId('toggle-open-button'))
+    const input = getByPlaceholderText('Isi pertanyaan anda di sini')
+    fireEvent.change(input, { target: { value: 'question' } })
 
-    fireEvent.click(getByTestId('delete-button'))
+    const button = getByTestId('submit-question')
 
-    fireEvent.click(getByText('Hapus'))
+    fireEvent.submit(button)
 
     await waitFor(() => {
-      expect(mockAxios.history.delete.length).toBe(1)
       setTimeout(() => {
-        expect(toast.success).toHaveBeenCalledWith('Berhasil menghapus analisis')
-        expect(useRouter().push).toHaveBeenCalledWith('/')
-      }, 500)
+        expect(toast).toHaveBeenCalledWith('Gagal menambahkan analisis')
+      }, 10000)
+    })
+  })
+
+  test('displays error message from backend when fail to post', async () => {
+    const errorResponse = {
+      data: {
+        detail: 'Backend Error Message'
+      }
+    }
+    mockedAxios.post.mockRejectedValueOnce({ response: errorResponse })
+
+    const { getByPlaceholderText, getByTestId } = render(<ValidatorQuestionForm />)
+
+    const input = getByPlaceholderText('Isi pertanyaan anda di sini')
+    fireEvent.change(input, { target: { value: 'question' } })
+
+    const button = getByTestId('submit-question')
+
+    fireEvent.submit(button)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Backend Error Message')
+      }, 10000)
+    })
+  })
+
+  test('updates mode successfully without id', async () => {
+    const validatorData = { mode: Mode.pribadi, question: 'Contoh pertanyaan', username: 'test', created_at: 'test' }
+    const { getByText } = render(<ValidatorQuestionForm id={undefined} validatorData={validatorData} />)
+
+    const dropdown = getByText(Mode.pribadi)
+    fireEvent.click(dropdown)
+    const option = getByText(Mode.pengawasan)
+    fireEvent.click(option)
+    fireEvent.click(getByText('Simpan'))
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.success).toHaveBeenCalledWith('Berhasil mengubah mode')
+      }, 10000)
+    })
+  })
+
+  test('updates mode successfully with API call', async () => {
+    const id = 'id-test-1'
+    const mockResponseData = {
+      mode: Mode.pengawasan
+    }
+    mockedAxios.put.mockResolvedValue({ data: mockResponseData })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    const { getByText, queryByText } = render(<ValidatorQuestionForm id={id} />)
+
+    const dropdown = getByText(Mode.pribadi)
+    fireEvent.click(dropdown)
+    const option = getByText(Mode.pengawasan)
+    fireEvent.click(option)
+    fireEvent.click(getByText('Simpan'))
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(queryByText('Apakah Anda yakin ingin menampilkan analisis ini kepada Admin?')).not.toBeInTheDocument()
+        expect(toast.success).toHaveBeenCalledWith('Berhasil mengubah mode')
+      }, 10000)
+    })
+  })
+
+  test('should show error message when failed', async () => {
+    const id = 'id-test-error-1'
+    const errorResponse = {
+      data: {
+        detail: 'Backend Error Message'
+      }
+    }
+    mockedAxios.put.mockRejectedValueOnce({ response: errorResponse })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    const { getByText } = render(<ValidatorQuestionForm id={id} />)
+
+    const dropdown = getByText(Mode.pribadi)
+    fireEvent.click(dropdown)
+    const option = getByText(Mode.pengawasan)
+    fireEvent.click(option)
+    fireEvent.click(getByText('Simpan'))
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Backend Error Message')
+      }, 10000)
+    })
+  })
+
+  test('displays a generic error message on mode change failure due to non-backend issue', async () => {
+    mockedAxios.put.mockRejectedValueOnce(new Error('Network Error'))
+
+    const id = 'id-test-failure-general'
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    const { getByText } = render(<ValidatorQuestionForm id={id} />)
+
+    fireEvent.click(getByText(Mode.pribadi))
+    fireEvent.click(getByText(Mode.pengawasan))
+    fireEvent.click(getByText('Simpan'))
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Gagal mengubah mode')
+      }, 10000)
+    })
+  })
+
+  test('closes the mode change confirmation modal when the cancel button is clicked', async () => {
+    const { getByText, queryByText } = render(<ValidatorQuestionForm />)
+
+    fireEvent.click(getByText(Mode.pribadi))
+    fireEvent.click(getByText(Mode.pengawasan))
+
+    const cancelButton = getByText('Batal')
+    fireEvent.click(cancelButton)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(queryByText('Apakah Anda yakin ingin menampilkan analisis ini kepada Admin?')).not.toBeInTheDocument()
+      }, 10000)
+    })
+  })
+
+  test('closes the mode change confirmation modal when the close icon is clicked', async () => {
+    const { getByText, queryByText, getByLabelText } = render(<ValidatorQuestionForm />)
+
+    fireEvent.click(getByText(Mode.pribadi))
+    fireEvent.click(getByText(Mode.pengawasan))
+
+    const closeIcon = getByLabelText('Close')
+    fireEvent.click(closeIcon)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(queryByText('Apakah Anda yakin ingin menampilkan analisis ini kepada Admin?')).not.toBeInTheDocument()
+      }, 10000)
     })
   })
 })

@@ -17,7 +17,6 @@ const Navbar = () => {
   useEffect(() => {
     const refresh_token = localStorage.getItem('isLoggedIn')
     setUserData(JSON.parse(localStorage.getItem('userData')!))
-    console.log(JSON.parse(localStorage.getItem('userData')!))
     setIsLoggedIn(refresh_token === 'true')
   }, [])
 
@@ -145,7 +144,7 @@ const Navbar = () => {
                     >
                       <ul className='py-2 text-sm text-black'>
                         <li>
-                          <a href='#' className='block px-4 py-2 hover:bg-gray-100'>
+                          <a href='/editProfile' className='block px-4 py-2 hover:bg-gray-100'>
                             Edit Profile
                           </a>
                         </li>
