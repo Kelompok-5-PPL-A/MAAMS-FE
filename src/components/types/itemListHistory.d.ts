@@ -5,5 +5,5 @@ export interface ItemListHistoryProps {
   showModeButton?: boolean
   showDeleteButton?: boolean
   user: string
-  idQuestion: string | string[]
+  idQuestion: string | string[] | undefined
 }

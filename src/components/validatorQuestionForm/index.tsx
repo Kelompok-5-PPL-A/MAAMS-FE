@@ -82,7 +82,7 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
             <div className='w-full'>
               <DropdownMode selectedMode={isModeChangeModalOpen ? pendingMode : mode} onChange={handleModeChange} />
             </div>
-            {id && <DeleteButton idQuestion={id} />}
+            {id && <DeleteButton idQuestion={id} pathname={router.pathname} />}
           </div>
 
           <h1 className='text-2xl font-bold text-black'>Ingin menganalisis masalah apa hari ini?</h1>
