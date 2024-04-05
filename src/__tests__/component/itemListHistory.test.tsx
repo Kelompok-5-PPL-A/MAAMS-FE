@@ -9,7 +9,8 @@ jest.mock('../../services/axiosInstance', () => ({
 }))
 jest.mock('next/router', () => ({
   reload: jest.fn(),
-  push: jest.fn()
+  push: jest.fn(),
+  useRouter: jest.fn().mockReturnValue({ pathname: '/test-pathname' })
 }))
 
 describe('ListItem Component', () => {
