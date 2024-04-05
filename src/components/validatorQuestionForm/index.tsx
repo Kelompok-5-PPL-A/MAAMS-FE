@@ -59,7 +59,7 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
                 onChange={id ? handleModeChangeGet : handleModeChange}
               />
             </div>
-            {id && <DeleteButton idQuestion={id} />}
+            {id && <DeleteButton idQuestion={id} pathname={router.pathname} />}
           </div>
 
           <h1 className='text-2xl font-bold text-black'>Ingin menganalisis masalah apa hari ini?</h1>
