@@ -55,7 +55,7 @@ const History: React.FC = () => {
   }
 
   useEffect(() => {
-    fetchData('?count=3')
+    fetchData('?count=4')
   }, [])
 
   const handleSubmit = () => {
@@ -64,12 +64,12 @@ const History: React.FC = () => {
       query: { keyword: keyword }
     })
 
-    fetchData(`search/?count=3&keyword=${keyword}`)
+    fetchData(`search/?count=4&keyword=${keyword}`)
   }
 
   return (
-    <MainLayout>
-      <div className='min-h-screen m-12'>
+    <MainLayout marginOverride='lg:mx-10 mx-0'>
+      <div className='min-h-screen lg:m-12'>
         <h1 data-testid='history-title' className='text-2xl font-bold mb-4 text-center mt-7 mb-7'>
           Riwayat Analisis
         </h1>
