@@ -3,15 +3,16 @@ import MainLayout from '../../../layout/MainLayout'
 import Section from '../../../components/sectionHistory'
 import Pagination from '../../../components/pagination'
 import { Item } from 'components/types/historyPage'
-import axios from 'axios'
-import { formatTimestamp } from '../../../utils/dateFormatter'
-import router from 'next/router'
-import toast from 'react-hot-toast'
+import { useRouter } from 'next/router'
 import { logout, refreshToken } from 'actions/auth'
+import toast from 'react-hot-toast'
+import { fetchQuestions } from 'actions/fetchQuestions'
+import { SearchBar } from 'components/searchBar'
 
 const PastWeekPublik: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState<number>(1) // Jumlah total halaman diinisialisasi dengan 1
+  const [totalPages, setTotalPages] = useState<number>(1)
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
   }
@@ -22,62 +23,78 @@ const PastWeekPublik: React.FC = () => {
     Authorization: `Bearer ${access}`
   }
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const lastWeekResponse = await axios({
-          method: 'GET',
-          url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/pengawasan/?count=5&p=${currentPage}&time_range=older`,
-          withCredentials: false,
-          headers: headers
-        })
+  const [searchKeyword, setSearchKeyword] = useState<string>('')
+  const router = useRouter()
+  const [submitted, setSubmitted] = useState<boolean>(false)
 
-        const lastWeekData = lastWeekResponse.data
-
-        // Process the data
-        const processedLastWeekData = lastWeekData.results.map((item: any) => ({
-          title: item.question,
-          timestamp: formatTimestamp(item.created_at),
-          mode: item.mode,
-          user: item.username
-        }))
-
-        // Set the entire history data
-        setOlder(processedLastWeekData)
-        // Set total pages based on count
-        setTotalPages(Math.ceil(lastWeekData.count / 5))
-      } catch (error: any) {
-        if (refresh != null && error.response.status == '401') {
-          try {
-            const responseRefresh = await refreshToken(refresh)
-            window.localStorage.setItem('access', responseRefresh.data.access)
-            router.reload()
-          } catch {
-            toast.error('Sesi anda telah berakhir. Silakan login kembali')
-            logout(refresh)
-            localStorage.clear()
-            router.push('/login')
-          }
-        } else if (error.response) {
-          toast.error(error.response.data.detail)
-          router.push('/')
-        } else if (error.message) {
-          toast.error(error.message)
-          router.push('/')
+  const fetchData = async (additional_param: string) => {
+    try {
+      const pastWeekData = await fetchQuestions(headers, 'older', additional_param)
+      setOlder(pastWeekData.processedData)
+      setTotalPages(Math.ceil(pastWeekData.count / 5))
+    } catch (error: any) {
+      if (refresh != null && error.response.status == '401') {
+        try {
+          const responseRefresh = await refreshToken(refresh)
+          window.localStorage.setItem('access', responseRefresh.data.access)
+          router.reload()
+        } catch {
+          toast.error('Sesi anda telah berakhir. Silakan login kembali')
+          logout(refresh)
+          localStorage.clear()
+          router.push('/login')
         }
+      } else if (error.response) {
+        toast.error(error.response.data.detail)
+        router.push('/')
+      } else if (error.message) {
+        toast.error(error.message)
+        router.push('/')
+      }
+    }
+  }
+
+  const handleSubmit = () => {
+    setSubmitted(true)
+    router.push({
+      pathname: router.pathname,
+      query: { keyword: searchKeyword }
+    })
+  }
+
+  useEffect(() => {
+    const fetchDataBasedOnQuery = async () => {
+      const { searchKeyword } = router.query
+      const page = submitted ? 1 : currentPage
+      if (searchKeyword && typeof searchKeyword === 'string') {
+        setSearchKeyword(searchKeyword)
+        fetchData(`pengawasan/?count=5&keyword=${searchKeyword}&p=${page}`)
+
+        if (submitted) {
+          setSubmitted(false)
+          setCurrentPage(1)
+        }
+      } else {
+        // Fetch default data when there's no keyword
+        fetchData(`pengawasan/?count=5&p=${currentPage}`)
       }
     }
 
-    fetchData()
-  }, [currentPage]) // Update data fetching when currentPage changes
+    fetchDataBasedOnQuery()
+  }, [router.query, currentPage])
 
   return (
     <MainLayout>
       <div className='min-h-screen m-12'>
-        <h1 data-testid='history-title' className='text-2xl font-bold mb-4 text-center mt-7 mb-7'>
-          Riwayat Analisis
+        <h1 data-testid='public-analysis-title' className='text-2xl font-bold mb-4 text-center mt-7 mb-7'>
+          Analisis Publik
         </h1>
-        <Section title='7 hari terakhir' items={older} showModeButton={false} />
+        <SearchBar
+          keyword={searchKeyword}
+          onSubmit={handleSubmit}
+          onChange={(value) => setSearchKeyword(value)}
+        ></SearchBar>
+        <Section title='7 hari terakhir' items={older} showModeButton={false} keyword='' />
         {totalPages >= 1 && (
           <Pagination currentPage={currentPage} onPageChange={handlePageChange} totalPages={totalPages}></Pagination>
         )}

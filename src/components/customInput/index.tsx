@@ -9,6 +9,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
   labelClassName,
   inputClassName,
   errorClassName,
+  spacerClassName,
   onChange,
   value,
   children,
@@ -24,7 +25,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
   }
 
   return (
-    <div className='space-y-4 w-full'>
+    <div className={`${spacerClassName ?? 'space-y-4'} w-full`}>
       {!!label && <label className={`${labelClassName}`}>{label}</label>}
       <InputGroup className='border-zinc-500'>
         <Input
