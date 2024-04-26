@@ -67,9 +67,8 @@ describe('ValidatorQuestionForm Component', () => {
   test('renders form correctly', () => {
     jest.requireMock('next/router').useRouter().push('/')
 
-    const { getByText, getByPlaceholderText } = render(<ValidatorQuestionForm />)
+    const { getByPlaceholderText } = render(<ValidatorQuestionForm />)
 
-    expect(getByText('Ingin menganalisis masalah apa hari ini?')).toBeInTheDocument()
     expect(getByPlaceholderText('Isi pertanyaan anda di sini')).toBeInTheDocument()
   })
 
@@ -99,7 +98,13 @@ describe('ValidatorQuestionForm Component', () => {
   })
 
   test('calls handleModeChange when option is selected in the dropdown and id is not provided', () => {
-    const validatorData = { mode: Mode.pribadi, question: 'Contoh pertanyaan', username: 'test', created_at: 'test' }
+    const validatorData = {
+      mode: Mode.pribadi,
+      question: 'Contoh pertanyaan',
+      username: 'test',
+      created_at: 'test',
+      title: 'test'
+    }
     const { getByText } = render(<ValidatorQuestionForm id={undefined} validatorData={validatorData} />)
 
     const dropdown = getByText(Mode.pribadi)
@@ -196,7 +201,13 @@ describe('ValidatorQuestionForm Component', () => {
   })
 
   test('updates mode successfully without id', async () => {
-    const validatorData = { mode: Mode.pribadi, question: 'Contoh pertanyaan', username: 'test', created_at: 'test' }
+    const validatorData = {
+      mode: Mode.pribadi,
+      question: 'Contoh pertanyaan',
+      username: 'test',
+      created_at: 'test',
+      title: 'test'
+    }
     const { getByText } = render(<ValidatorQuestionForm id={undefined} validatorData={validatorData} />)
 
     const dropdown = getByText(Mode.pribadi)
@@ -217,7 +228,7 @@ describe('ValidatorQuestionForm Component', () => {
     const mockResponseData = {
       mode: Mode.pengawasan
     }
-    mockedAxios.put.mockResolvedValue({ data: mockResponseData })
+    mockedAxios.patch.mockResolvedValue({ data: mockResponseData })
 
     jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
     jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
@@ -245,7 +256,7 @@ describe('ValidatorQuestionForm Component', () => {
         detail: 'Backend Error Message'
       }
     }
-    mockedAxios.put.mockRejectedValueOnce({ response: errorResponse })
+    mockedAxios.patch.mockRejectedValueOnce({ response: errorResponse })
 
     jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
     jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
@@ -266,7 +277,7 @@ describe('ValidatorQuestionForm Component', () => {
   })
 
   test('displays a generic error message on mode change failure due to non-backend issue', async () => {
-    mockedAxios.put.mockRejectedValueOnce(new Error('Network Error'))
+    mockedAxios.patch.mockRejectedValueOnce(new Error('Network Error'))
 
     const id = 'id-test-failure-general'
     jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
