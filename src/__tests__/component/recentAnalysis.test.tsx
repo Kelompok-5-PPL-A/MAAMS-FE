@@ -51,6 +51,7 @@ describe('Recent Analysis component', () => {
     localStorage.setItem('isLoggedIn', 'true')
     const mockResponseData = {
       id: 'mockId',
+      title: 'mock',
       mode: 'mock',
       question: 'mock',
       created_at: 'mock',

@@ -7,6 +7,7 @@ import { formatTimestamp } from '../../utils/dateFormatter'
 import toast from 'react-hot-toast'
 
 const defaultValidatorData: ValidatorData = {
+  title: '',
   id: '',
   question: '',
   mode: Mode.pribadi,

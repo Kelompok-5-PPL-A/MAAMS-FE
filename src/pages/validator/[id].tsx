@@ -4,17 +4,17 @@ import { CounterButton } from '../../components/counterButton'
 import { Row } from '../../components/row'
 import { ValidatorQuestionForm } from '../../components/validatorQuestionForm'
 import { useRouter } from 'next/router'
-import axios from 'axios'
 import { ValidatorData } from '../../components/types/validatorQuestionFormProps'
 import toast from 'react-hot-toast'
 import Mode from '../../constants/mode'
 import { SubmitButton } from '../../components/submitButton'
 import { CauseStatus } from '../../lib/enum'
-import { refreshToken, logout } from '../../actions/auth'
 import { UserDataProps } from 'components/types/userData'
-import { ValidatorAdminHeader } from '../../components/validatorAdminHeader'
+import { ValidatorAdminHeader } from 'components/validatorAdminHeader'
+import axiosInstance from 'services/axiosInstance'
 
 const defaultValidatorData: ValidatorData = {
+  title: '',
   question: '',
   mode: Mode.pribadi,
   created_at: '',
@@ -25,11 +25,7 @@ const ValidatorDetailPage = () => {
   const router = useRouter()
   const id = router.query.id
   const [validatorData, setValidatorData] = useState<ValidatorData>(defaultValidatorData)
-  const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
-  const headers = {
-    Authorization: `Bearer ${access}`
-  }
   const alphabet = 'ABCDE'
   const [columnCount, setColumnCount] = useState(3)
   const [rows, setRows] = useState([createInitialRow(1, 3)])
@@ -60,31 +56,15 @@ const ValidatorDetailPage = () => {
     }
 
     try {
-      const response = await axios({
-        method: 'GET',
-        url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/${id}/`,
-        withCredentials: false,
-        headers: headers
-      })
+      const response = await axiosInstance.get(`/api/v1/validator/${id}/`)
       const receivedData: ValidatorData = response.data
       setValidatorData(receivedData)
     } catch (error: any) {
-      if (refresh != null && error.response.status == '401') {
-        try {
-          const responseRefresh = await refreshToken(refresh)
-          window.localStorage.setItem('access', responseRefresh.data.access)
-          router.reload()
-        } catch {
-          toast.error('Sesi anda telah berakhir. Silakan login kembali')
-          logout(refresh)
-          localStorage.clear()
-          router.push('/login')
-        }
-      } else if (error.response) {
+      if (error.response) {
         toast.error(error.response.data.detail)
         router.push('/')
-      } else if (error.message) {
-        toast.error(error.message)
+      } else {
+        toast.error('Gagal mengambil data analisis')
         router.push('/')
       }
     }
