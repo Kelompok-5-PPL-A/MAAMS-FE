@@ -7,6 +7,7 @@ import { CircularIconButton } from '../../components/CircularIconButton'
 import { Icon } from '@chakra-ui/react'
 import { useOnClickOutside } from 'usehooks-ts'
 import React from 'react'
+import { HiOutlineInformationCircle } from 'react-icons/hi'
 
 export const EditableTitleForm: React.FC<EditableTitleFormProps> = ({ title, id, onTitleChange }) => {
   const [isEditable, setIsEditable] = useState(false)
@@ -46,7 +47,9 @@ export const EditableTitleForm: React.FC<EditableTitleFormProps> = ({ title, id,
     }
 
     if (titleInput == title) {
-      toast('Judul sama dengan sebelumnya')
+      toast('Judul sama dengan sebelumnya', {
+        icon: <HiOutlineInformationCircle className='text-blue-500 w-6 h-6' />
+      })
       setIsEditable(false)
       setNewTitle(title)
       return
