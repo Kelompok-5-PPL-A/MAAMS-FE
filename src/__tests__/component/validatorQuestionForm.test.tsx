@@ -97,6 +97,30 @@ describe('ValidatorQuestionForm Component', () => {
     })
   })
 
+  test('calls handleTitleChange when change title', () => {
+    const validatorData = {
+      mode: Mode.pribadi,
+      question: 'Contoh pertanyaan',
+      username: 'test',
+      created_at: 'test',
+      title: 'test'
+    }
+    const { getByText, getByTestId } = render(<ValidatorQuestionForm id={'id-test'} validatorData={validatorData} />)
+
+    expect(getByText('test')).toBeInTheDocument
+
+    const edit = getByTestId('edit-title')
+    fireEvent.click(edit)
+
+    const input = getByTestId('input-title')
+    fireEvent.change(input, { target: { value: 'baru' } })
+    const submit = getByTestId('submit-question')
+
+    fireEvent.click(submit)
+
+    expect(getByText('Saving...')).toBeInTheDocument
+  })
+
   test('calls handleModeChange when option is selected in the dropdown and id is not provided', () => {
     const validatorData = {
       mode: Mode.pribadi,
