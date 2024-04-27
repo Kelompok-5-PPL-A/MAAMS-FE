@@ -10,6 +10,7 @@ import { useRouter } from 'next/router'
 import { DeleteButton } from '../../components/deleteButton'
 import { Icon, Modal, ModalOverlay, ModalContent, ModalFooter, ModalBody, ModalCloseButton } from '@chakra-ui/react'
 import axiosInstance from '../../services/axiosInstance'
+import { EditableTitleForm } from '../../components/editableTitleForm'
 
 export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id, validatorData }) => {
   const [question, setQuestion] = useState<string>(validatorData?.question || '')
@@ -17,6 +18,11 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
   const router = useRouter()
   const [isModeChangeModalOpen, setIsModeChangeModalOpen] = useState<boolean>(false)
   const [pendingMode, setPendingMode] = useState(mode)
+  const [title, setTitle] = useState<string | undefined>(validatorData?.title || validatorData?.question)
+
+  const handleTitleChange = (newTitle: string) => {
+    setTitle(newTitle)
+  }
 
   const handleModeChange = (newMode: Mode) => {
     setPendingMode(newMode)
@@ -27,6 +33,7 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
     if (validatorData?.mode !== mode) {
       setMode(validatorData?.mode ?? Mode.pribadi)
     }
+    setTitle(validatorData?.title || validatorData?.question)
   }, [validatorData])
 
   const handleModeChangeConfirm = async () => {
@@ -84,7 +91,7 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
           {id && <DeleteButton idQuestion={id} pathname={router.pathname} />}
         </div>
 
-        <h1 className='text-2xl font-bold text-black'>Ingin menganalisis masalah apa hari ini?</h1>
+        {id && <EditableTitleForm title={title} onTitleChange={handleTitleChange} id={id} />}
 
         <form onSubmit={handleSubmit} data-testid='question-form'>
           <>
