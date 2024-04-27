@@ -5,6 +5,8 @@ import { DropdownMode } from '../../components/dropdownMode'
 import Mode from '../../constants/mode'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/router'
+import { CustomInput } from '../../components/customInput'
+import { Badge } from '../../components/badge'
 
 const QuestionAddPage: React.FC = () => {
   const router = useRouter()
@@ -75,77 +77,54 @@ const QuestionAddPage: React.FC = () => {
 
   return (
     <MainLayout>
-      <div className='flex flex-col w-full'>
-        <div className='w-full'>
-          <DropdownMode selectedMode={mode} onChange={handleModeChange} />
-        </div>
-        <h1 className='text-2xl font-bold text-black my-8'>Ingin menganalisis masalah apa hari ini?</h1>
-        <div className='flex flex-col lg:justify-center mt-4 lg:w-full gap-7'>
-          <div className='flex flex-col lg:justify-center lg:w-full gap-2'>
-            <div>Judul Analisis</div>
-            <input
-              required
-              type='text'
-              name='title'
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder='Ingin menganalisis apa hari ini ...'
-              className='border border-black shadow-lg rounded-md px-6 py-3 w-full'
-            />
+      <div className='min-h-screen m-10'>
+        <div className='flex flex-col w-full'>
+          <div className='w-full'>
+            <DropdownMode selectedMode={mode} onChange={handleModeChange} />
           </div>
-          <div className='flex flex-col lg:justify-center lg:w-full gap-2'>
-            <div>Pertanyaan (akibat)</div>
-            <input
-              required
-              type='text'
-              name='question'
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder='Pertanyaan apa yang ingin ditanyakan ...'
-              className='border border-black shadow-lg rounded-md px-6 py-3 w-full'
-            />
-          </div>
-          <div className='flex flex-col lg:justify-center lg:w-full gap-2'>
-            <div>Kategori Analisis</div>
-            <input
-              type='text'
-              name='tags'
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder='Berikan maksimal 5 kategori ...'
-              className='border border-black shadow-lg rounded-md px-6 py-3 w-full'
-            />
-            <div className='flex flex-wrap gap-2'>
-              {tags.map((tag, index) => (
-                <div key={index} className='flex items-center bg-yellow-400 rounded-full px-3 py-1'>
-                  <span>{tag}</span>
-                  <button
-                    type='button'
-                    data-testid='remove-tag-button'
-                    onClick={() => handleRemoveTag(tag)}
-                    className='ml-2 text-black'
-                  >
-                    <svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4' viewBox='0 0 20 20' fill='currentColor'>
-                      <path
-                        fillRule='evenodd'
-                        d='M5.293 5.293a1 1 0 011.414 0L10 8.586l3.293-3.293a1 1 0 111.414 1.414L11.414 10l3.293 3.293a1 1 0 01-1.414 1.414L10 11.414l-3.293 3.293a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 010-1.414z'
-                        clipRule='evenodd'
-                      />
-                    </svg>
-                  </button>
-                </div>
-              ))}
+          <h1 className='text-2xl font-bold text-black my-8'>Ingin menganalisis masalah apa hari ini?</h1>
+          <div className='flex flex-col lg:justify-center lg:w-full gap-4'>
+            <div className='flex flex-col lg:justify-center lg:w-full gap-2'>
+              <div>Judul Analisis</div>
+              <CustomInput
+                value={title}
+                placeholder='Ingin menganalisis apa hari ini ...'
+                onChange={(e) => setTitle(e.target.value)}
+              ></CustomInput>
             </div>
-          </div>
-          <div className='flex justify-center w-full mt-4 flex-col lg:flex-row'>
-            <button
-              type='button'
-              onClick={handleSubmit}
-              className='bg-gradient-to-b from-yellow-400 to-yellow-600 text-xl text-white font-bold py-2 px-10 rounded-xl'
-            >
-              Kirim
-            </button>
+            <div className='flex flex-col lg:justify-center lg:w-full gap-2'>
+              <div>Pertanyaan (akibat)</div>
+              <CustomInput
+                value={question}
+                placeholder='Pertanyaan apa yang ingin ditanyakan ...'
+                onChange={(e) => setQuestion(e.target.value)}
+              ></CustomInput>
+            </div>
+            <div className='flex flex-col lg:justify-center lg:w-full gap-2'>
+              <div>Kategori Analisis</div>
+              <CustomInput
+                value={newTag}
+                placeholder='Berikan maksimal 5 kategori ...'
+                onChange={(e) => setNewTag(e.target.value)}
+                onKeyDown={handleKeyDown}
+              ></CustomInput>
+              <div className='flex flex-wrap gap-2'>
+                {tags.map((tag, index) => (
+                  <div key={index}>
+                    <Badge text={tag} isRemovable={true} handleRemove={() => handleRemoveTag(tag)}></Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className='flex justify-center w-full flex-col lg:flex-row'>
+              <button
+                type='button'
+                onClick={handleSubmit}
+                className='bg-gradient-to-b from-yellow-400 to-yellow-600 text-l text-white font-bold py-2 px-12 rounded-xl'
+              >
+                Kirim
+              </button>
+            </div>
           </div>
         </div>
       </div>

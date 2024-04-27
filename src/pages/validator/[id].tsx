@@ -10,8 +10,8 @@ import Mode from '../../constants/mode'
 import { SubmitButton } from '../../components/submitButton'
 import { CauseStatus } from '../../lib/enum'
 import { UserDataProps } from 'components/types/userData'
-import { ValidatorAdminHeader } from 'components/validatorAdminHeader'
-import axiosInstance from 'services/axiosInstance'
+import { ValidatorAdminHeader } from '../../components/validatorAdminHeader'
+import axiosInstance from '../../services/axiosInstance'
 
 const defaultValidatorData: ValidatorData = {
   title: '',
