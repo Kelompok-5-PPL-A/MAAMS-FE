@@ -6,6 +6,7 @@ export interface ValidatorQuestionFormProps {
 }
 
 export interface ValidatorData {
+  title: string
   question: string
   mode: Mode
   username: string
