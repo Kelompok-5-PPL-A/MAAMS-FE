@@ -12,7 +12,7 @@ import { SubmitButton } from '../../components/submitButton'
 import { CauseStatus } from '../../lib/enum'
 import { refreshToken, logout } from '../../actions/auth'
 import { UserDataProps } from 'components/types/userData'
-import { ValidatorAdminHeader } from 'components/validatorAdminHeader'
+import { ValidatorAdminHeader } from '../../components/validatorAdminHeader'
 
 const defaultValidatorData: ValidatorData = {
   question: '',
