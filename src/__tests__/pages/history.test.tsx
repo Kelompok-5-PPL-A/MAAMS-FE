@@ -21,6 +21,7 @@ jest.mock('next/router', () => ({
 
 beforeEach(() => {
   localStorage.clear()
+  global.localStorage.setItem('userData', JSON.stringify({ is_staff: true }))
   jest.clearAllMocks()
 })
 
