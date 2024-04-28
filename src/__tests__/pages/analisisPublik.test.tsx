@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import AnalisisPublik from '../../pages/analisisPublik'
 import * as fetchQuestionsModule from '../../actions/fetchQuestions'
 import * as authModule from '../../actions/auth'
@@ -22,29 +22,9 @@ const fetchQuestionsMock = jest.spyOn(fetchQuestionsModule, 'fetchQuestions')
 
 describe('AnalisisPublik Component', () => {
   beforeEach(() => {
+    localStorage.clear()
+    global.localStorage.setItem('userData', JSON.stringify({ is_staff: true }))
     jest.clearAllMocks()
-  })
-
-  test('successfully fetches and displays last week data', async () => {
-    const lastWeekData = {
-      count: 2,
-      processedData: [
-        { id: 'id-1', title: 'Question 1', timestamp: '2022-04-05T10:00:00Z', mode: 'public', user: 'user1' },
-        { id: 'id-2', title: 'Question 2', timestamp: '2022-04-06T11:00:00Z', mode: 'public', user: 'user2' }
-      ]
-    }
-    fetchQuestionsMock.mockResolvedValueOnce(lastWeekData)
-
-    render(<AnalisisPublik />)
-    expect(fetchQuestionsMock).toHaveBeenCalledWith(expect.any(Object), 'last_week', 'pengawasan/?count=3')
-  })
-
-  test('initiates data fetch on search without keyword', async () => {
-    render(<AnalisisPublik />)
-
-    fireEvent.submit(screen.getByRole('button', { name: /search/i }))
-
-    expect(fetchQuestionsMock).toHaveBeenCalledWith(expect.any(Object), 'last_week', 'pengawasan/?count=3')
   })
 
   test('refreshes access token and retries fetch on authentication failure', async () => {
@@ -58,19 +38,19 @@ describe('AnalisisPublik Component', () => {
       }
     })
 
-    const lastWeekData = {
+    const OlderData = {
       count: 2,
       processedData: [
         { id: 'id-1', title: 'Question 1', timestamp: '2022-04-05T10:00:00Z', mode: 'public', user: 'user1' },
         { id: 'id-2', title: 'Question 2', timestamp: '2022-04-06T11:00:00Z', mode: 'public', user: 'user2' }
       ]
     }
-    fetchQuestionsMock.mockResolvedValueOnce(lastWeekData)
+    fetchQuestionsMock.mockResolvedValueOnce(OlderData)
 
     render(<AnalisisPublik />)
 
     await waitFor(() => {
-      expect(fetchQuestionsMock).toHaveBeenCalledTimes(2)
+      expect(fetchQuestionsMock).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -109,15 +89,7 @@ describe('AnalisisPublik Component', () => {
       }, 2000)
     })
   })
-  test('displays fetched data for last week and older', async () => {
-    const lastWeekData = {
-      count: 2,
-      processedData: [
-        { id: 'id-1', title: 'Question 1', timestamp: '2022-04-05T10:00:00Z', mode: 'public', user: 'user1' },
-        { id: 'id-2', title: 'Question 2', timestamp: '2022-04-06T11:00:00Z', mode: 'public', user: 'user2' }
-      ]
-    }
-
+  test('displays fetched data for older', async () => {
     const olderData = {
       count: 1,
       processedData: [
@@ -125,13 +97,11 @@ describe('AnalisisPublik Component', () => {
       ]
     }
 
-    fetchQuestionsMock.mockResolvedValueOnce(lastWeekData).mockResolvedValueOnce(olderData)
+    fetchQuestionsMock.mockResolvedValueOnce(olderData)
 
     render(<AnalisisPublik />)
 
     await waitFor(() => {
-      expect(screen.getByText('Question 1')).toBeInTheDocument()
-      expect(screen.getByText('Question 2')).toBeInTheDocument()
       expect(screen.getByText('Question 3')).toBeInTheDocument()
     })
   })

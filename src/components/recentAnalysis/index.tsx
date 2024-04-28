@@ -7,6 +7,7 @@ import { formatTimestamp } from '../../utils/dateFormatter'
 import toast from 'react-hot-toast'
 
 const defaultValidatorData: ValidatorData = {
+  title: '',
   id: '',
   question: '',
   mode: Mode.pribadi,
@@ -32,7 +33,7 @@ const RecentAnalysis: React.FC = () => {
     }
 
     setIsLoggedIn(refresh_token === 'true')
-    handleGet()
+    if (refresh_token === 'true') handleGet()
   }, [])
 
   return (

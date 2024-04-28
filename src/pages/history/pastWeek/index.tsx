@@ -19,6 +19,8 @@ const PastWeek: React.FC = () => {
   }
   const [older, setOlder] = useState<Item[]>([])
   const [keyword, setKeyword] = useState<string>('')
+  const [filter, setFilter] = useState<string>('semua')
+  const isAdmin = typeof window !== 'undefined' ? JSON.parse(window.localStorage.getItem('userData')!).is_staff : ''
   const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
   const headers = {
@@ -53,6 +55,10 @@ const PastWeek: React.FC = () => {
     }
   }
 
+  const handleFilterSelect = (filter: string) => {
+    setFilter(filter)
+  }
+
   const handleSubmit = () => {
     setSubmitted(true)
     router.push({
@@ -67,7 +73,7 @@ const PastWeek: React.FC = () => {
       const page = submitted ? 1 : currentPage
       if (keyword && typeof keyword === 'string') {
         setKeyword(keyword)
-        fetchData(`search/?count=5&keyword=${keyword}&p=${page}`)
+        fetchData(`search/?filter=${filter}&&count=5&keyword=${keyword}&p=${page}`)
 
         if (submitted) {
           setSubmitted(false)
@@ -75,7 +81,7 @@ const PastWeek: React.FC = () => {
         }
       } else {
         // Fetch default data when there's no keyword
-        fetchData(`?count=5&p=${currentPage}`)
+        fetchData(`?filter=${filter}&count=5&p=${currentPage}`)
       }
     }
 
@@ -88,7 +94,15 @@ const PastWeek: React.FC = () => {
         <h1 data-testid='history-title' className='text-2xl font-bold mb-4 text-center mt-7 mb-7'>
           Riwayat Analisis
         </h1>
-        <SearchBar keyword={keyword} onSubmit={handleSubmit} onChange={(value) => setKeyword(value)}></SearchBar>
+        <SearchBar
+          isAdmin={isAdmin}
+          publicAnalyses={false}
+          filter={filter}
+          keyword={keyword}
+          onSelect={handleFilterSelect}
+          onSubmit={handleSubmit}
+          onChange={(value) => setKeyword(value)}
+        ></SearchBar>
         <Section title='Lebih lama' items={older} showModeButton={true} showDeleteButton={true} keyword='' />
         {totalPages >= 1 && (
           <Pagination currentPage={currentPage} onPageChange={handlePageChange} totalPages={totalPages}></Pagination>

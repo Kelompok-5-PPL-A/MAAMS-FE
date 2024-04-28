@@ -11,7 +11,9 @@ import { fetchQuestions } from '../../actions/fetchQuestions'
 const History: React.FC = () => {
   const [lastweek, setLastWeek] = useState<Item[]>([])
   const [older, setOlder] = useState<Item[]>([])
+  const [filter, setFilter] = useState<string>('semua')
   const [keyword, setKeyword] = useState<string>('')
+  const isAdmin = typeof window !== 'undefined' ? JSON.parse(window.localStorage.getItem('userData')!).is_staff : ''
   const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
   const headers = {
@@ -29,7 +31,6 @@ const History: React.FC = () => {
       const processedLastWeekData = (await fetchQuestions(headers, 'last_week', additional_param)).processedData
       const processedOlderData = (await fetchQuestions(headers, 'older', additional_param)).processedData
 
-      // Set the entire history data
       setLastWeek(processedLastWeekData)
       setOlder(processedOlderData)
     } catch (error: any) {
@@ -58,13 +59,17 @@ const History: React.FC = () => {
     fetchData('?count=4')
   }, [])
 
+  const handleFilterSelect = (filter: string) => {
+    setFilter(filter)
+  }
+
   const handleSubmit = () => {
     router.push({
       pathname: router.pathname,
       query: { keyword: keyword }
     })
 
-    fetchData(`search/?count=4&keyword=${keyword}`)
+    fetchData(`search/?filter=${filter}&count=4&keyword=${keyword}`)
   }
 
   return (
@@ -73,7 +78,15 @@ const History: React.FC = () => {
         <h1 data-testid='history-title' className='text-2xl font-bold mb-4 text-center mt-7 mb-7'>
           Riwayat Analisis
         </h1>
-        <SearchBar keyword={keyword} onSubmit={handleSubmit} onChange={(value) => setKeyword(value)}></SearchBar>
+        <SearchBar
+          isAdmin={isAdmin}
+          publicAnalyses={false}
+          filter={filter}
+          keyword={keyword}
+          onSelect={handleFilterSelect}
+          onSubmit={handleSubmit}
+          onChange={(value) => setKeyword(value)}
+        ></SearchBar>
         {lastweek.length > 0 && (
           <Section
             title='7 hari terakhir'

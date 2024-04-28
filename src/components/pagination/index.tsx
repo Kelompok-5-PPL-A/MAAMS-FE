@@ -1,12 +1,45 @@
 import { PaginationProps } from 'components/types/pagination'
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import toast from 'react-hot-toast'
 
 const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
+  const [inputMode, setInputMode] = useState(false)
+  const [pageNumber, setPageNumber] = useState(currentPage)
+  const inputRef = useRef<HTMLInputElement>(null)
   const [hovered, setHovered] = useState(false)
 
+  useEffect(() => {
+    if (inputMode && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [inputMode])
+
   const handleEllipsisClick = () => {
-    onPageChange(currentPage + 1)
+    setInputMode(true)
     setHovered(false)
+  }
+
+  const handlePageInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputVal = e.target.value
+    const pageNum = parseInt(inputVal, 10)
+    if (inputVal === '' || (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages)) {
+      setPageNumber(pageNum)
+    }
+  }
+
+  const submitPageInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (
+      e.key === 'Enter' &&
+      !isNaN(pageNumber) &&
+      pageNumber !== currentPage &&
+      pageNumber >= 1 &&
+      pageNumber <= totalPages
+    ) {
+      onPageChange(pageNumber)
+      setInputMode(false)
+    } else if (e.key === 'Enter' && isNaN(pageNumber)) {
+      toast.error('Masukkan halaman yang ingin anda tuju')
+    }
   }
 
   const goToPreviousPage = () => {
@@ -25,7 +58,6 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
     const buttons = []
     const showEllipsis = totalPages >= 5
 
-    // If there is only one page, display only that page button
     if (totalPages === 1) {
       buttons.push(
         <button
@@ -42,7 +74,6 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
         </button>
       )
     } else {
-      // Render page buttons based on current page and total pages
       let maxButtonsToShow = 2
 
       if (showEllipsis && totalPages - currentPage <= 3) {
@@ -51,7 +82,6 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
 
       let startPage = Math.max(1, currentPage - Math.floor(maxButtonsToShow / 2))
       const endPage = Math.min(totalPages - 2, startPage + maxButtonsToShow - 1)
-
       if (endPage - startPage < maxButtonsToShow - 1) {
         startPage = Math.max(1, endPage - maxButtonsToShow + 1)
       }
@@ -63,9 +93,9 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
             type='button'
             className={`min-h-[38px] min-w-[38px] flex justify-center items-center ${
               i === currentPage
-                ? ' text-black-800 font-bold border-2 border-[#FBC707] bg-gray-200'
+                ? 'text-black-800 font-bold border-2 border-[#FBC707] bg-white'
                 : 'text-gray-800 bg-gray-200 hover:bg-gray-400 focus:bg-gray-300'
-            } py-2 px-3 text-sm rounded-lg focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg font-bold`}
+            } py-2 px-3 text-sm rounded-lg focus:outline-none`}
             onClick={() => onPageChange(i)}
           >
             {i}
@@ -75,52 +105,52 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
 
       if (showEllipsis && currentPage + maxButtonsToShow < totalPages) {
         buttons.push(
-          <button
-            key='ellipsis'
-            type='button'
-            className={`min-h-[38px] min-w-[38px] flex justify-center items-center text-gray-800 py-2 px-3 text-sm rounded-lg focus:outline-none bg-gray-200 font-bold ${
-              hovered ? 'hover:bg-gray-400' : ''
-            } ${hovered ? 'focus:bg-gray-300' : ''}`}
-            onClick={handleEllipsisClick}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            data-testid='ellipsis-button'
-          >
-            ...
-          </button>
+          inputMode ? (
+            <input
+              key='ellipsis-input'
+              type='number'
+              ref={inputRef}
+              value={pageNumber}
+              onChange={handlePageInput}
+              onKeyDown={submitPageInput}
+              onBlur={() => setInputMode(false)}
+              className='min-h-[38px] min-w-[38px] max-w-[100px] flex justify-center items-center text-gray-800 py-2 px-3 text-sm rounded-lg focus:outline-none bg-gray-200 border-2 border-[#FBC707] focus:bg-white'
+              autoFocus
+            />
+          ) : (
+            <button
+              key='ellipsis'
+              type='button'
+              className={`min-h-[38px] min-w-[38px] flex justify-center items-center text-gray-800 py-2 px-3 text-sm rounded-lg focus:outline-none bg-gray-200 font-bold ${
+                hovered ? 'hover:bg-gray-400' : ''
+              } ${hovered ? 'focus:bg-gray-300' : ''}`}
+              onClick={handleEllipsisClick}
+              onMouseEnter={() => setHovered(true)}
+              onMouseLeave={() => setHovered(false)}
+              data-testid='ellipsis-button'
+            >
+              ...
+            </button>
+          )
         )
       }
 
-      // Push the last two page buttons
-      buttons.push(
-        <button
-          key={totalPages - 1}
-          type='button'
-          className={`min-h-[38px] min-w-[38px] flex justify-center items-center ${
-            totalPages - 1 === currentPage
-              ? 'bg-gray-100 text-black-800 font-bold border-[#FBC707] border-2'
-              : 'text-gray-800 bg-gray-200 hover:bg-gray-400 focus:bg-gray-300'
-          } py-2 px-3 text-sm rounded-lg focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg font-bold`}
-          onClick={() => onPageChange(totalPages - 1)}
-        >
-          {totalPages - 1}
-        </button>
-      )
-
-      buttons.push(
-        <button
-          key={totalPages}
-          type='button'
-          className={`min-h-[38px] min-w-[38px] flex justify-center items-center ${
-            totalPages === currentPage
-              ? 'bg-gray-100 text-black-800 font-bold border-[#FBC707] border-2'
-              : 'text-gray-800 bg-gray-200 hover:bg-gray-400 focus:bg-gray-300'
-          } py-2 px-3 text-sm rounded-lg focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg font-bold`}
-          onClick={() => onPageChange(totalPages)}
-        >
-          {totalPages}
-        </button>
-      )
+      for (let i = Math.max(totalPages - 1, endPage + 1); i <= totalPages; i++) {
+        buttons.push(
+          <button
+            key={i}
+            type='button'
+            className={`min-h-[38px] min-w-[38px] flex justify-center items-center ${
+              i === currentPage
+                ? 'text-black-800 font-bold border-2 border-[#FBC707] bg-white'
+                : 'text-gray-800 bg-gray-200 hover:bg-gray-400 focus:bg-gray-300'
+            } py-2 px-3 text-sm rounded-lg focus:outline-none`}
+            onClick={() => onPageChange(i)}
+          >
+            {i}
+          </button>
+        )
+      }
     }
 
     return buttons
@@ -165,9 +195,6 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
         disabled={currentPage === totalPages}
         aria-label='Next'
       >
-        <span aria-hidden='true' className='sr-only'>
-          Next
-        </span>
         <svg
           className='flex-shrink-0 size-6'
           xmlns='http://www.w3.org/2000/svg'
@@ -182,6 +209,9 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
         >
           <path d='m9 18 6-6-6-6' />
         </svg>
+        <span aria-hidden='true' className='sr-only'>
+          Next
+        </span>
       </button>
     </nav>
   )

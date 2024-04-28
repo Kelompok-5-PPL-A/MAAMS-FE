@@ -26,9 +26,11 @@ export const fetchQuestions = async (headers: CustomHeader, time_range: string, 
   const processedData: Item[] = data.results.map((item: any) => ({
     id: item.id,
     title: item.question,
+    displayed_title: item.title,
     timestamp: formatTimestamp(item.created_at),
     mode: item.mode,
-    user: item.username
+    user: item.username,
+    tags: item.tags
   }))
 
   return {

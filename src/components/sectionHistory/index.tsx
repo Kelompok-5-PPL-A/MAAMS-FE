@@ -35,6 +35,7 @@ const Section: React.FC<
             user={item.user}
             showModeButton={showModeButton}
             showDeleteButton={showDeleteButton}
+            tags={item.tags}
           />
         ))}
       </div>
