@@ -1,12 +1,25 @@
 import React from 'react'
 
+import SearchFilter from '../searchFilter'
+
 interface SearchBarProps {
+  isAdmin: boolean
+  publicAnalyses: boolean
+  filter: string
   keyword: string
+  onSelect: (value: string) => void
   onChange: (value: string) => void
   onSubmit: () => void
 }
 
-export const SearchBar: React.FC<SearchBarProps> = ({ keyword, onChange, onSubmit }) => {
+export const SearchBar: React.FC<SearchBarProps> = ({
+  isAdmin,
+  publicAnalyses,
+  keyword,
+  onSelect,
+  onChange,
+  onSubmit
+}) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value)
   }
@@ -21,8 +34,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({ keyword, onChange, onSubmi
   return (
     <div className='mx-12 max-md:flex-wrap max-md:px-5'>
       <div className='flex gap-0 self-stretch shadow-lg rounded-[10px]'>
+        <SearchFilter isAdmin={isAdmin} updateFilter={onSelect} publicAnalyses={publicAnalyses}></SearchFilter>
         <input
-          className='w-full p-4 text-base bg-white rounded-tl-[10px] rounded-tr-none 
+          className='w-full p-4 text-base bg-white rounded-bl-none rounded-tl-none rounded-tr-none 
                 rounded-br-none rounded-bl-[10px] border border-yellow-400 border-solid text-slate-400 max-md:max-w-full placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400'
           style={{ color: 'black' }}
           type='text'
