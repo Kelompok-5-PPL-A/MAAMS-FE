@@ -71,8 +71,24 @@ describe('History Component', () => {
 
   test('fetches and displays data for last week', async () => {
     const items: Item[] = [
-      { id: '1', title: 'Question 1', timestamp: '2022-04-05T10:00:00Z', mode: 'public', user: 'user1' },
-      { id: '2', title: 'Question 2', timestamp: '2022-04-06T11:00:00Z', mode: 'private', user: 'user2' }
+      {
+        id: '1',
+        title: 'Question 1',
+        displayed_title: 'Question 1',
+        timestamp: '2022-04-05T10:00:00Z',
+        mode: 'public',
+        user: 'user1',
+        tags: ['Tags1']
+      },
+      {
+        id: '2',
+        title: 'Question 2',
+        displayed_title: 'Question 2',
+        timestamp: '2022-04-06T11:00:00Z',
+        mode: 'private',
+        user: 'user2',
+        tags: ['Tags2']
+      }
     ]
 
     const lastWeekData = {
@@ -82,7 +98,7 @@ describe('History Component', () => {
     fetchQuestionsMock.mockResolvedValueOnce(lastWeekData)
 
     render(<History />)
-    expect(fetchQuestionsMock).toHaveBeenCalledWith(expect.any(Object), 'last_week', '?count=3')
+    expect(fetchQuestionsMock).toHaveBeenCalledWith(expect.any(Object), 'last_week', '?count=4')
   })
 
   test('performs search without keyword', async () => {
@@ -90,7 +106,7 @@ describe('History Component', () => {
 
     fireEvent.submit(screen.getByRole('button', { name: /search/i }))
 
-    expect(fetchQuestionsMock).toHaveBeenCalledWith(expect.any(Object), 'last_week', '?count=3')
+    expect(fetchQuestionsMock).toHaveBeenCalledWith(expect.any(Object), 'last_week', '?count=4')
   })
 
   test('refreshes token successfully', async () => {
@@ -107,8 +123,24 @@ describe('History Component', () => {
     const lastWeekData = {
       count: 2,
       processedData: [
-        { id: '1', title: 'Question 1', timestamp: '2022-04-05T10:00:00Z', mode: 'public', user: 'user1' },
-        { id: '2', title: 'Question 2', timestamp: '2022-04-06T11:00:00Z', mode: 'private', user: 'user2' }
+        {
+          id: '1',
+          title: 'Question 1',
+          displayed_title: 'Question 1',
+          timestamp: '2022-04-05T10:00:00Z',
+          mode: 'public',
+          user: 'user1',
+          tags: ['tag1']
+        },
+        {
+          id: '2',
+          title: 'Question 2',
+          displayed_title: 'Question 2',
+          timestamp: '2022-04-06T11:00:00Z',
+          mode: 'private',
+          user: 'user2',
+          tags: ['tag2']
+        }
       ]
     }
     fetchQuestionsMock.mockResolvedValueOnce(lastWeekData)
@@ -122,21 +154,31 @@ describe('History Component', () => {
 
   test('should fetch data on mount', () => {
     render(<History />)
-    expect(fetchQuestionsMock).toHaveBeenCalledWith(expect.any(Object), 'last_week', '?count=3')
+    expect(fetchQuestionsMock).toHaveBeenCalledWith(expect.any(Object), 'last_week', '?count=4')
   })
 
   test('should set lastweek and older data after calling fetchQuestions()', async () => {
     fetchQuestionsMock.mockResolvedValueOnce({
       count: 2,
-      processedData: [{ id: '1', title: 'Question 1', timestamp: '2022-01-01', mode: 'mode1', user: 'user1' }]
+      processedData: [
+        {
+          id: '1',
+          title: 'Question 1',
+          displayed_title: 'Question 1',
+          timestamp: '2022-01-01',
+          mode: 'mode1',
+          user: 'user1',
+          tags: ['exampleTag']
+        }
+      ]
     })
     const { rerender } = render(<History />)
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0))
     })
     rerender(<History />)
-    expect(fetchQuestionsMock).toHaveBeenCalledWith(expect.any(Object), 'last_week', '?count=3')
-    expect(fetchQuestionsMock).toHaveBeenCalledWith(expect.any(Object), 'older', '?count=3')
+    expect(fetchQuestionsMock).toHaveBeenCalledWith(expect.any(Object), 'last_week', '?count=4')
+    expect(fetchQuestionsMock).toHaveBeenCalledWith(expect.any(Object), 'older', '?count=4')
   })
 
   test('should handle non-401 error from fetchQuestions()', async () => {
@@ -156,15 +198,39 @@ describe('History Component', () => {
     const lastWeekData = {
       count: 2,
       processedData: [
-        { id: 'id-1', title: 'Question 1', timestamp: '2022-04-05T10:00:00Z', mode: 'public', user: 'user1' },
-        { id: 'id-2', title: 'Question 2', timestamp: '2022-04-06T11:00:00Z', mode: 'private', user: 'user1' }
+        {
+          id: 'id-1',
+          title: 'Question 1',
+          displayed_title: 'Question 1',
+          timestamp: '2022-04-05T10:00:00Z',
+          mode: 'public',
+          user: 'user1',
+          tags: ['tags1']
+        },
+        {
+          id: 'id-2',
+          title: 'Question 2',
+          displayed_title: 'Question 2',
+          timestamp: '2022-04-06T11:00:00Z',
+          mode: 'private',
+          user: 'user1',
+          tags: ['tags2']
+        }
       ]
     }
 
     const olderData = {
       count: 1,
       processedData: [
-        { id: 'id-3', title: 'Question 3', timestamp: '2022-03-05T10:00:00Z', mode: 'public', user: 'user1' }
+        {
+          id: 'id-3',
+          title: 'Question 3',
+          displayed_title: 'Question 3',
+          timestamp: '2022-03-05T10:00:00Z',
+          mode: 'public',
+          user: 'user1',
+          tags: ['exampleTag']
+        }
       ]
     }
 
