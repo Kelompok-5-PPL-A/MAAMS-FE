@@ -17,6 +17,8 @@ const LastWeekPublik: React.FC = () => {
     setCurrentPage(page)
   }
   const [lastweek, setLastWeek] = useState<Item[]>([])
+  const [filter, setFilter] = useState<string>('semua')
+  const isAdmin = typeof window !== 'undefined' ? JSON.parse(window.localStorage.getItem('userData')!).is_staff : ''
   const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
   const headers = {
@@ -54,6 +56,10 @@ const LastWeekPublik: React.FC = () => {
     }
   }
 
+  const handleFilterSelect = (filter: string) => {
+    setFilter(filter)
+  }
+
   const handleSubmit = () => {
     setSubmitted(true)
     router.push({
@@ -68,7 +74,7 @@ const LastWeekPublik: React.FC = () => {
       const page = submitted ? 1 : currentPage
       if (keyword && typeof keyword === 'string') {
         setKeyword(keyword)
-        fetchData(`pengawasan/?count=5&keyword=${keyword}&p=${page}`)
+        fetchData(`pengawasan/?filter=${filter}&count=5&keyword=${keyword}&p=${page}`)
 
         if (submitted) {
           setSubmitted(false)
@@ -76,7 +82,7 @@ const LastWeekPublik: React.FC = () => {
         }
       } else {
         // Fetch default data when there's no keyword
-        fetchData(`pengawasan/?count=5&p=${currentPage}`)
+        fetchData(`pengawasan/?filter=${filter}&count=5&p=${currentPage}`)
       }
     }
 
@@ -89,7 +95,15 @@ const LastWeekPublik: React.FC = () => {
         <h1 data-testid='public-analysis-title' className='text-2xl font-bold mb-4 text-center mt-7 mb-7'>
           Analisis Publik
         </h1>
-        <SearchBar keyword={keyword} onSubmit={handleSubmit} onChange={(value) => setKeyword(value)}></SearchBar>
+        <SearchBar
+          isAdmin={isAdmin}
+          publicAnalyses={true}
+          filter={filter}
+          keyword={keyword}
+          onSelect={handleFilterSelect}
+          onSubmit={handleSubmit}
+          onChange={(value) => setKeyword(value)}
+        ></SearchBar>
         <Section title='7 hari terakhir' items={lastweek} showModeButton={false} keyword='' />
         {totalPages >= 1 && (
           <Pagination currentPage={currentPage} onPageChange={handlePageChange} totalPages={totalPages}></Pagination>

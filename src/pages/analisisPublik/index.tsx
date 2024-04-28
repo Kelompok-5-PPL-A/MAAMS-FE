@@ -11,12 +11,14 @@ import { fetchQuestions } from '../../actions/fetchQuestions'
 const AnalisisPublik: React.FC = () => {
   const [lastweek, setLastWeek] = useState<Item[]>([])
   const [older, setOlder] = useState<Item[]>([])
+  const isAdmin = typeof window !== 'undefined' ? JSON.parse(window.localStorage.getItem('userData')!).is_staff : ''
   const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
   const headers = {
     Authorization: `Bearer ${access}`
   }
 
+  const [filter, setFilter] = useState<string>('semua')
   const [keyword, setKeyword] = useState<string>('')
   const router = useRouter()
 
@@ -57,13 +59,17 @@ const AnalisisPublik: React.FC = () => {
     fetchData('pengawasan/?count=3')
   }, [])
 
+  const handleFilterSelect = (filter: string) => {
+    setFilter(filter)
+  }
+
   const handleSubmit = () => {
     router.push({
       pathname: router.pathname,
       query: { keyword: keyword }
     })
 
-    fetchData(`pengawasan/?count=3&keyword=${keyword}`)
+    fetchData(`pengawasan/?filter=${filter}&count=3&keyword=${keyword}`)
   }
 
   return (
@@ -72,7 +78,15 @@ const AnalisisPublik: React.FC = () => {
         <h1 data-testid='public-analysis-title' className='text-2xl font-bold mb-4 text-center mt-7 mb-7'>
           Analisis Publik
         </h1>
-        <SearchBar keyword={keyword} onSubmit={handleSubmit} onChange={(value) => setKeyword(value)}></SearchBar>
+        <SearchBar
+          isAdmin={isAdmin}
+          publicAnalyses={true}
+          filter={filter}
+          keyword={keyword}
+          onSelect={handleFilterSelect}
+          onSubmit={handleSubmit}
+          onChange={(value) => setKeyword(value)}
+        ></SearchBar>
         {lastweek.length > 0 && (
           <Section
             title='7 hari terakhir'
