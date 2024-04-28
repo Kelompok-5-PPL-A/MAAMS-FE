@@ -173,6 +173,20 @@ describe('QuestionAddPage', () => {
     })
   })
 
+  test('submits form with a long category', async () => {
+    const { getByPlaceholderText } = render(<QuestionAddPage />)
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+
+    fireEvent.change(newTagInput, { target: { value: 'Kategori yang panjang' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Kategori maksimal 10 karakter.')
+      }, 10000)
+    })
+  })
+
   test('changes the mode from PRIBADI to PENGAWASAN', () => {
     const { getByText } = render(<QuestionAddPage />)
 
