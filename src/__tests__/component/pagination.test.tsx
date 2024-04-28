@@ -10,6 +10,16 @@ describe('Pagination Component', () => {
     onPageChangeMock.mockClear()
   })
 
+  it('renders only one page button when there is exactly one page', () => {
+    const { getByText } = render(<Pagination currentPage={1} totalPages={1} onPageChange={onPageChangeMock} />)
+    const pageButton = getByText('1')
+    expect(pageButton).toBeInTheDocument()
+    fireEvent.click(pageButton)
+    expect(onPageChangeMock).toHaveBeenCalledWith(1)
+    expect(() => getByText('2')).toThrow()
+    expect(() => getByText('...')).toThrow()
+  })
+
   it('renders pagination correctly with given props', () => {
     const { getByText } = render(<Pagination currentPage={2} totalPages={5} onPageChange={onPageChangeMock} />)
     expect(getByText('1')).toBeInTheDocument()
@@ -96,5 +106,53 @@ describe('Pagination Component', () => {
     fireEvent.change(input, { target: { value: '' } })
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
     expect(input.value).toBe('')
+  })
+
+  it('calls onPageChange with the previous page number when the previous button is clicked and not on the first page', () => {
+    const onPageChangeMock = jest.fn()
+    const { getByLabelText } = render(<Pagination currentPage={2} totalPages={5} onPageChange={onPageChangeMock} />)
+
+    const previousButton = getByLabelText('Previous')
+    fireEvent.click(previousButton)
+
+    expect(onPageChangeMock).toHaveBeenCalledWith(1)
+  })
+
+  it('calls onPageChange with the next page number when the next button is clicked and not on the last page', () => {
+    const onPageChangeMock = jest.fn()
+    const { getByLabelText } = render(<Pagination currentPage={1} totalPages={3} onPageChange={onPageChangeMock} />)
+
+    const nextButton = getByLabelText('Next')
+    fireEvent.click(nextButton)
+
+    expect(onPageChangeMock).toHaveBeenCalledWith(2)
+  })
+
+  it('disables the previous button on the first page and enables it otherwise', () => {
+    const onPageChangeMock = jest.fn()
+    const { getByLabelText, rerender } = render(
+      <Pagination currentPage={1} totalPages={5} onPageChange={onPageChangeMock} />
+    )
+
+    let previousButton = getByLabelText('Previous')
+    expect(previousButton).toBeDisabled()
+
+    rerender(<Pagination currentPage={2} totalPages={5} onPageChange={onPageChangeMock} />)
+    previousButton = getByLabelText('Previous')
+    expect(previousButton).not.toBeDisabled()
+  })
+
+  it('disables the next button on the last page and enables it otherwise', () => {
+    const onPageChangeMock = jest.fn()
+    const { getByLabelText, rerender } = render(
+      <Pagination currentPage={5} totalPages={5} onPageChange={onPageChangeMock} />
+    )
+
+    let nextButton = getByLabelText('Next')
+    expect(nextButton).toBeDisabled()
+
+    rerender(<Pagination currentPage={4} totalPages={5} onPageChange={onPageChangeMock} />)
+    nextButton = getByLabelText('Next')
+    expect(nextButton).not.toBeDisabled()
   })
 })
