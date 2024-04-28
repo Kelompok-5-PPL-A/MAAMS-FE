@@ -1,5 +1,6 @@
 import { PaginationProps } from 'components/types/pagination'
 import React, { useState, useEffect, useRef } from 'react'
+import toast from 'react-hot-toast'
 
 const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
   const [inputMode, setInputMode] = useState(false)
@@ -36,6 +37,8 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
     ) {
       onPageChange(pageNumber)
       setInputMode(false)
+    } else if (e.key === 'Enter' && isNaN(pageNumber)) {
+      toast.error('Masukkan halaman yang ingin anda tuju')
     }
   }
 

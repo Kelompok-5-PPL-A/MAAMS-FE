@@ -1,7 +1,8 @@
 import React from 'react'
-import { render, fireEvent } from '@testing-library/react'
+import { render, fireEvent, waitFor } from '@testing-library/react'
 import Pagination from '../../components/pagination'
 import '@testing-library/jest-dom'
+import toast from 'react-hot-toast'
 
 describe('Pagination Component', () => {
   const onPageChangeMock = jest.fn()
@@ -183,5 +184,21 @@ describe('Pagination Component', () => {
 
     fireEvent.click(getByText('5'))
     expect(onPageChangeMock).toHaveBeenCalledWith(5)
+  })
+
+  it('displays error toast when pressing Enter without entering a value in the input field', async () => {
+    const { getByText, getByRole } = render(
+      <Pagination currentPage={3} totalPages={10} onPageChange={onPageChangeMock} />
+    )
+    fireEvent.click(getByText('...'))
+    const input = getByRole('spinbutton')
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
+    expect(onPageChangeMock).not.toHaveBeenCalled()
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Masukkan halaman yang ingin anda tuju')
+      }, 2000)
+    })
   })
 })
