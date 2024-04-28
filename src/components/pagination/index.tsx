@@ -5,6 +5,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
   const [inputMode, setInputMode] = useState(false)
   const [pageNumber, setPageNumber] = useState(currentPage)
   const inputRef = useRef<HTMLInputElement>(null)
+  const [hovered, setHovered] = useState(false)
 
   useEffect(() => {
     if (inputMode && inputRef.current) {
@@ -14,6 +15,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
 
   const handleEllipsisClick = () => {
     setInputMode(true)
+    setHovered(false)
   }
 
   const handlePageInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,72 +54,100 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
   const renderPageButtons = () => {
     const buttons = []
     const showEllipsis = totalPages >= 5
-    const maxButtonsToShow = 2
-    let startPage = Math.max(1, currentPage - Math.floor(maxButtonsToShow / 2))
-    const endPage = Math.min(totalPages - 2, startPage + maxButtonsToShow - 1)
-    if (endPage - startPage < maxButtonsToShow - 1) {
-      startPage = Math.max(1, endPage - maxButtonsToShow + 1)
-    }
 
-    for (let i = startPage; i <= endPage; i++) {
+    if (totalPages === 1) {
       buttons.push(
         <button
-          key={i}
+          key={1}
           type='button'
           className={`min-h-[38px] min-w-[38px] flex justify-center items-center ${
-            i === currentPage
-              ? 'text-black-800 font-bold border-2 border-[#FBC707] bg-white'
+            1 === currentPage
+              ? ' text-black-800 font-bold border-2 border-[#FBC707] bg-gray-200'
               : 'text-gray-800 bg-gray-200 hover:bg-gray-400 focus:bg-gray-300'
-          } py-2 px-3 text-sm rounded-lg focus:outline-none`}
-          onClick={() => onPageChange(i)}
+          } py-2 px-3 text-sm rounded-lg focus:outline-none disabled:opacity-50 disabled:pointer-events-none bg font-bold`}
+          onClick={() => onPageChange(1)}
         >
-          {i}
+          {1}
         </button>
       )
-    }
+    } else {
+      let maxButtonsToShow = 2
 
-    if (showEllipsis && currentPage + maxButtonsToShow < totalPages) {
-      buttons.push(
-        inputMode ? (
-          <input
-            key='ellipsis-input'
-            type='number'
-            ref={inputRef}
-            value={pageNumber}
-            onChange={handlePageInput}
-            onKeyDown={submitPageInput}
-            onBlur={() => setInputMode(false)}
-            className='min-h-[38px] min-w-[38px] max-w-[100px] flex justify-center items-center text-gray-800 py-2 px-3 text-sm rounded-lg focus:outline-none bg-gray-200 border-2 border-[#FBC707] focus:bg-white'
-            autoFocus
-          />
-        ) : (
+      if (showEllipsis && totalPages - currentPage <= 3) {
+        maxButtonsToShow = 3
+      }
+
+      let startPage = Math.max(1, currentPage - Math.floor(maxButtonsToShow / 2))
+      const endPage = Math.min(totalPages - 2, startPage + maxButtonsToShow - 1)
+      if (endPage - startPage < maxButtonsToShow - 1) {
+        startPage = Math.max(1, endPage - maxButtonsToShow + 1)
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        buttons.push(
           <button
-            key='ellipsis'
+            key={i}
             type='button'
-            className='min-h-[38px] min-w-[38px] flex justify-center items-center text-gray-800 py-2 px-3 text-sm rounded-lg focus:outline-none bg-gray-200'
-            onClick={handleEllipsisClick}
+            className={`min-h-[38px] min-w-[38px] flex justify-center items-center ${
+              i === currentPage
+                ? 'text-black-800 font-bold border-2 border-[#FBC707] bg-white'
+                : 'text-gray-800 bg-gray-200 hover:bg-gray-400 focus:bg-gray-300'
+            } py-2 px-3 text-sm rounded-lg focus:outline-none`}
+            onClick={() => onPageChange(i)}
           >
-            ...
+            {i}
           </button>
         )
-      )
-    }
+      }
 
-    for (let i = Math.max(totalPages - 1, endPage + 1); i <= totalPages; i++) {
-      buttons.push(
-        <button
-          key={i}
-          type='button'
-          className={`min-h-[38px] min-w-[38px] flex justify-center items-center ${
-            i === currentPage
-              ? 'text-black-800 font-bold border-2 border-[#FBC707] bg-white'
-              : 'text-gray-800 bg-gray-200 hover:bg-gray-400 focus:bg-gray-300'
-          } py-2 px-3 text-sm rounded-lg focus:outline-none`}
-          onClick={() => onPageChange(i)}
-        >
-          {i}
-        </button>
-      )
+      if (showEllipsis && currentPage + maxButtonsToShow < totalPages) {
+        buttons.push(
+          inputMode ? (
+            <input
+              key='ellipsis-input'
+              type='number'
+              ref={inputRef}
+              value={pageNumber}
+              onChange={handlePageInput}
+              onKeyDown={submitPageInput}
+              onBlur={() => setInputMode(false)}
+              className='min-h-[38px] min-w-[38px] max-w-[100px] flex justify-center items-center text-gray-800 py-2 px-3 text-sm rounded-lg focus:outline-none bg-gray-200 border-2 border-[#FBC707] focus:bg-white'
+              autoFocus
+            />
+          ) : (
+            <button
+              key='ellipsis'
+              type='button'
+              className={`min-h-[38px] min-w-[38px] flex justify-center items-center text-gray-800 py-2 px-3 text-sm rounded-lg focus:outline-none bg-gray-200 font-bold ${
+                hovered ? 'hover:bg-gray-400' : ''
+              } ${hovered ? 'focus:bg-gray-300' : ''}`}
+              onClick={handleEllipsisClick}
+              onMouseEnter={() => setHovered(true)}
+              onMouseLeave={() => setHovered(false)}
+              data-testid='ellipsis-button'
+            >
+              ...
+            </button>
+          )
+        )
+      }
+
+      for (let i = Math.max(totalPages - 1, endPage + 1); i <= totalPages; i++) {
+        buttons.push(
+          <button
+            key={i}
+            type='button'
+            className={`min-h-[38px] min-w-[38px] flex justify-center items-center ${
+              i === currentPage
+                ? 'text-black-800 font-bold border-2 border-[#FBC707] bg-white'
+                : 'text-gray-800 bg-gray-200 hover:bg-gray-400 focus:bg-gray-300'
+            } py-2 px-3 text-sm rounded-lg focus:outline-none`}
+            onClick={() => onPageChange(i)}
+          >
+            {i}
+          </button>
+        )
+      }
     }
 
     return buttons

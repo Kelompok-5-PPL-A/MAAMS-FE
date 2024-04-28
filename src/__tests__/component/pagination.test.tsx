@@ -155,4 +155,33 @@ describe('Pagination Component', () => {
     nextButton = getByLabelText('Next')
     expect(nextButton).not.toBeDisabled()
   })
+
+  it('sets hovered to true when mouse enters and false when mouse leaves', () => {
+    const { getByText } = render(<Pagination currentPage={2} totalPages={7} onPageChange={onPageChangeMock} />)
+
+    const ellipsisButton = getByText('...')
+    fireEvent.mouseEnter(ellipsisButton)
+    expect(ellipsisButton).toHaveClass('hover:bg-gray-400')
+    expect(ellipsisButton).toHaveClass('focus:bg-gray-300')
+
+    fireEvent.mouseLeave(ellipsisButton)
+    expect(ellipsisButton).not.toHaveClass('hover:bg-gray-400')
+    expect(ellipsisButton).not.toHaveClass('focus:bg-gray-300')
+  })
+
+  it('calls onPageChange with the correct page number when a page button is clicked', () => {
+    const { getByText } = render(<Pagination currentPage={2} totalPages={5} onPageChange={onPageChangeMock} />)
+
+    fireEvent.click(getByText('1'))
+    expect(onPageChangeMock).toHaveBeenCalledWith(1)
+
+    fireEvent.click(getByText('2'))
+    expect(onPageChangeMock).toHaveBeenCalledWith(2)
+
+    fireEvent.click(getByText('4'))
+    expect(onPageChangeMock).toHaveBeenCalledWith(4)
+
+    fireEvent.click(getByText('5'))
+    expect(onPageChangeMock).toHaveBeenCalledWith(5)
+  })
 })
