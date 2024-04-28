@@ -87,7 +87,6 @@ const AnalisisPublik: React.FC = () => {
           onSubmit={handleSubmit}
           onChange={(value) => setKeyword(value)}
         ></SearchBar>
-        {/* <button onClick={() => console.log(filter)}>check current filter</button> */}
         {lastweek.length > 0 && (
           <Section
             title='7 hari terakhir'
