@@ -84,6 +84,31 @@ describe('QuestionAddPage', () => {
     })
   })
 
+  test('displays error messages for too long title on submission', async () => {
+    const { getByText, getByPlaceholderText } = render(<QuestionAddPage />)
+    const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')
+    const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 5 kategori ...')
+
+    const submitButton = getByText('Kirim')
+
+    fireEvent.change(titleInput, {
+      target: {
+        value: 'Longggggggggggggggggggggggggg Titleeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      }
+    })
+    fireEvent.change(questionInput, { target: { value: 'Sample Question' } })
+    fireEvent.change(newTagInput, { target: { value: 'Sample Tag' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Judul maksimal 40 karakter. Berikan judul yang lebih singkat')
+      }, 10000)
+    })
+  })
+
   test('displays error messages for missing question on form submission', async () => {
     const { getByText, getByPlaceholderText } = render(<QuestionAddPage />)
     const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')

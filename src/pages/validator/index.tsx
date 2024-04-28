@@ -55,6 +55,9 @@ const QuestionAddPage: React.FC = () => {
     } else if (tags.length == 0) {
       toast.error('Minimal mengisi 1 kategori')
       return
+    } else if (title.length > 40) {
+      toast.error('Judul maksimal 40 karakter. Berikan judul yang lebih singkat')
+      return
     }
 
     try {
