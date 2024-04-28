@@ -10,6 +10,7 @@ import { useRouter } from 'next/router'
 import { DeleteButton } from '../../components/deleteButton'
 import { Icon, Modal, ModalOverlay, ModalContent, ModalFooter, ModalBody, ModalCloseButton } from '@chakra-ui/react'
 import axiosInstance from '../../services/axiosInstance'
+import { EditableTitleForm } from '../../components/editableTitleForm'
 
 export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id, validatorData }) => {
   const [question, setQuestion] = useState<string>(validatorData?.question || '')
@@ -17,6 +18,11 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
   const router = useRouter()
   const [isModeChangeModalOpen, setIsModeChangeModalOpen] = useState<boolean>(false)
   const [pendingMode, setPendingMode] = useState(mode)
+  const [title, setTitle] = useState<string | undefined>(validatorData?.title || validatorData?.question)
+
+  const handleTitleChange = (newTitle: string) => {
+    setTitle(newTitle)
+  }
 
   const handleModeChange = (newMode: Mode) => {
     setPendingMode(newMode)
@@ -27,6 +33,7 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
     if (validatorData?.mode !== mode) {
       setMode(validatorData?.mode ?? Mode.pribadi)
     }
+    setTitle(validatorData?.title || validatorData?.question)
   }, [validatorData])
 
   const handleModeChangeConfirm = async () => {
@@ -34,7 +41,7 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
       if (!id) {
         setMode(validatorData?.mode || pendingMode)
       } else {
-        const { data } = await axiosInstance.put(`/api/v1/validator/ubah/${id}/`, {
+        const { data } = await axiosInstance.patch(`/api/v1/validator/ubah/${id}/`, {
           mode: pendingMode
         })
         setMode(data.mode)
@@ -76,35 +83,37 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
 
   return (
     <>
-      <form className='flex flex-col w-full gap-8' onSubmit={handleSubmit} data-testid='question-form'>
-        <>
-          <div className='flex flex-row'>
-            <div className='w-full'>
-              <DropdownMode selectedMode={isModeChangeModalOpen ? pendingMode : mode} onChange={handleModeChange} />
-            </div>
-            {id && <DeleteButton idQuestion={id} pathname={router.pathname} />}
-          </div>
-
-          <h1 className='text-2xl font-bold text-black'>Ingin menganalisis masalah apa hari ini?</h1>
-
+      <div className='flex flex-col w-full gap-8'>
+        <div className='flex flex-row'>
           <div className='w-full'>
-            <div className='flex gap-4'>
-              <CustomInput
-                inputClassName='flex-grow w-full py-7 p-6 bg-white rounded-[10px] shadow border border-zinc-500 justify-start items-center gap-4 inline-flex'
-                placeholder='Isi pertanyaan anda di sini'
-                value={id ? validatorData?.question : question}
-                isDisabled={id ? true : false}
-                onChange={(e) => setQuestion(e.target.value)}
-              />
-              {id ? (
-                <></>
-              ) : (
-                <CircularIconButton icon={<Icon as={MdSend} />} type='submit' data-testid='submit-question' />
-              )}
-            </div>
+            <DropdownMode selectedMode={isModeChangeModalOpen ? pendingMode : mode} onChange={handleModeChange} />
           </div>
-        </>
-      </form>
+          {id && <DeleteButton idQuestion={id} pathname={router.pathname} />}
+        </div>
+
+        {id && <EditableTitleForm title={title} onTitleChange={handleTitleChange} id={id} />}
+
+        <form onSubmit={handleSubmit} data-testid='question-form'>
+          <>
+            <div className='w-full'>
+              <div className='flex gap-4'>
+                <CustomInput
+                  inputClassName='flex-grow w-full py-7 p-6 bg-white rounded-[10px] shadow border border-zinc-500 justify-start items-center gap-4 inline-flex'
+                  placeholder='Isi pertanyaan anda di sini'
+                  value={id ? validatorData?.question : question}
+                  isDisabled={id ? true : false}
+                  onChange={(e) => setQuestion(e.target.value)}
+                />
+                {id ? (
+                  <></>
+                ) : (
+                  <CircularIconButton icon={<Icon as={MdSend} />} type='submit' data-testid='submit-question' />
+                )}
+              </div>
+            </div>
+          </>
+        </form>
+      </div>
 
       <Modal isOpen={isModeChangeModalOpen} onClose={() => setIsModeChangeModalOpen(false)}>
         <ModalOverlay />
