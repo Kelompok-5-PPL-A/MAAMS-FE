@@ -13,14 +13,14 @@ describe('QuestionAddPage', () => {
     expect(getByText('Ingin menganalisis masalah apa hari ini?')).toBeInTheDocument
     expect(getByPlaceholderText('Ingin menganalisis apa hari ini ...')).toBeInTheDocument
     expect(getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')).toBeInTheDocument
-    expect(getByPlaceholderText('Berikan maksimal 5 kategori ...')).toBeInTheDocument
+    expect(getByPlaceholderText('Berikan maksimal 3 kategori ...')).toBeInTheDocument
   })
 
   test('updates title, question, and newTag state variables on input change', () => {
     const { getByPlaceholderText } = render(<QuestionAddPage />)
     const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')
     const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')
-    const newTagInput = getByPlaceholderText('Berikan maksimal 5 kategori ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
 
     fireEvent.change(titleInput, { target: { value: 'Sample Title' } })
     fireEvent.change(questionInput, { target: { value: 'Sample Question' } })
@@ -33,7 +33,7 @@ describe('QuestionAddPage', () => {
 
   test('adds a tag when Enter key is pressed', () => {
     const { getByPlaceholderText, getByText } = render(<QuestionAddPage />)
-    const newTagInput = getByPlaceholderText('Berikan maksimal 5 kategori ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
 
     fireEvent.change(newTagInput, { target: { value: 'Sample Tag' } })
     fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
@@ -43,7 +43,7 @@ describe('QuestionAddPage', () => {
 
   test('removes an entered tag when remove button is clicked', () => {
     const { getByPlaceholderText, getByText, getByTestId, queryByText } = render(<QuestionAddPage />)
-    const newTagInput = getByPlaceholderText('Berikan maksimal 5 kategori ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
 
     fireEvent.change(newTagInput, { target: { value: 'Sample Tag' } })
     fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
@@ -56,18 +56,18 @@ describe('QuestionAddPage', () => {
     expect(queryByText('Sample Tag')).not.toBeInTheDocument
   })
 
-  test('prevents adding more than 5 tags', async () => {
+  test('prevents adding more than 3 tags', async () => {
     const { getByPlaceholderText } = render(<QuestionAddPage />)
-    const newTagInput = getByPlaceholderText('Berikan maksimal 5 kategori ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 4; i++) {
       fireEvent.change(newTagInput, { target: { value: `Tag ${i + 1}` } })
       fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
     }
 
     await waitFor(() => {
       setTimeout(() => {
-        expect(toast.error).toHaveBeenCalledWith('Kategori sudah ada 5')
+        expect(toast.error).toHaveBeenCalledWith('Kategori sudah ada 3')
       }, 10000)
     })
   })
@@ -88,7 +88,7 @@ describe('QuestionAddPage', () => {
     const { getByText, getByPlaceholderText } = render(<QuestionAddPage />)
     const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')
     const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')
-    const newTagInput = getByPlaceholderText('Berikan maksimal 5 kategori ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
 
     const submitButton = getByText('Kirim')
 
@@ -148,7 +148,7 @@ describe('QuestionAddPage', () => {
 
     const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')
     const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')
-    const newTagInput = getByPlaceholderText('Berikan maksimal 5 kategori ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
     const submitButton = getByText('Kirim')
 
     fireEvent.change(titleInput, { target: { value: 'Sample Title' } })
@@ -195,7 +195,7 @@ describe('QuestionAddPage', () => {
 
     const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')
     const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')
-    const newTagInput = getByPlaceholderText('Berikan maksimal 5 kategori ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
     const submitButton = getByText('Kirim')
 
     fireEvent.change(titleInput, { target: { value: 'Sample Title' } })
@@ -220,7 +220,7 @@ describe('QuestionAddPage', () => {
 
     const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')
     const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')
-    const newTagInput = getByPlaceholderText('Berikan maksimal 5 kategori ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
     const submitButton = getByText('Kirim')
 
     fireEvent.change(titleInput, { target: { value: 'Sample Title' } })

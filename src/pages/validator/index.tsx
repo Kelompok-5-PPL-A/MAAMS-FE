@@ -32,8 +32,8 @@ const QuestionAddPage: React.FC = () => {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && newTag.trim() !== '') {
-      if (tags.length == 5) {
-        toast.error('Kategori sudah ada 5')
+      if (tags.length == 3) {
+        toast.error('Kategori sudah ada 3')
         return
       }
       setTags((prevCategories) => [...prevCategories, newTag.trim()])
@@ -107,7 +107,7 @@ const QuestionAddPage: React.FC = () => {
               <div>Kategori Analisis</div>
               <CustomInput
                 value={newTag}
-                placeholder='Berikan maksimal 5 kategori ...'
+                placeholder='Berikan maksimal 3 kategori ...'
                 onChange={(e) => setNewTag(e.target.value)}
                 onKeyDown={handleKeyDown}
               ></CustomInput>
