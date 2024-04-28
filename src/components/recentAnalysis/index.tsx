@@ -38,7 +38,7 @@ const RecentAnalysis: React.FC = () => {
 
   return (
     <>
-      {isLoggedIn && recentData?.id && (
+      {isLoggedIn && recentData?.id != null && (
         <div className='flex flex-col justify-center items-center w-full gap-8 px-8 my-8'>
           <p className='text-3xl font-bold text-center text-black'>Analisis Terbaru</p>
           <div className='w-full'>
