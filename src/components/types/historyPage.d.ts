@@ -4,5 +4,6 @@ export interface Item {
   mode: string
   user: string
   id: string
-  tags: []
+  displayed_title: string
+  tags: string[]
 }
