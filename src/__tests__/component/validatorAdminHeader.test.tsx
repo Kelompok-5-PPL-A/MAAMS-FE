@@ -9,7 +9,8 @@ describe('ValidatorAdminHeader', () => {
     username: 'Test',
     question: 'Question test',
     created_at: '',
-    mode: Mode.pengawasan
+    mode: Mode.pengawasan,
+    title: ''
   }
 
   it('should render the question input as disabled if id is provided', () => {
@@ -22,7 +23,13 @@ describe('ValidatorAdminHeader', () => {
   it('should update the question state when input changes', () => {
     const { getByRole } = render(
       <ValidatorAdminHeader
-        validatorData={{ username: 'TestUser', question: 'Question test', created_at: '', mode: Mode.pengawasan }}
+        validatorData={{
+          username: 'TestUser',
+          question: 'Question test',
+          created_at: '',
+          mode: Mode.pengawasan,
+          title: ''
+        }}
       />
     )
 
