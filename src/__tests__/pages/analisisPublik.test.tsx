@@ -22,6 +22,8 @@ const fetchQuestionsMock = jest.spyOn(fetchQuestionsModule, 'fetchQuestions')
 
 describe('AnalisisPublik Component', () => {
   beforeEach(() => {
+    localStorage.clear()
+    global.localStorage.setItem('userData', JSON.stringify({ is_staff: true }))
     jest.clearAllMocks()
   })
 

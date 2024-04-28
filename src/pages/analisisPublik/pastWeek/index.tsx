@@ -17,13 +17,15 @@ const PastWeekPublik: React.FC = () => {
     setCurrentPage(page)
   }
   const [older, setOlder] = useState<Item[]>([])
+  const [filter, setFilter] = useState<string>('semua')
+  const isAdmin = typeof window !== 'undefined' ? JSON.parse(window.localStorage.getItem('userData')!).is_staff : ''
   const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
   const headers = {
     Authorization: `Bearer ${access}`
   }
 
-  const [searchKeyword, setSearchKeyword] = useState<string>('')
+  const [keyword, setKeyword] = useState<string>('')
   const router = useRouter()
   const [submitted, setSubmitted] = useState<boolean>(false)
 
@@ -54,21 +56,25 @@ const PastWeekPublik: React.FC = () => {
     }
   }
 
+  const handleFilterSelect = (filter: string) => {
+    setFilter(filter)
+  }
+
   const handleSubmit = () => {
     setSubmitted(true)
     router.push({
       pathname: router.pathname,
-      query: { keyword: searchKeyword }
+      query: { keyword: keyword }
     })
   }
 
   useEffect(() => {
     const fetchDataBasedOnQuery = async () => {
-      const { searchKeyword } = router.query
+      const { keyword } = router.query
       const page = submitted ? 1 : currentPage
-      if (searchKeyword && typeof searchKeyword === 'string') {
-        setSearchKeyword(searchKeyword)
-        fetchData(`pengawasan/?count=5&keyword=${searchKeyword}&p=${page}`)
+      if (keyword && typeof keyword === 'string') {
+        setKeyword(keyword)
+        fetchData(`pengawasan/?filter=${filter}&count=5&keyword=${keyword}&p=${page}`)
 
         if (submitted) {
           setSubmitted(false)
@@ -76,7 +82,7 @@ const PastWeekPublik: React.FC = () => {
         }
       } else {
         // Fetch default data when there's no keyword
-        fetchData(`pengawasan/?count=5&p=${currentPage}`)
+        fetchData(`pengawasan/?filter=${filter}&count=5&p=${currentPage}`)
       }
     }
 
@@ -90,9 +96,13 @@ const PastWeekPublik: React.FC = () => {
           Analisis Publik
         </h1>
         <SearchBar
-          keyword={searchKeyword}
+          isAdmin={isAdmin}
+          publicAnalyses={true}
+          filter={filter}
+          keyword={keyword}
+          onSelect={handleFilterSelect}
           onSubmit={handleSubmit}
-          onChange={(value) => setSearchKeyword(value)}
+          onChange={(value) => setKeyword(value)}
         ></SearchBar>
         <Section title='7 hari terakhir' items={older} showModeButton={false} keyword='' />
         {totalPages >= 1 && (
