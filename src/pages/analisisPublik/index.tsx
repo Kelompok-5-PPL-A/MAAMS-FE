@@ -13,20 +13,21 @@ const AnalisisPublik: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState<number>(1)
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
+  const [filter, setFilter] = useState<string>('semua')
+  const [keyword, setKeyword] = useState<string>('')
+  const [submitted, setSubmitted] = useState<boolean>(false)
+  const router = useRouter()
   const [data, setData] = useState<Item[]>([])
   const isAdmin = typeof window !== 'undefined' ? JSON.parse(window.localStorage.getItem('userData')!).is_staff : ''
   const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
+
   const headers = {
     Authorization: `Bearer ${access}`
   }
-  const [filter, setFilter] = useState<string>('semua')
-  const [keyword, setKeyword] = useState<string>('')
-  const router = useRouter()
-
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
   const fetchData = async (additional_param: string) => {
     if (!refresh) {
       toast.error('Silakan login terlebih dahulu')
@@ -59,22 +60,39 @@ const AnalisisPublik: React.FC = () => {
     }
   }
 
-  useEffect(() => {
-    fetchData('pengawasan/?count=5')
-  }, [])
-
   const handleFilterSelect = (filter: string) => {
     setFilter(filter)
   }
 
   const handleSubmit = () => {
+    setSubmitted(true)
     router.push({
       pathname: router.pathname,
       query: { keyword: keyword }
     })
-
-    fetchData(`pengawasan/?filter=${filter}&count=5&keyword=${keyword}`)
   }
+  useEffect(() => {
+    const fetchDataBasedOnQuery = async () => {
+      const { keyword } = router.query
+      const page = submitted ? 1 : currentPage
+      if (keyword && typeof keyword === 'string') {
+        setKeyword(keyword)
+        fetchData(`pengawasan/?count=5&keyword=${keyword}&p=${page}`)
+        fetchData(`pengawasan/?filter=${filter}&count=5&keyword=${keyword}&p=${page}`)
+
+        if (submitted) {
+          setSubmitted(false)
+          setCurrentPage(1)
+        }
+      } else {
+        // Fetch default data when there's no keyword
+        fetchData(`pengawasan/?count=5&p=${currentPage}`)
+        fetchData(`pengawasan/?filter=${filter}&count=5&p=${currentPage}`)
+      }
+    }
+
+    fetchDataBasedOnQuery()
+  }, [router.query, currentPage])
 
   return (
     <MainLayout>
