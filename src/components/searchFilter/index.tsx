@@ -17,11 +17,11 @@ const NoSSRSearchFilter: React.FC<SearchFilterProps> = ({ isAdmin, updateFilter,
   }
 
   return (
-    <div className=' max-md:flex-wrap max-md:px-5'>
-      <div className='flex gap-0 self-stretch shadow-lg rounded-[10px]'>
+    <div className='max-md:flex-wrap max-md:px-5 '>
+      <div className='h-full flex gap-0 self-stretch shadow-lg rounded-tl-[10px] bg-yellow-400 rounded-bl-[10px]'>
         <select
           role='combobox'
-          className='rounded-bl-[10px] rounded-tl-[10px] px-4 py-3.5 bg-yellow-400 flex justify-center items-center'
+          className='rounded-bl-[10px] rounded-tl-[10px] px-4 py-3.5 flex bg-inherit justify-center items-center mr-3'
           onChange={handleChange}
         >
           {/* only allow filtering by user names if logged in user is an admin */}
@@ -32,7 +32,7 @@ const NoSSRSearchFilter: React.FC<SearchFilterProps> = ({ isAdmin, updateFilter,
               }
             }
             return (
-              <option key={index} value={value}>
+              <option className='bg-white' key={index} value={value}>
                 {value}
               </option>
             )
