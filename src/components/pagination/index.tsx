@@ -1,5 +1,5 @@
 import { PaginationProps } from 'components/types/pagination'
-import React, { useState, useEffect, useRef, ChangeEvent, KeyboardEvent } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
   const [inputMode, setInputMode] = useState(false)
@@ -16,7 +16,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
     setInputMode(true)
   }
 
-  const handlePageInput = (e: ChangeEvent<HTMLInputElement>) => {
+  const handlePageInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputVal = e.target.value
     const pageNum = parseInt(inputVal, 10)
     if (inputVal === '' || (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages)) {
@@ -24,7 +24,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
     }
   }
 
-  const submitPageInput = (e: KeyboardEvent<HTMLInputElement>) => {
+  const submitPageInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (
       e.key === 'Enter' &&
       !isNaN(pageNumber) &&
@@ -66,7 +66,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
           type='button'
           className={`min-h-[38px] min-w-[38px] flex justify-center items-center ${
             i === currentPage
-              ? 'text-black-800 font-bold border-2 border-[#FBC707] bg-gray-200' // This class should make the button white if it's the current page
+              ? 'text-black-800 font-bold border-2 border-[#FBC707] bg-white'
               : 'text-gray-800 bg-gray-200 hover:bg-gray-400 focus:bg-gray-300'
           } py-2 px-3 text-sm rounded-lg focus:outline-none`}
           onClick={() => onPageChange(i)}
@@ -87,7 +87,7 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
             onChange={handlePageInput}
             onKeyDown={submitPageInput}
             onBlur={() => setInputMode(false)}
-            className='min-h-[38px] min-w-[38px] text-gray-800 py-2 px-3 text-sm rounded-lg focus:outline-none bg-gray-200 border-2 border-[#FBC707] focus:bg-gray-200'
+            className='min-h-[38px] min-w-[38px] max-w-[100px] flex justify-center items-center text-gray-800 py-2 px-3 text-sm rounded-lg focus:outline-none bg-gray-200 border-2 border-[#FBC707] focus:bg-white'
             autoFocus
           />
         ) : (
@@ -110,8 +110,8 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
           type='button'
           className={`min-h-[38px] min-w-[38px] flex justify-center items-center ${
             i === currentPage
-              ? 'bg-gray-100 text-black-800 font-bold border-[#FBC707] border-2'
-              : 'text-gray-800 bg-gray-200 hover:bg-gray-400'
+              ? 'text-black-800 font-bold border-2 border-[#FBC707] bg-white'
+              : 'text-gray-800 bg-gray-200 hover:bg-gray-400 focus:bg-gray-300'
           } py-2 px-3 text-sm rounded-lg focus:outline-none`}
           onClick={() => onPageChange(i)}
         >
