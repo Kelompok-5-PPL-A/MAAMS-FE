@@ -64,6 +64,7 @@ const AdminTable: React.FC<Props> = ({ data }) => {
               <td className='px-6 py-4 text-right border-b border-b-[#FBC707]'>
                 <span
                   className='text-blue-600 underline cursor-pointer hover:text-sm'
+                  data-testid={`view-button-${id}`}
                   onClick={(e) => {
                     e.stopPropagation()
                     handleRowClick(id)

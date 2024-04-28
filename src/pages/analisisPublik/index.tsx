@@ -7,7 +7,7 @@ import toast from 'react-hot-toast'
 import { SearchBar } from '../../components/searchBar'
 import { fetchQuestions } from '../../actions/fetchQuestions'
 import AdminTable from '../../components/adminTable'
-import Pagination from 'components/pagination'
+import Pagination from '../../components/pagination'
 
 const AnalisisPublik: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1)
@@ -85,7 +85,6 @@ const AnalisisPublik: React.FC = () => {
           setCurrentPage(1)
         }
       } else {
-        // Fetch default data when there's no keyword
         fetchData(`pengawasan/?count=5&p=${currentPage}`)
         fetchData(`pengawasan/?filter=${filter}&count=5&p=${currentPage}`)
       }
