@@ -4,4 +4,5 @@ export interface Item {
   timestamp: string
   id: string
   tags: string[]
+  displayed_title: string
 }

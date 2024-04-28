@@ -36,14 +36,16 @@ const AdminTable: React.FC<Props> = ({ data }) => {
           </tr>
         </thead>
         <tbody>
-          {data.map(({ id, title, user, tags, timestamp }) => (
+          {data.map(({ id, title, displayed_title, user, tags, timestamp }) => (
             <tr
               key={id}
               className='bg-white hover:bg-gray-200 border border-[#FBC707] text-xs h-20 cursor-pointer'
               onClick={() => handleRowClick(id)}
             >
               <td className='px-6 py-4 border-b border-b-[#FBC707] truncate'>
-                {title.length > 60 ? `${title.slice(0, 60)}...` : title}
+                {(displayed_title || title).length > 60
+                  ? `${(displayed_title || title).slice(0, 60)}...`
+                  : displayed_title || title}
               </td>
               <td className='px-6 py-4 border-b border-b-[#FBC707] truncate'>
                 {user.length > 10 ? `${user.slice(0, 10)}...` : user}
