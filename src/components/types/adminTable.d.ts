@@ -3,4 +3,5 @@ export interface Item {
   user: string
   timestamp: string
   id: string
+  tags: []
 }

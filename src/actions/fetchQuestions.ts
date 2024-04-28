@@ -19,20 +19,21 @@ export const fetchQuestions = async (headers: CustomHeader, time_range?: string,
     url += `&time_range=${time_range}`
   }
 
-  console.log(url)
   const response = await axios.get(url, {
     withCredentials: false,
     headers: headers
   })
 
   const data: historyData = response.data
+  console.log(data)
 
   const processedData: Item[] = data.results.map((item: any) => ({
     id: item.id,
     title: item.question,
     timestamp: formatTimestamp(item.created_at),
     mode: item.mode,
-    user: item.username
+    user: item.username,
+    tags: item.tags
   }))
 
   return {
