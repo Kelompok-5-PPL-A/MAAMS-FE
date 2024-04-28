@@ -1,78 +1,253 @@
 import React from 'react'
-import { render, fireEvent, within } from '@testing-library/react'
-import '@testing-library/jest-dom'
-import ValidatorPage from '../../pages/validator'
+import { render, fireEvent, waitFor } from '@testing-library/react'
+import QuestionAddPage from '../../pages/validator'
+import axiosInstance from '../../services/axiosInstance'
+import { toast } from 'react-hot-toast'
+import Mode from '../../constants/mode'
 
 jest.mock('next/router', () => require('next-router-mock'))
 
-describe('ValidatorPage Page Tests', () => {
-  test('renders validatorPage page with CounterButton and initial Row', () => {
-    const { getByText, getAllByTestId } = render(<ValidatorPage />)
-
-    expect(getByText('Sebab:')).toBeInTheDocument()
-    expect(getByText('3')).toBeInTheDocument()
-    expect(getAllByTestId('row-container')).toHaveLength(1) // Initial row count
+describe('QuestionAddPage', () => {
+  test('renders correctly with default values', () => {
+    const { getByText, getByPlaceholderText } = render(<QuestionAddPage />)
+    expect(getByText('Ingin menganalisis masalah apa hari ini?')).toBeInTheDocument
+    expect(getByPlaceholderText('Ingin menganalisis apa hari ini ...')).toBeInTheDocument
+    expect(getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')).toBeInTheDocument
+    expect(getByPlaceholderText('Berikan maksimal 3 kategori ...')).toBeInTheDocument
   })
 
-  test('increments and decrements columns on button clicks', async () => {
-    const { getByText, findAllByPlaceholderText } = render(<ValidatorPage />)
+  test('updates title, question, and newTag state variables on input change', () => {
+    const { getByPlaceholderText } = render(<QuestionAddPage />)
+    const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')
+    const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
 
-    const incrementButton = getByText('+')
-    fireEvent.click(incrementButton)
-    expect(getByText('4')).toBeInTheDocument()
+    fireEvent.change(titleInput, { target: { value: 'Sample Title' } })
+    fireEvent.change(questionInput, { target: { value: 'Sample Question' } })
+    fireEvent.change(newTagInput, { target: { value: 'Sample Tag' } })
 
-    const placeholders = await findAllByPlaceholderText('Isi sebab..')
-    expect(placeholders.length).toBeGreaterThan(0)
-
-    const decrementButton = getByText('-')
-    fireEvent.click(decrementButton)
-    expect(getByText('3')).toBeInTheDocument()
+    expect(titleInput.getAttribute('value')).toBe('Sample Title')
+    expect(questionInput.getAttribute('value')).toBe('Sample Question')
+    expect(newTagInput.getAttribute('value')).toBe('Sample Tag')
   })
 
-  test('does not allow incrementing beyond 5 columns', () => {
-    const { getByText } = render(<ValidatorPage />)
+  test('adds a tag when Enter key is pressed', () => {
+    const { getByPlaceholderText, getByText } = render(<QuestionAddPage />)
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
 
-    const incrementButton = getByText('+')
-    for (let i = 0; i < 5; i++) {
-      fireEvent.click(incrementButton)
-    }
-    expect(getByText('5')).toBeInTheDocument()
+    fireEvent.change(newTagInput, { target: { value: 'Sample Tag' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
 
-    fireEvent.click(incrementButton) // Attempt to increment beyond the limit
-    fireEvent.click(incrementButton)
-    expect(getByText('5')).toBeInTheDocument() // Confirm the column count does not exceed 5
+    expect(getByText('Sample Tag')).toBeInTheDocument
   })
 
-  test('does not allow decrementing below 3 columns', () => {
-    const { getByText } = render(<ValidatorPage />)
+  test('removes an entered tag when remove button is clicked', () => {
+    const { getByPlaceholderText, getByText, getByTestId, queryByText } = render(<QuestionAddPage />)
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
 
-    const decrementButton = getByText('-')
-    for (let i = 0; i < 3; i++) {
-      fireEvent.click(decrementButton)
-    }
-    expect(getByText('3')).toBeInTheDocument()
+    fireEvent.change(newTagInput, { target: { value: 'Sample Tag' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
 
-    fireEvent.click(decrementButton)
-    fireEvent.click(decrementButton)
-    expect(getByText('3')).toBeInTheDocument()
+    expect(getByText('Sample Tag')).toBeInTheDocument
+
+    const removeButton = getByTestId('remove-tag-button')
+    fireEvent.click(removeButton)
+
+    expect(queryByText('Sample Tag')).not.toBeInTheDocument
   })
 
-  test('adds a new row on submitting causes with correct feedback', async () => {
-    const { getByText, findAllByText, getAllByTestId } = render(<ValidatorPage />)
+  test('prevents adding more than 3 tags', async () => {
+    const { getByPlaceholderText } = render(<QuestionAddPage />)
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
 
-    const cells = getAllByTestId('cell')
-    for (const cell of cells) {
-      const input = within(cell).getByPlaceholderText('Isi sebab..') as HTMLInputElement
-      fireEvent.change(input, { target: { value: 'Some cause' } })
+    for (let i = 0; i < 4; i++) {
+      fireEvent.change(newTagInput, { target: { value: `Tag ${i + 1}` } })
+      fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
     }
 
-    const submitButton = getByText('Kirim Sebab')
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Kategori sudah ada 3')
+      }, 10000)
+    })
+  })
+
+  test('displays error messages for missing title on form submission', async () => {
+    const { getByText } = render(<QuestionAddPage />)
+    const submitButton = getByText('Kirim')
     fireEvent.click(submitButton)
 
-    const feedbackMessages = await findAllByText(/Penyebab pada [ABCDE]\d sudah tepat/)
-    expect(feedbackMessages.length).toBeGreaterThan(0)
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Judul harus diisi')
+      }, 10000)
+    })
+  })
 
-    const rows = getAllByTestId('row-container')
-    expect(rows).toHaveLength(2)
+  test('displays error messages for too long title on submission', async () => {
+    const { getByText, getByPlaceholderText } = render(<QuestionAddPage />)
+    const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')
+    const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+
+    const submitButton = getByText('Kirim')
+
+    fireEvent.change(titleInput, {
+      target: {
+        value: 'Longggggggggggggggggggggggggg Titleeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+      }
+    })
+    fireEvent.change(questionInput, { target: { value: 'Sample Question' } })
+    fireEvent.change(newTagInput, { target: { value: 'Sample Tag' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Judul maksimal 40 karakter. Berikan judul yang lebih singkat')
+      }, 10000)
+    })
+  })
+
+  test('displays error messages for missing question on form submission', async () => {
+    const { getByText, getByPlaceholderText } = render(<QuestionAddPage />)
+    const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')
+    const submitButton = getByText('Kirim')
+
+    fireEvent.change(titleInput, { target: { value: 'Sample Title' } })
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Pertanyaan harus diisi')
+      }, 10000)
+    })
+  })
+
+  test('displays error messages for missing tags on form submission', async () => {
+    const { getByText, getByPlaceholderText } = render(<QuestionAddPage />)
+    const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')
+    const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')
+    const submitButton = getByText('Kirim')
+
+    fireEvent.change(titleInput, { target: { value: 'Sample Title' } })
+    fireEvent.change(questionInput, { target: { value: 'Sample Question' } })
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Minimal mengisi 1 kategori')
+      }, 10000)
+    })
+  })
+
+  test('submits form with valid data and redirects to correct route', async () => {
+    const mockPost = jest.fn().mockResolvedValueOnce({ data: { id: 123 } })
+    const { getByText, getByPlaceholderText } = render(<QuestionAddPage />)
+    axiosInstance.post = mockPost
+
+    const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')
+    const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+    const submitButton = getByText('Kirim')
+
+    fireEvent.change(titleInput, { target: { value: 'Sample Title' } })
+    fireEvent.change(questionInput, { target: { value: 'Sample Question' } })
+    fireEvent.change(newTagInput, { target: { value: 'Sample Tag' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    fireEvent.click(submitButton)
+
+    await waitFor(() => expect(axiosInstance.post).toHaveBeenCalledTimes(1))
+    expect(axiosInstance.post).toHaveBeenCalledWith('/api/v1/validator/baru/', {
+      title: 'Sample Title',
+      question: 'Sample Question',
+      mode: 'PRIBADI',
+      tags: ['Sample Tag']
+    })
+    expect(mockPost).toHaveBeenCalled()
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Analisis berhasil ditambahkan')
+      }, 10000)
+    })
+  })
+
+  test('submits form with a long category', async () => {
+    const { getByPlaceholderText } = render(<QuestionAddPage />)
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+
+    fireEvent.change(newTagInput, { target: { value: 'Kategori yang panjang' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Kategori maksimal 10 karakter.')
+      }, 10000)
+    })
+  })
+
+  test('changes the mode from PRIBADI to PENGAWASAN', () => {
+    const { getByText } = render(<QuestionAddPage />)
+
+    fireEvent.click(getByText(Mode.pribadi))
+    fireEvent.click(getByText(Mode.pengawasan))
+
+    expect(getByText(Mode.pengawasan)).toBeInTheDocument
+  })
+
+  test('displays error message from backend when fail to post', async () => {
+    const errorResponse = {
+      data: {
+        detail: 'Backend Error Message'
+      }
+    }
+    const mockPost = jest.fn().mockRejectedValueOnce({ response: errorResponse })
+    axiosInstance.post = mockPost
+
+    const { getByText, getByPlaceholderText } = render(<QuestionAddPage />)
+
+    const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')
+    const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+    const submitButton = getByText('Kirim')
+
+    fireEvent.change(titleInput, { target: { value: 'Sample Title' } })
+    fireEvent.change(questionInput, { target: { value: 'Sample Question' } })
+    fireEvent.change(newTagInput, { target: { value: 'Sample Tag' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Backend Error Message')
+      }, 10000)
+    })
+  })
+
+  test('displays error message from backend when fail to post', async () => {
+    const mockPost = jest.fn().mockRejectedValueOnce({ status: 400 })
+    axiosInstance.post = mockPost
+
+    const { getByText, getByPlaceholderText } = render(<QuestionAddPage />)
+
+    const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')
+    const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+    const submitButton = getByText('Kirim')
+
+    fireEvent.change(titleInput, { target: { value: 'Sample Title' } })
+    fireEvent.change(questionInput, { target: { value: 'Sample Question' } })
+    fireEvent.change(newTagInput, { target: { value: 'Sample Tag' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Gagal menambahkan analisis')
+      }, 10000)
+    })
   })
 })

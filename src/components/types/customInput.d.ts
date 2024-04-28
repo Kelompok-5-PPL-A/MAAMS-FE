@@ -6,6 +6,7 @@ export interface CustomInputProps {
   errorClassName?: string
   spacerClassName?: string
   onChange: React.ChangeEventHandler<HTMLInputElement>
+  onKeyDown?: KeyboardEventHandler<HTMLInputElement>
   value?: string | undefined
   children?: ReactNode
   error?: string
