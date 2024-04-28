@@ -13,9 +13,13 @@ interface historyData {
   results: Item[]
 }
 
-export const fetchQuestions = async (headers: CustomHeader, time_range: string, additional_param: string) => {
-  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/${additional_param}&time_range=${time_range}`
+export const fetchQuestions = async (headers: CustomHeader, time_range?: string, additional_param?: string) => {
+  let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/validator/${additional_param}`
+  if (time_range !== '') {
+    url += `&time_range=${time_range}`
+  }
 
+  console.log(url)
   const response = await axios.get(url, {
     withCredentials: false,
     headers: headers

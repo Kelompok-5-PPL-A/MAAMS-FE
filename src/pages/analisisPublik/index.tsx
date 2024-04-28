@@ -9,7 +9,7 @@ import { fetchQuestions } from '../../actions/fetchQuestions'
 import AdminTable from '../../components/adminTable'
 
 const AnalisisPublik: React.FC = () => {
-  const [older, setOlder] = useState<Item[]>([])
+  const [data, setData] = useState<Item[]>([])
   const isAdmin = typeof window !== 'undefined' ? JSON.parse(window.localStorage.getItem('userData')!).is_staff : ''
   const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
@@ -28,8 +28,8 @@ const AnalisisPublik: React.FC = () => {
     }
     try {
       //NOTE: This fetch function dummy for table
-      const processedOlderData = await fetchQuestions(headers, 'older', additional_param)
-      setOlder(processedOlderData.processedData)
+      const processedOlderData = await fetchQuestions(headers, '', additional_param)
+      setData(processedOlderData.processedData)
     } catch (error: any) {
       if (refresh != null && error.response.status == '401') {
         try {
@@ -84,7 +84,7 @@ const AnalisisPublik: React.FC = () => {
           onSubmit={handleSubmit}
           onChange={(value) => setKeyword(value)}
         ></SearchBar>
-        <AdminTable data={older} />
+        <AdminTable data={data} />
       </div>
     </MainLayout>
   )
