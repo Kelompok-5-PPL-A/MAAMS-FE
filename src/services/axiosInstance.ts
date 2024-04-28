@@ -1,6 +1,6 @@
 import { refreshToken } from '../actions/auth'
 import axios from 'axios'
-import router from 'next/router'
+import { useRouter } from 'next/router'
 import toast from 'react-hot-toast'
 
 const axiosInstance = axios.create({
@@ -33,11 +33,11 @@ axiosInstance.interceptors.response.use(
         const responseRefresh = await refreshToken(refresh)
         window.localStorage.setItem('access', responseRefresh.data.access)
         toast.error('Sesi anda telah diperbaharui. Silakan coba lagi')
-        router.reload()
+        useRouter().reload()
       } catch {
         toast.error('Sesi anda telah berakhir. Silakan login kembali')
         localStorage.clear()
-        router.push('/login')
+        useRouter().push('/login')
       }
     } else {
       return Promise.reject(error)
