@@ -21,6 +21,17 @@ const defaultValidatorData: ValidatorData = {
   username: ''
 }
 
+const defaultUserData: UserDataProps = {
+  date_joined: '',
+  email: '',
+  first_name: '',
+  is_active: false,
+  is_staff: false,
+  last_name: '',
+  username: '',
+  uuid: ''
+}
+
 const ValidatorDetailPage = () => {
   const router = useRouter()
   const id = router.query.id
@@ -33,7 +44,7 @@ const ValidatorDetailPage = () => {
 
   const [isStaff, setIsStaff] = useState(false)
   const [isOwner, setIsOwner] = useState(false)
-  const [userData, setUserData] = useState<UserDataProps | null>(null)
+  const [userData, setUserData] = useState<UserDataProps>(defaultUserData)
 
   useEffect(() => {
     getQuestionData()
@@ -45,8 +56,8 @@ const ValidatorDetailPage = () => {
 
   useEffect(() => {
     setIsStaff(userData?.is_staff || false)
-    setIsOwner(userData?.username == validatorData?.username ? true : false)
-  }, [userData, validatorData])
+    setIsOwner(userData?.username == validatorData?.username)
+  }, [validatorData])
 
   const getQuestionData = async () => {
     if (!id) return
@@ -164,12 +175,14 @@ const ValidatorDetailPage = () => {
           <ValidatorQuestionForm id={id} validatorData={validatorData} />
         )}
         <h1 className='text-2xl font-bold text-black'>Sebab:</h1>
-        {isOwner && (
+        {isOwner ? (
           <CounterButton
             number={columnCount}
             onIncrement={() => adjustColumnCount(true)}
             onDecrement={() => adjustColumnCount(false)}
           />
+        ) : (
+          <></>
         )}
         {rows.map((row) => (
           <div key={row.id}>
@@ -186,10 +199,12 @@ const ValidatorDetailPage = () => {
             />
           </div>
         ))}
-        {isOwner && (
+        {isOwner ? (
           <div className='flex justify-center mt-4'>
             <SubmitButton onClick={() => submitCauses()} disabled={isSubmitDisabled} label='Kirim Sebab' />
           </div>
+        ) : (
+          <></>
         )}
       </div>
     </MainLayout>
