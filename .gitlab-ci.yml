@@ -38,9 +38,11 @@ sonarqube-check:
     key: "${CI_JOB_NAME}"
     paths:
       - .sonar/cache
+  tags:
+    - runner-randi
   script:
-    - jest-test
-    - sonar-scanner.bat 
+    - chmod +x /opt/sonar-scanner/bin/sonar-scanner
+    - sonar-scanner
       -Dsonar.projectKey=$SONAR_PROJECT 
       -Dsonar.sources=. 
       -Dsonar.host.url=$SONAR_HOST_URL 

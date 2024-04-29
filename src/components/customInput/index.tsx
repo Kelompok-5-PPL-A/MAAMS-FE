@@ -11,6 +11,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
   errorClassName,
   spacerClassName,
   onChange,
+  onKeyDown,
   value,
   children,
   error,
@@ -31,6 +32,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
         <Input
           placeholder={placeholder}
           onChange={onChange}
+          onKeyDown={onKeyDown}
           value={value}
           className={`${inputClassName} disabled:text-black`}
           disabled={isDisabled}

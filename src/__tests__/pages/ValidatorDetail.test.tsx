@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, fireEvent, within } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import ValidatorDetailPage from '../../pages/validator'
+import ValidatorDetailPage from '../../pages/validator/[id]'
 
 jest.mock('next/router', () => require('next-router-mock'))
 

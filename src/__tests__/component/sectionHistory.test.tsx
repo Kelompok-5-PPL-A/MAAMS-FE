@@ -33,7 +33,17 @@ describe('Section Component', () => {
     expect(seeMoreElement).toBeNull()
   })
   it('renders section with items correctly', () => {
-    const items = [{ id: 1, title: 'Item 1', timestamp: '2024-03-25', mode: 'read', user: 'User 1' }]
+    const items = [
+      {
+        id: 1,
+        displayed_title: 'Item 1',
+        title: 'Item 1',
+        timestamp: '2024-03-25',
+        mode: 'read',
+        user: 'User 1',
+        tags: ['tag1']
+      }
+    ]
     const { getByText } = render(<Section title='History' items={items} keyword='' seeMoreLink='/some-link' />)
     expect(getByText('Item 1')).toBeInTheDocument()
   })
@@ -50,7 +60,17 @@ describe('Section Component', () => {
   })
 
   it('renders ListItem component with correct props', () => {
-    const items = [{ id: 1, title: 'Item 1', timestamp: '2024-03-25', mode: 'read', user: 'User 1' }]
+    const items = [
+      {
+        id: 1,
+        displayed_title: 'Item 1',
+        title: 'Item 1',
+        timestamp: '2024-03-25',
+        mode: 'read',
+        user: 'User 1',
+        tags: ['tag1']
+      }
+    ]
     const { getByText } = render(<Section title='History' items={items} keyword='' />)
     expect(getByText('Item 1')).toBeInTheDocument()
   })

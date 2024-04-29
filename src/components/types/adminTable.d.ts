@@ -1,9 +1,8 @@
 export interface Item {
   title: string
-  timestamp: string
-  mode: string
   user: string
+  timestamp: string
   id: string
-  displayed_title: string
   tags: string[]
+  displayed_title: string
 }

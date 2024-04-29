@@ -1,38 +1,43 @@
 import React, { useState, useEffect } from 'react'
 import MainLayout from '../../layout/MainLayout'
-import Section from '../../components/sectionHistory'
 import { Item } from 'components/types/historyPage'
 import { logout, refreshToken } from '../../actions/auth'
 import { useRouter } from 'next/router'
 import toast from 'react-hot-toast'
 import { SearchBar } from '../../components/searchBar'
 import { fetchQuestions } from '../../actions/fetchQuestions'
+import AdminTable from '../../components/adminTable'
+import Pagination from '../../components/pagination'
 
 const AnalisisPublik: React.FC = () => {
-  const [lastweek, setLastWeek] = useState<Item[]>([])
-  const [older, setOlder] = useState<Item[]>([])
-  const isAdmin = typeof window !== 'undefined' ? JSON.parse(window.localStorage.getItem('userData')!).is_staff : ''
-  const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
-  const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
-  const headers = {
-    Authorization: `Bearer ${access}`
-  }
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState<number>(1)
 
   const [filter, setFilter] = useState<string>('semua')
   const [keyword, setKeyword] = useState<string>('')
+  const [submitted, setSubmitted] = useState<boolean>(false)
   const router = useRouter()
+  const [data, setData] = useState<Item[]>([])
+  const isAdmin = typeof window !== 'undefined' ? JSON.parse(window.localStorage.getItem('userData')!).is_staff : ''
+  const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
+  const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
 
+  const headers = {
+    Authorization: `Bearer ${access}`
+  }
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
   const fetchData = async (additional_param: string) => {
     if (!refresh) {
       toast.error('Silakan login terlebih dahulu')
       router.push('/login')
     }
     try {
-      const processedLastWeekData = (await fetchQuestions(headers, 'last_week', additional_param)).processedData
-      const processedOlderData = (await fetchQuestions(headers, 'older', additional_param)).processedData
-
-      setLastWeek(processedLastWeekData)
-      setOlder(processedOlderData)
+      //NOTE: This fetch function dummy for table
+      const processedData = await fetchQuestions(headers, '', additional_param)
+      setData(processedData.processedData)
+      setTotalPages(Math.ceil(processedData.count / 5))
     } catch (error: any) {
       if (refresh != null && error.response.status == '401') {
         try {
@@ -55,22 +60,38 @@ const AnalisisPublik: React.FC = () => {
     }
   }
 
-  useEffect(() => {
-    fetchData('pengawasan/?count=3')
-  }, [])
-
   const handleFilterSelect = (filter: string) => {
     setFilter(filter)
   }
 
   const handleSubmit = () => {
+    setSubmitted(true)
     router.push({
       pathname: router.pathname,
       query: { keyword: keyword }
     })
-
-    fetchData(`pengawasan/?filter=${filter}&count=3&keyword=${keyword}`)
   }
+  useEffect(() => {
+    const fetchDataBasedOnQuery = async () => {
+      const { keyword } = router.query
+      const page = submitted ? 1 : currentPage
+      if (keyword && typeof keyword === 'string') {
+        setKeyword(keyword)
+        fetchData(`pengawasan/?count=5&keyword=${keyword}&p=${page}`)
+        fetchData(`pengawasan/?filter=${filter}&count=5&keyword=${keyword}&p=${page}`)
+
+        if (submitted) {
+          setSubmitted(false)
+          setCurrentPage(1)
+        }
+      } else {
+        fetchData(`pengawasan/?count=5&p=${currentPage}`)
+        fetchData(`pengawasan/?filter=${filter}&count=5&p=${currentPage}`)
+      }
+    }
+
+    fetchDataBasedOnQuery()
+  }, [router.query, currentPage])
 
   return (
     <MainLayout>
@@ -87,23 +108,9 @@ const AnalisisPublik: React.FC = () => {
           onSubmit={handleSubmit}
           onChange={(value) => setKeyword(value)}
         ></SearchBar>
-        {lastweek.length > 0 && (
-          <Section
-            title='7 hari terakhir'
-            items={lastweek}
-            seeMoreLink={'/analisisPublik/lastWeek'}
-            showModeButton={false}
-            keyword={keyword}
-          />
-        )}
-        {older.length > 0 && (
-          <Section
-            title='Lebih lama'
-            items={older}
-            seeMoreLink={'/analisisPublik/pastWeek'}
-            showModeButton={false}
-            keyword={keyword}
-          />
+        <AdminTable data={data} />
+        {totalPages >= 1 && (
+          <Pagination currentPage={currentPage} onPageChange={handlePageChange} totalPages={totalPages}></Pagination>
         )}
       </div>
     </MainLayout>

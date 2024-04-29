@@ -33,7 +33,7 @@ const RecentAnalysis: React.FC = () => {
     }
 
     setIsLoggedIn(refresh_token === 'true')
-    handleGet()
+    if (refresh_token === 'true') handleGet()
   }, [])
 
   return (
