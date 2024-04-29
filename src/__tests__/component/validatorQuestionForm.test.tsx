@@ -103,7 +103,8 @@ describe('ValidatorQuestionForm Component', () => {
       question: 'Contoh pertanyaan',
       username: 'test',
       created_at: 'test',
-      title: 'test'
+      title: 'test',
+      tags: ['test']
     }
     const { getByText, getByTestId } = render(<ValidatorQuestionForm id={'id-test'} validatorData={validatorData} />)
 
@@ -127,7 +128,8 @@ describe('ValidatorQuestionForm Component', () => {
       question: 'Contoh pertanyaan',
       username: 'test',
       created_at: 'test',
-      title: 'test'
+      title: 'test',
+      tags: ['test']
     }
     const { getByText } = render(<ValidatorQuestionForm id={undefined} validatorData={validatorData} />)
 
@@ -230,7 +232,8 @@ describe('ValidatorQuestionForm Component', () => {
       question: 'Contoh pertanyaan',
       username: 'test',
       created_at: 'test',
-      title: 'test'
+      title: 'test',
+      tags: ['test']
     }
     const { getByText } = render(<ValidatorQuestionForm id={undefined} validatorData={validatorData} />)
 
