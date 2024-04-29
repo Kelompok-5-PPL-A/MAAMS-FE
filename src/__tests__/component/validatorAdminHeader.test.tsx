@@ -56,4 +56,11 @@ describe('ValidatorAdminHeader component', () => {
 
     expect(questionInput).toHaveValue('New question')
   })
+
+  it('should render with default values when validatorData is not provided', () => {
+    const { getByRole } = render(<ValidatorAdminHeader />)
+
+    const questionInput = getByRole('textbox')
+    expect(questionInput).toHaveValue('')
+  })
 })
