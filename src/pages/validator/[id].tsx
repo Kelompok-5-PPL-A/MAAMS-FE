@@ -164,7 +164,7 @@ const ValidatorDetailPage = () => {
           <ValidatorQuestionForm id={id} validatorData={validatorData} />
         )}
         <h1 className='text-2xl font-bold text-black'>Sebab:</h1>
-        {(!isStaff || isOwner) && (
+        {isOwner && (
           <CounterButton
             number={columnCount}
             onIncrement={() => adjustColumnCount(true)}
@@ -178,7 +178,7 @@ const ValidatorDetailPage = () => {
               cols={columnCount}
               causes={row.causes}
               causeStatuses={row.statuses}
-              disabledCells={isStaff ? Array(columnCount).fill(true) : row.disabled}
+              disabledCells={!isOwner ? Array(columnCount).fill(true) : row.disabled}
               onCauseAndStatusChanges={(causeIndex: number, newValue: string, newStatus: CauseStatus) =>
                 updateCauseAndStatus(row.id, causeIndex, newValue, newStatus)
               }
@@ -186,7 +186,7 @@ const ValidatorDetailPage = () => {
             />
           </div>
         ))}
-        {!isStaff && (
+        {isOwner && (
           <div className='flex justify-center mt-4'>
             <SubmitButton onClick={() => submitCauses()} disabled={isSubmitDisabled} label='Kirim Sebab' />
           </div>
