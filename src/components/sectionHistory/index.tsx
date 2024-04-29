@@ -29,7 +29,7 @@ const Section: React.FC<
           <ListItem
             idQuestion={item.id}
             key={index}
-            title={item.displayed_title}
+            title={item.displayed_title || item.title}
             timestamp={item.timestamp}
             mode={item.mode}
             user={item.user}
