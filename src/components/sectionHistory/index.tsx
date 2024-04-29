@@ -24,18 +24,21 @@ const Section: React.FC<
           </a>
         )}
       </div>
-      {items.map((item, index) => (
-        <ListItem
-          idQuestion={item.id}
-          key={index}
-          title={item.title}
-          timestamp={item.timestamp}
-          mode={item.mode}
-          user={item.user}
-          showModeButton={showModeButton}
-          showDeleteButton={showDeleteButton}
-        />
-      ))}
+      <div className='grid grid-cols-2 gap-x-4'>
+        {items.map((item, index) => (
+          <ListItem
+            idQuestion={item.id}
+            key={index}
+            title={item.displayed_title || item.title}
+            timestamp={item.timestamp}
+            mode={item.mode}
+            user={item.user}
+            showModeButton={showModeButton}
+            showDeleteButton={showDeleteButton}
+            tags={item.tags}
+          />
+        ))}
+      </div>
     </ul>
   )
 }
