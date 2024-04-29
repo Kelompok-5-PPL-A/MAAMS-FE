@@ -6,7 +6,7 @@ export const ValidatorAdminHeader: React.FC<ValidatorQuestionFormProps> = ({ id,
   const [question, setQuestion] = useState<string>(validatorData?.question || '')
 
   return (
-    <>
+    <div className='flex flex-col gap-4'>
       <h1 className='text-2xl font-bold text-black'>{validatorData?.title ?? validatorData?.question}</h1>
       <p>oleh {validatorData?.username || 'Username'}</p>
       <div className='w-full'>
@@ -19,6 +19,6 @@ export const ValidatorAdminHeader: React.FC<ValidatorQuestionFormProps> = ({ id,
           />
         </div>
       </div>
-    </>
+    </div>
   )
 }
