@@ -10,6 +10,7 @@ const defaultValidatorData: ValidatorData = {
   title: '',
   id: '',
   question: '',
+  tags: [],
   mode: Mode.pribadi,
   created_at: '',
   username: ''
@@ -48,6 +49,7 @@ const RecentAnalysis: React.FC = () => {
               title={recentData.question}
               timestamp={formatTimestamp(recentData.created_at)}
               mode={recentData.mode}
+              tags={recentData.tags}
               user={recentData.username}
               showModeButton={true}
               showDeleteButton={false}
