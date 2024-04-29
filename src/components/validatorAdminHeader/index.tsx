@@ -7,7 +7,8 @@ export const ValidatorAdminHeader: React.FC<ValidatorQuestionFormProps> = ({ id,
 
   return (
     <>
-      <h1 className='text-2xl font-bold text-black'>Analisis {validatorData?.username || 'Username'}</h1>
+      <h1 className='text-2xl font-bold text-black'>{validatorData?.title ?? validatorData?.question}</h1>
+      <p>oleh {validatorData?.username || 'Username'}</p>
       <div className='w-full'>
         <div className='flex gap-4'>
           <CustomInput

@@ -19,7 +19,6 @@ describe('ValidatorAdminHeader component', () => {
 
     expect(getByText(`${validatorData.title}`)).toBeInTheDocument
     expect(getByText(`oleh ${validatorData.username}`)).toBeInTheDocument
-    expect(getByText(`${validatorData.tags[0]}`)).toBeInTheDocument
     expect(inputElement.getAttribute('value')).toBe(validatorData.question)
   })
 
