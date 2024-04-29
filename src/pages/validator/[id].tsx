@@ -32,6 +32,7 @@ const ValidatorDetailPage = () => {
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
 
   const [isStaff, setIsStaff] = useState(false)
+  const [isOwner, setIsOwner] = useState(false)
   const [userData, setUserData] = useState<UserDataProps | null>(null)
 
   useEffect(() => {
@@ -44,7 +45,8 @@ const ValidatorDetailPage = () => {
 
   useEffect(() => {
     setIsStaff(userData?.is_staff || false)
-  }, [userData])
+    setIsOwner(userData?.username == validatorData?.username ? true : false)
+  }, [userData, validatorData])
 
   const getQuestionData = async () => {
     if (!id) return
@@ -156,13 +158,13 @@ const ValidatorDetailPage = () => {
   return (
     <MainLayout>
       <div className='flex flex-col w-full gap-8'>
-        {isStaff ? (
+        {isStaff && !isOwner ? (
           <ValidatorAdminHeader id={id} validatorData={validatorData} />
         ) : (
           <ValidatorQuestionForm id={id} validatorData={validatorData} />
         )}
         <h1 className='text-2xl font-bold text-black'>Sebab:</h1>
-        {!isStaff && (
+        {(!isStaff || isOwner) && (
           <CounterButton
             number={columnCount}
             onIncrement={() => adjustColumnCount(true)}
