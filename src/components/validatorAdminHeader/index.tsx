@@ -1,6 +1,7 @@
 import { ValidatorQuestionFormProps } from '../types/validatorQuestionFormProps'
 import { CustomInput } from '../customInput'
 import React, { useState } from 'react'
+import { TagsGroup } from '../../components/tagsGroup'
 
 export const ValidatorAdminHeader: React.FC<ValidatorQuestionFormProps> = ({ id, validatorData }) => {
   const [question, setQuestion] = useState<string>(validatorData?.question || '')
@@ -9,6 +10,7 @@ export const ValidatorAdminHeader: React.FC<ValidatorQuestionFormProps> = ({ id,
     <div className='flex flex-col gap-4'>
       <h1 className='text-2xl font-bold text-black'>{validatorData?.title ?? validatorData?.question}</h1>
       <p>oleh {validatorData?.username || 'Username'}</p>
+      <TagsGroup tags={validatorData?.tags} />
       <div className='w-full'>
         <div className='flex gap-4'>
           <CustomInput
