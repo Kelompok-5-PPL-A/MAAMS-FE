@@ -1,9 +1,71 @@
 import React from 'react'
-import { render, fireEvent, within } from '@testing-library/react'
+import { render, fireEvent, within, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import ValidatorDetailPage from '../../pages/validator/[id]'
+import axiosInstance from '../../services/axiosInstance'
+import { toast } from 'react-hot-toast'
 
-jest.mock('next/router', () => require('next-router-mock'))
+jest.mock('../../services/axiosInstance')
+const mockedAxios = axiosInstance as jest.Mocked<typeof axiosInstance>
+
+const mockPush = jest.fn()
+const mockReload = jest.fn()
+
+const routerContext = {
+  query: { id: '123' }
+}
+
+jest.mock('next/router', () => ({
+  useRouter: () => ({
+    push: mockPush,
+    reload: mockReload,
+    query: routerContext.query
+  })
+}))
+
+beforeEach(() => {
+  localStorage.clear()
+  jest.clearAllMocks()
+})
+
+afterEach(() => {
+  localStorage.clear()
+  jest.clearAllMocks()
+})
+
+class LocalStorageMock {
+  store: { [key: string]: any }
+  length: number
+
+  constructor() {
+    this.store = {}
+    this.length = 0
+  }
+
+  getItem(key: string) {
+    return this.store[key] || null
+  }
+
+  setItem(key: string, value: string) {
+    this.store[key] = value.toString()
+    this.length = Object.keys(this.store).length
+  }
+
+  clear() {
+    this.store = {}
+    this.length = 0
+  }
+
+  key(index: number) {
+    return Object.keys(this.store)[index] || null
+  }
+
+  removeItem(key: string) {
+    delete this.store[key]
+    this.length = Object.keys(this.store).length
+  }
+}
+global.localStorage = new LocalStorageMock()
 
 describe('ValidatorPage Page Tests', () => {
   test('renders validatorPage page with CounterButton and initial Row', () => {
@@ -38,9 +100,9 @@ describe('ValidatorPage Page Tests', () => {
     }
     expect(getByText('5')).toBeInTheDocument()
 
-    fireEvent.click(incrementButton) // Attempt to increment beyond the limit
     fireEvent.click(incrementButton)
-    expect(getByText('5')).toBeInTheDocument() // Confirm the column count does not exceed 5
+    fireEvent.click(incrementButton)
+    expect(getByText('5')).toBeInTheDocument()
   })
 
   test('does not allow decrementing below 3 columns', () => {
@@ -74,5 +136,84 @@ describe('ValidatorPage Page Tests', () => {
 
     const rows = getAllByTestId('row-container')
     expect(rows).toHaveLength(2)
+  })
+
+  test('redirect to login when refresh token not existing', async () => {
+    render(<ValidatorDetailPage />)
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/login')
+    })
+  })
+
+  test('Successfully get data on successful API call', async () => {
+    const mockResponseData = {
+      mode: 'mockMode',
+      question: 'mockQuestion',
+      title: 'mockTitle',
+      tags: ['mockTags']
+    }
+    mockedAxios.get.mockResolvedValue({ data: mockResponseData })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    const { getByText } = render(<ValidatorDetailPage />)
+
+    await waitFor(() => {
+      expect(getByText('mockMode')).toBeInTheDocument
+      expect(getByText('mockTitle')).toBeInTheDocument
+      expect(getByText('mockTags')).toBeInTheDocument
+    })
+  })
+
+  test('displays error message from backend when fail to post', async () => {
+    const errorResponse = {
+      data: {
+        detail: 'Backend Error Message'
+      }
+    }
+    mockedAxios.get.mockRejectedValueOnce({ response: errorResponse })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    render(<ValidatorDetailPage />)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Backend Error Message')
+        expect(mockPush).toHaveBeenCalledWith('/')
+      }, 10000)
+    })
+  })
+
+  test('displays error message when fail to get data', async () => {
+    const errorResponse = {
+      response: {
+        request: {
+          responseText: 'Gagal mengambil data analisis'
+        }
+      }
+    }
+    mockedAxios.get.mockRejectedValueOnce({ data: errorResponse })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    render(<ValidatorDetailPage />)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Gagal mengambil data analisis')
+        expect(mockPush).toHaveBeenCalledWith('/')
+      }, 10000)
+    })
+  })
+
+  test('handle missing ID return nothing', () => {
+    routerContext.query = { id: '' }
+
+    render(<ValidatorDetailPage />)
   })
 })
