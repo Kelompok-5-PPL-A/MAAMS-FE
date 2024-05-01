@@ -77,7 +77,6 @@ const AnalisisPublik: React.FC = () => {
       const page = submitted ? 1 : currentPage
       if (keyword && typeof keyword === 'string') {
         setKeyword(keyword)
-        fetchData(`pengawasan/?count=5&keyword=${keyword}&p=${page}`)
         fetchData(`pengawasan/?filter=${filter}&count=5&keyword=${keyword}&p=${page}`)
 
         if (submitted) {
@@ -86,7 +85,6 @@ const AnalisisPublik: React.FC = () => {
         }
       } else {
         fetchData(`pengawasan/?count=5&p=${currentPage}`)
-        fetchData(`pengawasan/?filter=${filter}&count=5&p=${currentPage}`)
       }
     }
 
