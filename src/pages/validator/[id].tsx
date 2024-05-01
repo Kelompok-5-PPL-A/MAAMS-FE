@@ -18,7 +18,8 @@ const defaultValidatorData: ValidatorData = {
   question: '',
   mode: Mode.pribadi,
   created_at: '',
-  username: ''
+  username: '',
+  tags: []
 }
 
 const defaultUserData: UserDataProps = {

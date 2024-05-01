@@ -8,16 +8,19 @@ const validatorData = {
   question: 'Sample question',
   mode: Mode.pribadi,
   username: 'JohnDoe',
-  created_at: '2022-04-27'
+  created_at: '2022-04-27',
+  tags: ['example tag']
 }
 
 describe('ValidatorAdminHeader component', () => {
-  it('renders with correct username and question', () => {
+  it('renders with correct title, username, tags, and question', () => {
     const { getByText, getByRole } = render(<ValidatorAdminHeader id={'123'} validatorData={validatorData} />)
     const inputElement = getByRole('textbox') as HTMLInputElement
 
-    expect(getByText(`Analisis ${validatorData.username}`)).toBeInTheDocument
+    expect(getByText(`${validatorData.title}`)).toBeInTheDocument
+    expect(getByText(`oleh ${validatorData.username}`)).toBeInTheDocument
     expect(inputElement.getAttribute('value')).toBe(validatorData.question)
+    expect(getByText(`${validatorData.tags[0]}`)).toBeInTheDocument
   })
 
   it('displays disabled input field with correct value', () => {
