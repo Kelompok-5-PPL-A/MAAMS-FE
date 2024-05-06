@@ -8,6 +8,8 @@ import { logout, refreshToken } from 'actions/auth'
 import toast from 'react-hot-toast'
 import { fetchQuestions } from 'actions/fetchQuestions'
 import { SearchBar } from 'components/searchBar'
+import { fetchFilters } from '../../../actions/fetchFilters'
+import { FilterData } from 'components/types/filterData'
 
 const LastWeek: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1)
@@ -20,6 +22,9 @@ const LastWeek: React.FC = () => {
   const [keyword, setKeyword] = useState<string>('')
   const [filter, setFilter] = useState<string>('semua')
   const [submitted, setSubmitted] = useState<boolean>(false)
+  const [filterData, setFilterData] = useState<FilterData>()
+  const [suggestion, setSuggestion] = useState<string[]>([])
+
   const isAdmin = typeof window !== 'undefined' ? JSON.parse(window.localStorage.getItem('userData')!).is_staff : ''
   const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
@@ -33,6 +38,9 @@ const LastWeek: React.FC = () => {
       const lastWeekData = await fetchQuestions(headers, 'last_week', additional_param)
       setLastWeek(lastWeekData.processedData)
       setTotalPages(Math.ceil(lastWeekData.count / 5))
+
+      const processedFilterData = await fetchFilters(headers)
+      setFilterData(processedFilterData)
     } catch (error: any) {
       if (refresh != null && error.response.status == '401') {
         try {
@@ -57,6 +65,15 @@ const LastWeek: React.FC = () => {
 
   const handleFilterSelect = (filter: string) => {
     setFilter(filter)
+    if (filter == 'Pengguna') {
+      setSuggestion(filterData!.pengguna)
+    } else if (filter == 'Judul') {
+      setSuggestion(filterData!.judul)
+    } else if (filter == 'Topik') {
+      setSuggestion(filterData!.topik)
+    } else {
+      setSuggestion([])
+    }
   }
 
   const handleSubmit = () => {
@@ -97,8 +114,8 @@ const LastWeek: React.FC = () => {
         <SearchBar
           isAdmin={isAdmin}
           publicAnalyses={false}
-          filter={filter}
           keyword={keyword}
+          suggestions={suggestion}
           onSelect={handleFilterSelect}
           onSubmit={handleSubmit}
           onChange={(value) => setKeyword(value)}

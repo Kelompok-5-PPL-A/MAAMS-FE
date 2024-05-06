@@ -1,12 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 
+import { AutoComplete, AutoCompleteChangeEvent, AutoCompleteCompleteEvent } from 'primereact/autocomplete'
 import SearchFilter from '../searchFilter'
 
 interface SearchBarProps {
   isAdmin: boolean
   publicAnalyses: boolean
-  filter: string
   keyword: string
+  suggestions: string[]
   onSelect: (value: string) => void
   onChange: (value: string) => void
   onSubmit: () => void
@@ -16,12 +17,20 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   isAdmin,
   publicAnalyses,
   keyword,
+  suggestions,
   onSelect,
   onChange,
   onSubmit
 }) => {
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [items, setItems] = useState<string[]>([])
+
+  const search = (e: AutoCompleteCompleteEvent) => {
+    setItems(suggestions.filter((item) => item.toLowerCase().includes(e.query.toLowerCase())))
+  }
+
+  const handleInputChange = (e: AutoCompleteChangeEvent) => {
     onChange(e.target.value)
+    setItems(suggestions.filter((item) => item.toLowerCase().includes(e.target.value.toLowerCase())))
   }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -35,15 +44,19 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     <div className='mx-12 max-md:flex-wrap max-md:px-5'>
       <div className='flex gap-0 self-stretch shadow-lg rounded-[10px]'>
         <SearchFilter isAdmin={isAdmin} updateFilter={onSelect} publicAnalyses={publicAnalyses}></SearchFilter>
-        <input
-          className='w-full p-4 text-base bg-white rounded-bl-none rounded-tl-none rounded-tr-none 
-                rounded-br-none rounded-bl-[10px] border border-yellow-400 border-solid text-slate-400 max-md:max-w-full placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400'
-          style={{ color: 'black' }}
-          type='text'
-          placeholder='Cari analisis...'
+        <AutoComplete
+          className='w-full text-base bg-white rounded-bl-none rounded-tl-none rounded-tr-none rounded-br-none rounded-bl-[10px] border border-yellow-400 border-solid text-slate-400 max-md:max-w-full placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400'
+          inputClassName='w-full p-4 text-base bg-white text-slate-400 max-md:max-w-full placeholder-gray-500 focus:outline-none focus:outline-none focus:ring-2 focus:ring-yellow-400'
+          panelClassName='p-2 text-base border border-yellow-400 border-solid bg-white text-slate-400 max-md:max-w-full placeholder-gray-500 focus:outline-none'
+          placeholder='Cari analisis..'
+          emptyMessage='No results found.'
+          autoHighlight={true}
+          maxLength={64}
           value={keyword}
+          suggestions={items}
+          completeMethod={search}
           onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
+          onKeyPress={handleKeyDown}
         />
         <button
           onClick={onSubmit}
