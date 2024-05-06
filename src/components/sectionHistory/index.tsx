@@ -24,7 +24,7 @@ const Section: React.FC<
           </a>
         )}
       </div>
-      <div className='grid grid-cols-2 gap-x-4'>
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4'>
         {items.map((item, index) => (
           <ListItem
             idQuestion={item.id}

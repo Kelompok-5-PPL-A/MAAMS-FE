@@ -41,7 +41,7 @@ const ListItem: React.FC<ItemListHistoryProps & { showModeButton?: boolean }> = 
           ))}
         </div>
       </Link>
-      <div className='hidden shrink-0 sm:flex sm:flex-col sm:items-end z-10 justify-start'>
+      <div className='sm:flex sm:flex-col sm:items-end z-10 justify-start'>
         {showDeleteButton && <DeleteButton idQuestion={idQuestion} pathname={useRouter().pathname} />}
       </div>
     </li>
