@@ -17,7 +17,7 @@ const NoSSRSearchFilter: React.FC<SearchFilterProps> = ({ isAdmin, updateFilter,
   }
 
   return (
-    <div className='max-md:flex-wrap max-md:px-5 '>
+    <div className='max-md:flex-wrap'>
       <div className='h-full flex gap-0 self-stretch shadow-lg rounded-tl-[10px] bg-yellow-400 rounded-bl-[10px]'>
         <select
           role='combobox'

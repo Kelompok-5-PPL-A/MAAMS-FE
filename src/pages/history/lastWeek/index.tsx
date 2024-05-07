@@ -81,7 +81,7 @@ const LastWeek: React.FC = () => {
         }
       } else {
         // Fetch default data when there's no keyword
-        fetchData(`?filter=${filter}&count=5&p=${currentPage}`)
+        fetchData(`?filter=${filter}&count=4&p=${currentPage}`)
       }
     }
 
