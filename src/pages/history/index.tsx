@@ -8,7 +8,7 @@ import toast from 'react-hot-toast'
 import { SearchBar } from '../../components/searchBar'
 import { fetchQuestions } from '../../actions/fetchQuestions'
 import { fetchFilters } from '../../actions/fetchFilters'
-import { FilterData } from 'components/types/filterData'
+import { FilterData } from '../../components/types/filterData'
 
 const History: React.FC = () => {
   const [lastweek, setLastWeek] = useState<Item[]>([])
