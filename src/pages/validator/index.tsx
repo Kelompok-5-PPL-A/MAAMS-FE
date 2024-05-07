@@ -40,6 +40,10 @@ const QuestionAddPage: React.FC = () => {
         toast.error('Kategori maksimal 10 karakter.')
         return
       }
+      if (tags.includes(newTag.trim())) {
+        toast.error('Kategori sudah ada. Masukan kategori lain')
+        return
+      }
       setTags((prevCategories) => [...prevCategories, newTag.trim()])
       setNewTag('')
     }
