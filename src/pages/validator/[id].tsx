@@ -171,7 +171,7 @@ const ValidatorDetailPage = () => {
     )
   }
 
-  const createCausesForRow = async () => {
+  const createCausesFromRow = async () => {
     try {
       const createPromises = rows
         .flatMap((row) =>
@@ -180,15 +180,28 @@ const ValidatorDetailPage = () => {
             cause: cause,
             row: row.id,
             column: index,
-            mode: Mode.pribadi // Set the mode as needed
+            mode: Mode.pribadi
           }))
         )
         .map((data) => axiosInstance.post(`/api/v1/validator/causes/`, data))
 
       await Promise.all(createPromises)
     } catch (error) {
-      console.error('Error creating causes:', error)
-      // Handle error
+      console.error('Gagal validasi sebab:', error)
+    }
+  }
+
+  const patchCausesFromRow = async () => {
+    try {
+      const patchPromises = rows.flatMap((row) =>
+        row.causes.map((cause, index) => {
+          return axiosInstance.patch(`/api/v1/validator/causes/patch/${id}/${cause[row.id][index].id}/`, { cause })
+        })
+      )
+
+      await Promise.all(patchPromises)
+    } catch (error) {
+      console.error('Gagal validasi sebab:', error)
     }
   }
 
@@ -199,7 +212,9 @@ const ValidatorDetailPage = () => {
       const isFirstTime = rows.every((row) => row.statuses.every((status) => status === CauseStatus.Unchecked))
 
       if (isFirstTime) {
-        await createCausesForRow()
+        await createCausesFromRow()
+      } else {
+        await patchCausesFromRow()
       }
 
       const updatedRows = rows.map((row) => ({
@@ -207,6 +222,7 @@ const ValidatorDetailPage = () => {
         statuses: row.statuses.map(() => CauseStatus.CorrectNotRoot),
         feedbacks: row.feedbacks.map((feedback, index) => `Penyebab pada ${alphabet[index]}${row.id} sudah tepat`)
       }))
+
       setRows(updatedRows)
 
       const checkAllStatus = updatedRows.every((row) =>
@@ -220,7 +236,7 @@ const ValidatorDetailPage = () => {
         disableValidatedRow()
       }
 
-      await axiosInstance.post(`/api/v1/validator/validate/${id}/`)
+      await axiosInstance.post(`/api/v1/validator/causes/validate/${id}/`)
     } catch (error) {
       console.error('Gagal validasi sebab:', error)
     }
