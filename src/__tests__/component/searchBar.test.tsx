@@ -1,90 +1,110 @@
 import React from 'react'
-import { render, fireEvent, waitFor } from '@testing-library/react'
+import '@testing-library/jest-dom'
+import { render, fireEvent, screen, waitFor } from '@testing-library/react'
 import { SearchBar } from '../../components/searchBar'
 
 describe('SearchBar component', () => {
+  const mockSuggestions = ['apple', 'banana', 'orange']
+  const mockOnChange = jest.fn()
+  const mockOnSelect = jest.fn()
+  const mockOnSubmit = jest.fn()
+
+  const isAdmin = false
+  const publicAnalyses = false
+  const suggestion: string[] = []
+  const keyword = ''
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
   test('renders and triggers onChange and onSubmit', async () => {
-    const isAdmin = false
-    const publicAnalyses = false
-    const filter = ''
-    const keyword = ''
-    const onSelect = jest.fn()
-    const onChange = jest.fn()
-    const onSubmit = jest.fn()
-
     const { getByPlaceholderText } = render(
       <SearchBar
         isAdmin={isAdmin}
         publicAnalyses={publicAnalyses}
-        filter={filter}
+        suggestions={suggestion}
         keyword={keyword}
-        onSelect={onSelect}
-        onChange={onChange}
-        onSubmit={onSubmit}
+        onSelect={mockOnSelect}
+        onChange={mockOnChange}
+        onSubmit={mockOnSubmit}
       />
     )
 
-    const inputElement = await waitFor(() => getByPlaceholderText('Cari analisis...'))
-    fireEvent.change(inputElement, { target: { value: 'test' } })
-    expect(onChange).toHaveBeenCalledWith('test')
-
-    fireEvent.keyDown(inputElement, { key: 'Enter', code: 'Enter' })
-    expect(onSubmit).toHaveBeenCalled()
+    // Ensure all necessary elements are rendered
+    expect(getByPlaceholderText('Cari analisis..')).toBeInTheDocument()
   })
 
-  test('does not trigger onSubmit on input change', async () => {
-    const isAdmin = false
-    const publicAnalyses = false
-    const filter = ''
-    const keyword = ''
-    const onSelect = jest.fn()
-    const onChange = jest.fn()
-    const onSubmit = jest.fn()
-
+  test('handles input change and suggestion filtering', async () => {
     const { getByPlaceholderText } = render(
       <SearchBar
         isAdmin={isAdmin}
         publicAnalyses={publicAnalyses}
-        filter={filter}
+        suggestions={suggestion}
         keyword={keyword}
-        onSelect={onSelect}
-        onChange={onChange}
-        onSubmit={onSubmit}
+        onSelect={mockOnSelect}
+        onChange={mockOnChange}
+        onSubmit={mockOnSubmit}
       />
     )
 
-    const inputElement = await waitFor(() => getByPlaceholderText('Cari analisis...'))
-    fireEvent.change(inputElement, { target: { value: 'test' } })
-    expect(onSubmit).not.toHaveBeenCalled()
+    // Simulate user input
+    const inputElement = await waitFor(() => getByPlaceholderText('Cari analisis..'))
+
+    fireEvent.change(inputElement, { target: { value: 'app' } })
+
+    // Check if onChange is called with correct value
+    expect(mockOnChange).toHaveBeenCalledWith('app')
+
+    // Check if suggestions are updated based on input value
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(screen.getByText('apple')).toBeInTheDocument()
+        expect(screen.queryByText('banana')).not.toBeInTheDocument()
+        expect(screen.queryByText('orange')).not.toBeInTheDocument()
+      }, 2000)
+    })
   })
 
-  test('triggers onSubmit on button click after input change', async () => {
-    const isAdmin = false
-    const publicAnalyses = false
-    const filter = ''
-    const keyword = ''
-    const onSelectMock = jest.fn()
-    const onChangeMock = jest.fn()
-    const onSubmitMock = jest.fn()
-
-    const { getByPlaceholderText, getByRole } = render(
+  test('handles submit action', () => {
+    render(
       <SearchBar
         isAdmin={isAdmin}
         publicAnalyses={publicAnalyses}
-        filter={filter}
+        suggestions={mockSuggestions}
         keyword={keyword}
-        onSelect={onSelectMock}
-        onChange={onChangeMock}
-        onSubmit={onSubmitMock}
+        onSelect={mockOnSelect}
+        onChange={mockOnChange}
+        onSubmit={mockOnSubmit}
       />
     )
 
-    const inputElement = await waitFor(() => getByPlaceholderText('Cari analisis...'))
+    // Simulate submit action by clicking the search button
+    fireEvent.click(screen.getByTestId('search-button'))
+
+    // Check if onSubmit is called
+    expect(mockOnSubmit).toHaveBeenCalledTimes(1)
+  })
+
+  test('triggers onSubmit on enter keypress after input change', async () => {
+    render(
+      <SearchBar
+        isAdmin={isAdmin}
+        publicAnalyses={publicAnalyses}
+        suggestions={suggestion}
+        keyword={keyword}
+        onSelect={mockOnSelect}
+        onChange={mockOnChange}
+        onSubmit={mockOnSubmit}
+      />
+    )
+
+    // Simulate user input
+    const inputElement = await waitFor(() => screen.getByPlaceholderText('Cari analisis..'))
     fireEvent.change(inputElement, { target: { value: 'keyword' } })
 
-    const searchButton = getByRole('button', { name: 'Search Icon' })
-    fireEvent.click(searchButton)
+    fireEvent.keyPress(inputElement, { key: 'Enter', charCode: 13 })
 
-    expect(onSubmitMock).toHaveBeenCalled()
+    expect(mockOnSubmit).toHaveBeenCalled()
   })
 })

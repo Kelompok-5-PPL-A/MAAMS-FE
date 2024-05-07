@@ -11,6 +11,7 @@ import { DeleteButton } from '../../components/deleteButton'
 import { Icon, Modal, ModalOverlay, ModalContent, ModalFooter, ModalBody, ModalCloseButton } from '@chakra-ui/react'
 import axiosInstance from '../../services/axiosInstance'
 import { EditableTitleForm } from '../../components/editableTitleForm'
+import { TagsGroup } from '../../components/tagsGroup'
 
 export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id, validatorData }) => {
   const [question, setQuestion] = useState<string>(validatorData?.question || '')
@@ -92,6 +93,8 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
         </div>
 
         {id && <EditableTitleForm title={title} onTitleChange={handleTitleChange} id={id} />}
+
+        <TagsGroup tags={validatorData?.tags} />
 
         <form onSubmit={handleSubmit} data-testid='question-form'>
           <>
