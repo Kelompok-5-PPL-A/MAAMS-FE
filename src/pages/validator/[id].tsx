@@ -89,22 +89,24 @@ const ValidatorDetailPage = () => {
   const getCauses = async () => {
     try {
       const response = await axiosInstance.get(`/api/v1/validator/causes/${id}`)
-      processAndSetRows(response.data)
-    } catch (error) {
-      console.error('Error fetching causes:', error)
+      const causes: Cause[] = response.data?.data ?? []
+      processAndSetRows(causes)
+    } catch (error: any) {
+      console.error('Gagal mengambil sebab: ', error)
       throw error
     }
   }
 
   const processAndSetRows = (causes: Cause[]) => {
-    const groupedCauses: { [key: number]: Cause[] } = causes.reduce((acc: { [key: number]: Cause[] }, cause) => {
+    const groupedCauses: { [key: number]: Cause[] } = {}
+
+    causes.forEach((cause) => {
       const { row } = cause
-      if (!acc[row]) {
-        acc[row] = []
+      if (!groupedCauses[row]) {
+        groupedCauses[row] = []
       }
-      acc[row].push(cause)
-      return acc
-    }, {})
+      groupedCauses[row].push(cause)
+    })
 
     const rows = Object.entries(groupedCauses).map(([rowNumber, rowCauses]) => ({
       id: parseInt(rowNumber),
