@@ -87,6 +87,14 @@ const ValidatorDetailPage = () => {
   }
 
   const getCauses = async () => {
+    if (!id) return
+
+    if (!refresh) {
+      toast.error('silakan login terlebih dahulu')
+      router.push('/login')
+      return
+    }
+
     try {
       const response = await axiosInstance.get(`/api/v1/validator/causes/${id}`)
       const causes: Cause[] = response.data?.data ?? []
