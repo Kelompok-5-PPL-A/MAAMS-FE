@@ -41,7 +41,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   }
 
   return (
-    <div className='mx-12 max-md:flex-wrap max-md:px-5'>
+    <div className='md:mx-12 max-md:flex-wrap max-md:px-5'>
       <div className='flex gap-0 self-stretch shadow-lg rounded-[10px]'>
         <SearchFilter isAdmin={isAdmin} updateFilter={onSelect} publicAnalyses={publicAnalyses}></SearchFilter>
         <AutoComplete

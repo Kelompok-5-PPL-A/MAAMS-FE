@@ -13,6 +13,12 @@ module.exports = {
       parserOptions: {
         sourceType: 'script'
       }
+    },
+    {
+      files: ['src/pages/api/sentry-example-api.js', 'src/pages/_error.jsx'],
+      rules: {
+        'react/prop-types': 'off'
+      }
     }
   ],
   parser: '@typescript-eslint/parser',
@@ -29,6 +35,7 @@ module.exports = {
   rules: {
     'react/react-in-jsx-scope': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-var-requires': 'off'
+    '@typescript-eslint/no-var-requires': 'off',
+    'no-unreachable': 'off'
   }
 }
