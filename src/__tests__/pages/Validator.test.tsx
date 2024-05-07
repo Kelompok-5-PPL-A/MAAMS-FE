@@ -187,6 +187,22 @@ describe('QuestionAddPage', () => {
     })
   })
 
+  test('submits form with duplicate category', async () => {
+    const { getByPlaceholderText } = render(<QuestionAddPage />)
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+
+    fireEvent.change(newTagInput, { target: { value: 'Kategori' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+    fireEvent.change(newTagInput, { target: { value: 'Kategori' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Kategori sudah ada. Masukan kategori lain')
+      }, 10000)
+    })
+  })
+
   test('changes the mode from PRIBADI to PENGAWASAN', () => {
     const { getByText } = render(<QuestionAddPage />)
 
