@@ -10,6 +10,7 @@ import Mode from '../../constants/mode'
 import { SubmitButton } from '../../components/submitButton'
 import { CauseStatus } from '../../lib/enum'
 import { UserDataProps } from 'components/types/userData'
+import { Cause } from '../../components/types/cause'
 import { ValidatorAdminHeader } from '../../components/validatorAdminHeader'
 import axiosInstance from '../../services/axiosInstance'
 
@@ -48,6 +49,7 @@ const ValidatorDetailPage = () => {
 
   useEffect(() => {
     getQuestionData()
+    getCauses()
   }, [id])
 
   useEffect(() => {
@@ -81,6 +83,37 @@ const ValidatorDetailPage = () => {
         router.push('/')
       }
     }
+  }
+
+  const getCauses = async () => {
+    try {
+      const response = await axiosInstance.get(`/api/v1/validator/causes/${id}`)
+      processAndSetRows(response.data)
+    } catch (error) {
+      console.error('Error fetching causes:', error)
+      throw error
+    }
+  }
+
+  const processAndSetRows = (causes: Cause[]) => {
+    const groupedCauses: { [key: number]: Cause[] } = causes.reduce((acc: { [key: number]: Cause[] }, cause) => {
+      const { row } = cause
+      if (!acc[row]) {
+        acc[row] = []
+      }
+      acc[row].push(cause)
+      return acc
+    }, {})
+
+    const rows = Object.entries(groupedCauses).map(([rowNumber, rowCauses]) => ({
+      id: parseInt(rowNumber),
+      causes: rowCauses.map((cause) => cause.cause),
+      statuses: rowCauses.map((cause) => (cause.status ? CauseStatus.CorrectRoot : CauseStatus.CorrectNotRoot)),
+      feedbacks: rowCauses.map(() => ''),
+      disabled: rowCauses.map(() => false)
+    }))
+
+    setRows(rows)
   }
 
   useEffect(() => {
@@ -138,29 +171,58 @@ const ValidatorDetailPage = () => {
     )
   }
 
+  const createCausesForRow = async () => {
+    try {
+      const createPromises = rows
+        .flatMap((row) =>
+          row.causes.map((cause, index) => ({
+            question_id: id,
+            cause: cause,
+            row: row.id,
+            column: index,
+            mode: Mode.pribadi // Set the mode as needed
+          }))
+        )
+        .map((data) => axiosInstance.post(`/api/v1/validator/causes/`, data))
+
+      await Promise.all(createPromises)
+    } catch (error) {
+      console.error('Error creating causes:', error)
+      // Handle error
+    }
+  }
+
   // TODO : Implement disable column with root cause logic
 
   const submitCauses = async () => {
-    // TODO : Implement submit causes logic with API call
+    try {
+      const isFirstTime = rows.every((row) => row.statuses.every((status) => status === CauseStatus.Unchecked))
 
-    //For dummy implementation, causes always correct but not root
-    const updatedRows = rows.map((row) => ({
-      ...row,
-      statuses: row.statuses.map(() => CauseStatus.CorrectNotRoot),
-      feedbacks: row.feedbacks.map((feedback, index) => `Penyebab pada ${alphabet[index]}${row.id} sudah tepat`)
-    }))
+      if (isFirstTime) {
+        await createCausesForRow()
+      }
 
-    setRows(updatedRows)
+      const updatedRows = rows.map((row) => ({
+        ...row,
+        statuses: row.statuses.map(() => CauseStatus.CorrectNotRoot),
+        feedbacks: row.feedbacks.map((feedback, index) => `Penyebab pada ${alphabet[index]}${row.id} sudah tepat`)
+      }))
+      setRows(updatedRows)
 
-    const checkAllStatus = updatedRows.every((row) =>
-      row.statuses.every((status) => status === CauseStatus.CorrectNotRoot || status === CauseStatus.CorrectRoot)
-    )
+      const checkAllStatus = updatedRows.every((row) =>
+        row.statuses.every((status) => status === CauseStatus.CorrectNotRoot || status === CauseStatus.CorrectRoot)
+      )
 
-    setCanAdjustColumns(!checkAllStatus)
+      setCanAdjustColumns(!checkAllStatus)
 
-    if (checkAllStatus) {
-      addRow()
-      disableValidatedRow()
+      if (checkAllStatus) {
+        addRow()
+        disableValidatedRow()
+      }
+
+      await axiosInstance.post(`/api/v1/validator/validate/${id}/`)
+    } catch (error) {
+      console.error('Gagal validasi sebab:', error)
     }
   }
 
