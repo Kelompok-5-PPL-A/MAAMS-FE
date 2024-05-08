@@ -26,6 +26,12 @@ const QuestionAddPage: React.FC = () => {
     }
   }, [])
 
+  useEffect(() => {
+    if (router.query.question) {
+      setQuestion(router.query.question as string)
+    }
+  }, [router.query])
+
   const handleModeChange = (newMode: Mode) => {
     setMode(newMode)
   }
