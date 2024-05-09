@@ -5,9 +5,26 @@ import axiosInstance from '../../services/axiosInstance'
 import { toast } from 'react-hot-toast'
 import Mode from '../../constants/mode'
 
-jest.mock('next/router', () => require('next-router-mock'))
+const mockPush = jest.fn()
+const mockReload = jest.fn()
+
+const routerContext = {
+  query: { question: 'Sample Question' }
+}
+
+jest.mock('next/router', () => ({
+  useRouter: () => ({
+    push: mockPush,
+    reload: mockReload,
+    query: routerContext.query
+  })
+}))
 
 describe('QuestionAddPage', () => {
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
   test('renders correctly with default values', () => {
     const { getByText, getByPlaceholderText } = render(<QuestionAddPage />)
     expect(getByText('Ingin menganalisis masalah apa hari ini?')).toBeInTheDocument
@@ -187,6 +204,22 @@ describe('QuestionAddPage', () => {
     })
   })
 
+  test('submits form with duplicate category', async () => {
+    const { getByPlaceholderText } = render(<QuestionAddPage />)
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+
+    fireEvent.change(newTagInput, { target: { value: 'Kategori' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+    fireEvent.change(newTagInput, { target: { value: 'Kategori' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Kategori sudah ada. Masukan kategori lain')
+      }, 10000)
+    })
+  })
+
   test('changes the mode from PRIBADI to PENGAWASAN', () => {
     const { getByText } = render(<QuestionAddPage />)
 
@@ -247,6 +280,42 @@ describe('QuestionAddPage', () => {
     await waitFor(() => {
       setTimeout(() => {
         expect(toast).toHaveBeenCalledWith('Gagal menambahkan analisis')
+      }, 10000)
+    })
+  })
+
+  test('should set question state when router query parameter is present', async () => {
+    const { getByPlaceholderText } = render(<QuestionAddPage />)
+
+    await waitFor(() => {
+      const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...') as HTMLInputElement
+      expect(questionInput.value).toBe('Sample Question')
+    })
+  })
+
+  test('should reset question if input is deleted', async () => {
+    const { getByText, getByPlaceholderText } = render(<QuestionAddPage />)
+
+    await waitFor(() => {
+      const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...') as HTMLInputElement
+      expect(questionInput.value).toBe('Sample Question')
+    })
+
+    const titleInput = getByPlaceholderText('Ingin menganalisis apa hari ini ...')
+    const questionInput = getByPlaceholderText('Pertanyaan apa yang ingin ditanyakan ...')
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+    const submitButton = getByText('Kirim')
+
+    fireEvent.change(titleInput, { target: { value: 'Sample Title' } })
+    fireEvent.change(questionInput, { target: { value: '' } })
+    fireEvent.change(newTagInput, { target: { value: 'Sample Tag' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Pertanyaan harus diisi')
       }, 10000)
     })
   })
