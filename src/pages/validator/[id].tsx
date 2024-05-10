@@ -96,10 +96,19 @@ const ValidatorDetailPage = () => {
     }
 
     try {
-      const response = await axiosInstance.get(`/api/v1/validator/causes/${id}`)
-      const causes: Cause[] = response.data?.data ?? []
-      processAndSetRows(causes)
+      const response = await axiosInstance.get(`/api/v1/validator/causes/${id}/`)
+      const causes: Cause[] = response.data ?? []
+      const rows = processAndSetRows(causes)
+      if (causes.length != 0) {
+        setRows(rows)
+        checkStatus(rows)
+      } else {
+        setRows([createInitialRow(1, 3)])
+      }
     } catch (error: any) {
+      if (error.response && error.response.status === 404) {
+        return
+      }
       console.error('Gagal mengambil sebab: ', error)
       throw error
     }
@@ -108,7 +117,7 @@ const ValidatorDetailPage = () => {
   const processAndSetRows = (causes: Cause[]) => {
     const groupedCauses: { [key: number]: Cause[] } = {}
 
-    causes.forEach((cause) => {
+    Array.prototype.forEach.call(causes, (cause: Cause) => {
       const { row } = cause
       if (!groupedCauses[row]) {
         groupedCauses[row] = []
@@ -119,12 +128,12 @@ const ValidatorDetailPage = () => {
     const rows = Object.entries(groupedCauses).map(([rowNumber, rowCauses]) => ({
       id: parseInt(rowNumber),
       causes: rowCauses.map((cause) => cause.cause),
+      causesId: rowCauses.map((cause) => cause.id),
       statuses: rowCauses.map((cause) => (cause.status ? CauseStatus.CorrectRoot : CauseStatus.CorrectNotRoot)),
       feedbacks: rowCauses.map(() => ''),
       disabled: rowCauses.map(() => false)
     }))
-
-    setRows(rows)
+    return rows
   }
 
   useEffect(() => {
@@ -152,7 +161,7 @@ const ValidatorDetailPage = () => {
   }
 
   const addRow = () => {
-    setRows((prevRows) => [...prevRows, createInitialRow(rows.length + 1, columnCount)])
+    setRows((prevRows) => [...prevRows, createInitialRow(prevRows.length + 1, columnCount)])
   }
 
   const updateCauseAndStatus = (rowId: number, columnIndex: number, newCause: string, newStatus: CauseStatus) => {
@@ -182,18 +191,35 @@ const ValidatorDetailPage = () => {
     )
   }
 
-  const createCausesFromRow = async () => {
+  const checkStatus = (updatedRows: typeof rows) => {
+    const checkAllStatus = updatedRows.every((row) =>
+      row.statuses.every((status) => status === CauseStatus.CorrectNotRoot || status === CauseStatus.CorrectRoot)
+    )
+
+    setCanAdjustColumns(!checkAllStatus)
+
+    if (checkAllStatus) {
+      addRow()
+      disableValidatedRow()
+    }
+  }
+
+  const createCausesFromRow = async (rowNumber: number) => {
     try {
-      const createPromises = rows
-        .flatMap((row) =>
-          row.causes.map((cause, index) => ({
-            question_id: id,
-            cause: cause,
-            row: row.id,
-            column: index,
-            mode: Mode.pribadi
-          }))
-        )
+      const row = rows.find((row) => row.id === rowNumber)
+      if (!row) {
+        console.error('Row not found')
+        return
+      }
+
+      const createPromises = row.causes
+        .map((cause, index) => ({
+          question_id: id,
+          cause: cause,
+          row: row.id,
+          column: index,
+          mode: Mode.pribadi
+        }))
         .map((data) => axiosInstance.post(`/api/v1/validator/causes/`, data))
 
       await Promise.all(createPromises)
@@ -202,13 +228,17 @@ const ValidatorDetailPage = () => {
     }
   }
 
-  const patchCausesFromRow = async () => {
+  const patchCausesFromRow = async (rowNumber: number) => {
     try {
-      const patchPromises = rows.flatMap((row) =>
-        row.causes.map((cause, index) => {
-          return axiosInstance.patch(`/api/v1/validator/causes/patch/${id}/${cause[row.id][index].id}/`, { cause })
-        })
-      )
+      const row = rows.find((row) => row.id === rowNumber)
+      if (!row) {
+        console.error('Row not found')
+        return
+      }
+
+      const patchPromises = row.causes.map((cause, index) => {
+        return axiosInstance.patch(`/api/v1/validator/causes/patch/${id}/${row.causesId[index]}/`, { cause })
+      })
 
       await Promise.all(patchPromises)
     } catch (error) {
@@ -220,12 +250,17 @@ const ValidatorDetailPage = () => {
 
   const submitCauses = async () => {
     try {
-      const isFirstTime = rows.every((row) => row.statuses.every((status) => status === CauseStatus.Unchecked))
+      const largestRowId = Math.max(...rows.map((row) => row.id))
+      const latestRow = rows.find((row) => row.id === largestRowId)
 
-      if (isFirstTime) {
-        await createCausesFromRow()
-      } else {
-        await patchCausesFromRow()
+      if (latestRow) {
+        const isFirstTime = latestRow.statuses.every((status) => status === CauseStatus.Unchecked)
+
+        if (isFirstTime) {
+          await createCausesFromRow(largestRowId)
+        } else {
+          await patchCausesFromRow(largestRowId)
+        }
       }
 
       const updatedRows = rows.map((row) => ({
@@ -235,19 +270,9 @@ const ValidatorDetailPage = () => {
       }))
 
       setRows(updatedRows)
+      checkStatus(updatedRows)
 
-      const checkAllStatus = updatedRows.every((row) =>
-        row.statuses.every((status) => status === CauseStatus.CorrectNotRoot || status === CauseStatus.CorrectRoot)
-      )
-
-      setCanAdjustColumns(!checkAllStatus)
-
-      if (checkAllStatus) {
-        addRow()
-        disableValidatedRow()
-      }
-
-      await axiosInstance.post(`/api/v1/validator/causes/validate/${id}/`)
+      // await axiosInstance.post(`/api/v1/validator/causes/validate/${id}/`)
     } catch (error) {
       console.error('Gagal validasi sebab:', error)
     }
@@ -279,6 +304,7 @@ const ValidatorDetailPage = () => {
               rowNumber={row.id}
               cols={columnCount}
               causes={row.causes}
+              causesId={row.causesId}
               causeStatuses={row.statuses}
               disabledCells={!isOwner ? Array(columnCount).fill(true) : row.disabled}
               onCauseAndStatusChanges={(causeIndex: number, newValue: string, newStatus: CauseStatus) =>
@@ -304,6 +330,7 @@ function createInitialRow(id: number, cols: number) {
   return {
     id,
     causes: Array(cols).fill(''),
+    causesId: Array(cols).fill(''),
     statuses: Array(cols).fill(CauseStatus.Unchecked),
     feedbacks: Array(cols).fill(''),
     disabled: Array(cols).fill(false)
