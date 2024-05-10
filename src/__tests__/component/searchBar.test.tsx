@@ -31,16 +31,16 @@ describe('SearchBar component', () => {
       />
     )
 
-    // Ensure all necessary elements are rendered
     expect(getByPlaceholderText('Cari analisis..')).toBeInTheDocument()
   })
 
   test('handles input change and suggestion filtering', async () => {
+    const suggestions = ['apple', 'BAnana', 'orAnge']
     const { getByPlaceholderText } = render(
       <SearchBar
         isAdmin={isAdmin}
         publicAnalyses={publicAnalyses}
-        suggestions={suggestion}
+        suggestions={suggestions}
         keyword={keyword}
         onSelect={mockOnSelect}
         onChange={mockOnChange}
@@ -48,15 +48,12 @@ describe('SearchBar component', () => {
       />
     )
 
-    // Simulate user input
     const inputElement = await waitFor(() => getByPlaceholderText('Cari analisis..'))
 
     fireEvent.change(inputElement, { target: { value: 'app' } })
 
-    // Check if onChange is called with correct value
     expect(mockOnChange).toHaveBeenCalledWith('app')
 
-    // Check if suggestions are updated based on input value
     await waitFor(() => {
       setTimeout(() => {
         expect(screen.getByText('apple')).toBeInTheDocument()
@@ -79,10 +76,7 @@ describe('SearchBar component', () => {
       />
     )
 
-    // Simulate submit action by clicking the search button
     fireEvent.click(screen.getByTestId('search-button'))
-
-    // Check if onSubmit is called
     expect(mockOnSubmit).toHaveBeenCalledTimes(1)
   })
 
@@ -99,12 +93,9 @@ describe('SearchBar component', () => {
       />
     )
 
-    // Simulate user input
     const inputElement = await waitFor(() => screen.getByPlaceholderText('Cari analisis..'))
     fireEvent.change(inputElement, { target: { value: 'keyword' } })
-
     fireEvent.keyPress(inputElement, { key: 'Enter', charCode: 13 })
-
     expect(mockOnSubmit).toHaveBeenCalled()
   })
 
