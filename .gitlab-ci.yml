@@ -13,7 +13,7 @@ test:
     - npm install
   script:
     - npm run test:ci
-  coverage: /Lines[^|]*\|[^|]*\s+([\d\.]+)/
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)%\s+([\d\.]+)%\s+([\d\.]+)%\s+([\d\.]+)%\s+/
   artifacts:
     paths:
       - coverage/
