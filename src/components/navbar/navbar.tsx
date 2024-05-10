@@ -53,9 +53,7 @@ const Navbar = () => {
             },
             className: 'unique-toast'
           })
-          setTimeout(() => {
-            router.push('/login')
-          }, 2000)
+          router.push('/login')
         })
         .catch((err) => {
           console.error('Error logging out:', err)
