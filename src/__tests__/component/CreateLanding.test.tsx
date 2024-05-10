@@ -1,21 +1,21 @@
 import React from 'react'
 import { render, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
-import axiosInstance from '../../services/axiosInstance'
 import toast from 'react-hot-toast'
 import CreateLanding from '../../components/CreateLanding/index'
+import { useRouter } from 'next/router'
 
-jest.mock('../../services/axiosInstance')
-const mockedAxios = axiosInstance as jest.Mocked<typeof axiosInstance>
+jest.mock('react-hot-toast')
+
+jest.mock('next/router', () => ({
+  useRouter: jest.fn()
+}))
 
 const mockPush = jest.fn()
-const mockReload = jest.fn()
-jest.mock('next/router', () => ({
-  useRouter: () => ({
-    push: mockPush,
-    reload: mockReload
-  })
-}))
+
+;(useRouter as jest.Mock).mockReturnValue({
+  push: mockPush
+})
 
 beforeEach(() => {
   localStorage.clear()
@@ -85,8 +85,6 @@ describe('CreateLanding', () => {
   })
 
   it('displays error when question is not filled', async () => {
-    jest.requireMock('next/router').useRouter().push('/')
-
     localStorage.setItem('isLoggedIn', 'true')
     const { getByPlaceholderText, getByTitle } = render(<CreateLanding />)
     const input = getByPlaceholderText('ingin menganalisis apa hari ini ...')
@@ -101,79 +99,24 @@ describe('CreateLanding', () => {
     })
   })
 
-  it('displays success message and redirects on successful API call', async () => {
-    const mockResponseData = {
-      mode: 'mode',
-      question: 'question'
-    }
-    mockedAxios.post.mockResolvedValue({ data: mockResponseData })
-
+  it('should push router with question query parameter when question state is present', async () => {
     localStorage.setItem('isLoggedIn', 'true')
-    const { getByPlaceholderText, getByTitle } = render(<CreateLanding />)
+    const { getByTitle, getByPlaceholderText } = render(<CreateLanding />)
 
     const input = getByPlaceholderText('ingin menganalisis apa hari ini ...')
-    fireEvent.change(input, { target: { value: 'question' } })
 
+    fireEvent.change(input, { target: { value: 'Pertanyaan baru' } })
+
+    expect(input.getAttribute('value')).toBe('Pertanyaan baru')
     const button = getByTitle('submit_button')
 
     fireEvent.submit(button)
 
     await waitFor(() => {
-      setTimeout(() => {
-        expect(toast).toHaveBeenCalledWith('Analisis berhasil ditambahkan')
-      }, 2000)
-    })
-  })
-
-  it('displays error message when fail to post', async () => {
-    const errorResponse = {
-      response: {
-        request: {
-          responseText: 'Gagal menambahkan analisis'
-        }
-      }
-    }
-    mockedAxios.post.mockRejectedValueOnce({ data: errorResponse })
-
-    localStorage.setItem('isLoggedIn', 'true')
-    const { getByPlaceholderText, getByTitle } = render(<CreateLanding />)
-
-    const input = getByPlaceholderText('ingin menganalisis apa hari ini ...')
-    fireEvent.change(input, { target: { value: 'question' } })
-
-    const button = getByTitle('submit_button')
-
-    fireEvent.submit(button)
-
-    await waitFor(() => {
-      setTimeout(() => {
-        expect(toast).toHaveBeenCalledWith('Gagal menambahkan analisis')
-      }, 2000)
-    })
-  })
-
-  it('displays error message from backend when fail to post', async () => {
-    const errorResponse = {
-      data: {
-        detail: 'Backend Error Message'
-      }
-    }
-    mockedAxios.post.mockRejectedValueOnce({ response: errorResponse })
-
-    localStorage.setItem('isLoggedIn', 'true')
-    const { getByPlaceholderText, getByTitle } = render(<CreateLanding />)
-
-    const input = getByPlaceholderText('ingin menganalisis apa hari ini ...')
-    fireEvent.change(input, { target: { value: 'question' } })
-
-    const button = getByTitle('submit_button')
-
-    fireEvent.submit(button)
-
-    await waitFor(() => {
-      setTimeout(() => {
-        expect(toast).toHaveBeenCalledWith('Backend Error Message')
-      }, 2000)
+      expect(mockPush).toHaveBeenCalledWith({
+        pathname: '/validator',
+        query: { question: 'Pertanyaan baru' }
+      })
     })
   })
 })

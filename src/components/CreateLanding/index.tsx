@@ -1,13 +1,13 @@
 import { CustomInput } from '../../components/customInput'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
-import router from 'next/router'
+import { useRouter } from 'next/router'
 import toast from 'react-hot-toast'
-import axiosInstance from '../../services/axiosInstance'
 
 const CreateLanding = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [question, setQuestion] = useState<string>('')
+  const router = useRouter()
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -17,19 +17,10 @@ const CreateLanding = () => {
       return
     }
 
-    try {
-      const { data } = await axiosInstance.post('/api/v1/validator/baru/', {
-        mode: 'PRIBADI',
-        question: question
-      })
-      router.push(`/validator/${data.id}`)
-    } catch (error: any) {
-      if (error.response) {
-        toast.error(error.response.data.detail)
-      } else {
-        toast.error('Gagal menambahkan analisis')
-      }
-    }
+    router.push({
+      pathname: '/validator',
+      query: { question: question }
+    })
   }
 
   useEffect(() => {
