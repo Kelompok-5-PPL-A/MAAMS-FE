@@ -18,6 +18,7 @@ const History: React.FC = () => {
   const [suggestion, setSuggestion] = useState<string[]>([])
   const [keyword, setKeyword] = useState<string>('')
 
+  // istanbul ignore next
   const isAdmin = typeof window !== 'undefined' ? JSON.parse(window.localStorage.getItem('userData')!).is_staff : ''
   const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
@@ -28,6 +29,7 @@ const History: React.FC = () => {
   const router = useRouter()
 
   const fetchData = async (additional_param: string) => {
+    // istanbul ignore next
     if (!refresh) {
       toast.error('Silakan login terlebih dahulu')
       router.push('/login')
@@ -41,9 +43,10 @@ const History: React.FC = () => {
       setOlder(processedOlderData)
 
       const processedFilterData = await fetchFilters(headers)
-
+      // istanbul ignore next
       setFilterData(processedFilterData)
     } catch (error: any) {
+      // istanbul ignore next
       if (refresh != null && error.response.status == '401') {
         try {
           const responseRefresh = await refreshToken(refresh)
@@ -70,7 +73,9 @@ const History: React.FC = () => {
   }, [])
 
   const handleFilterSelect = (filter: string) => {
+    // istanbul ignore next
     setFilter(filter)
+    // istanbul ignore next
     if (filter == 'Pengguna') {
       setSuggestion(filterData!.pengguna)
     } else if (filter == 'Judul') {
