@@ -39,7 +39,6 @@ const ValidatorDetailPage = () => {
   const id = router.query.id
   const [validatorData, setValidatorData] = useState<ValidatorData>(defaultValidatorData)
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
-  const alphabet = 'ABCDE'
   const [columnCount, setColumnCount] = useState(3)
   const [rows, setRows] = useState([createInitialRow(1, 3)])
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
@@ -106,11 +105,7 @@ const ValidatorDetailPage = () => {
         setRows([createInitialRow(1, 3)])
       }
     } catch (error: any) {
-      if (error.response && error.response.status === 404) {
-        return
-      }
-      console.error('Gagal mengambil sebab: ', error)
-      throw error
+      toast.error('Gagal mengambil sebab')
     }
   }
 
@@ -129,9 +124,9 @@ const ValidatorDetailPage = () => {
       id: parseInt(rowNumber),
       causes: rowCauses.map((cause) => cause.cause),
       causesId: rowCauses.map((cause) => cause.id),
-      statuses: rowCauses.map((cause) => (cause.status ? CauseStatus.CorrectRoot : CauseStatus.CorrectNotRoot)),
+      statuses: rowCauses.map((cause) => (cause.status ? CauseStatus.CorrectNotRoot : CauseStatus.Incorrect)),
       feedbacks: rowCauses.map(() => ''),
-      disabled: rowCauses.map(() => false)
+      disabled: rowCauses.map((cause) => cause.status)
     }))
     return rows
   }
@@ -223,8 +218,8 @@ const ValidatorDetailPage = () => {
         .map((data) => axiosInstance.post(`/api/v1/validator/causes/`, data))
 
       await Promise.all(createPromises)
-    } catch (error) {
-      console.error('Gagal validasi sebab:', error)
+    } catch (error: any) {
+      toast.error('Gagal menambahkan sebab: ', error.response.data.detail)
     }
   }
 
@@ -241,8 +236,8 @@ const ValidatorDetailPage = () => {
       })
 
       await Promise.all(patchPromises)
-    } catch (error) {
-      console.error('Gagal validasi sebab:', error)
+    } catch (error: any) {
+      toast.error('Gagal validasi sebab: ', error.response.data.detail)
     }
   }
 
@@ -263,18 +258,11 @@ const ValidatorDetailPage = () => {
         }
       }
 
-      const updatedRows = rows.map((row) => ({
-        ...row,
-        statuses: row.statuses.map(() => CauseStatus.CorrectNotRoot),
-        feedbacks: row.feedbacks.map((feedback, index) => `Penyebab pada ${alphabet[index]}${row.id} sudah tepat`)
-      }))
+      await axiosInstance.patch(`/api/v1/validator/causes/validate/${id}/`)
 
-      setRows(updatedRows)
-      checkStatus(updatedRows)
-
-      // await axiosInstance.post(`/api/v1/validator/causes/validate/${id}/`)
-    } catch (error) {
-      console.error('Gagal validasi sebab:', error)
+      getCauses()
+    } catch (error: any) {
+      toast.error('Gagal validasi sebab: ', error.response.data.detail)
     }
   }
 
