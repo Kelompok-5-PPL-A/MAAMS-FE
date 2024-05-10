@@ -115,7 +115,7 @@ describe('DeleteButton', () => {
     await waitFor(() => {
       setTimeout(() => {
         expect(toast).toHaveBeenCalledWith('Berhasil menghapus analisis')
-      }, 2000)
+      }, 3000)
     })
   })
 

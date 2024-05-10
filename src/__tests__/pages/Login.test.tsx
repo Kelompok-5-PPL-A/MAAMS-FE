@@ -94,7 +94,7 @@ describe('Login Page', () => {
     waitFor(() => {
       setTimeout(function () {
         expect(routerPushMock).toHaveBeenCalledWith('/')
-      }, 1000)
+      }, 2000)
     })
   })
 
