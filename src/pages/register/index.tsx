@@ -81,9 +81,7 @@ const Register: React.FC = () => {
         console.log('Response from server:', res)
         if (res.status === 201) {
           toast.success('User registered successfully.')
-          setTimeout(() => {
-            router.push('/login')
-          }, 1000)
+          router.push('/login')
         }
       })
       .catch((err) => {
@@ -99,8 +97,6 @@ const Register: React.FC = () => {
             errorMessage = err.response.data.password[0]
             setErrPasswordMessage(errorMessage)
             setErrConfirmPasswordMessage(errorMessage)
-          } else {
-            errorMessage = 'Failed to register, please try again.'
           }
         }
         toast.error('Failed to register, please try again. ')
@@ -173,6 +169,7 @@ const Register: React.FC = () => {
             </label>
             <input
               type='password'
+              data-testid='password'
               id='password'
               autoComplete='off'
               placeholder='Password...'
@@ -198,6 +195,7 @@ const Register: React.FC = () => {
             </label>
             <input
               type='password'
+              data-testid='confirmPassword'
               id='ConfirmPassword'
               autoComplete='off'
               placeholder='Password...'

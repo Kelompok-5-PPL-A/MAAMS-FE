@@ -27,3 +27,13 @@ body {
 textarea {
   overflow: hidden;
 }
+
+/* dropdown suggestion items for search bar */
+.p-autocomplete-item:hover {
+  color: #000000;
+  background-color: #fbbf24;
+}
+.p-highlight {
+  color: #000000;
+  background-color: #fbbf24;
+}

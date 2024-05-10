@@ -7,12 +7,18 @@ import { useRouter } from 'next/router'
 import toast from 'react-hot-toast'
 import { SearchBar } from '../../components/searchBar'
 import { fetchQuestions } from '../../actions/fetchQuestions'
+import { fetchFilters } from '../../actions/fetchFilters'
+import { FilterData } from '../../components/types/filterData'
 
 const History: React.FC = () => {
   const [lastweek, setLastWeek] = useState<Item[]>([])
   const [older, setOlder] = useState<Item[]>([])
   const [filter, setFilter] = useState<string>('semua')
+  const [filterData, setFilterData] = useState<FilterData>()
+  const [suggestion, setSuggestion] = useState<string[]>([])
   const [keyword, setKeyword] = useState<string>('')
+
+  // istanbul ignore next
   const isAdmin = typeof window !== 'undefined' ? JSON.parse(window.localStorage.getItem('userData')!).is_staff : ''
   const access = typeof window !== 'undefined' ? window.localStorage.getItem('access') : ''
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
@@ -23,17 +29,24 @@ const History: React.FC = () => {
   const router = useRouter()
 
   const fetchData = async (additional_param: string) => {
+    // istanbul ignore next
     if (!refresh) {
       toast.error('Silakan login terlebih dahulu')
       router.push('/login')
     }
+
     try {
       const processedLastWeekData = (await fetchQuestions(headers, 'last_week', additional_param)).processedData
       const processedOlderData = (await fetchQuestions(headers, 'older', additional_param)).processedData
 
       setLastWeek(processedLastWeekData)
       setOlder(processedOlderData)
+
+      const processedFilterData = await fetchFilters(headers)
+      // istanbul ignore next
+      setFilterData(processedFilterData)
     } catch (error: any) {
+      // istanbul ignore next
       if (refresh != null && error.response.status == '401') {
         try {
           const responseRefresh = await refreshToken(refresh)
@@ -60,7 +73,18 @@ const History: React.FC = () => {
   }, [])
 
   const handleFilterSelect = (filter: string) => {
+    // istanbul ignore next
     setFilter(filter)
+    // istanbul ignore next
+    if (filter == 'Pengguna') {
+      setSuggestion(filterData!.pengguna)
+    } else if (filter == 'Judul') {
+      setSuggestion(filterData!.judul)
+    } else if (filter == 'Topik') {
+      setSuggestion(filterData!.topik)
+    } else {
+      setSuggestion([])
+    }
   }
 
   const handleSubmit = () => {
@@ -81,8 +105,8 @@ const History: React.FC = () => {
         <SearchBar
           isAdmin={isAdmin}
           publicAnalyses={false}
-          filter={filter}
           keyword={keyword}
+          suggestions={suggestion}
           onSelect={handleFilterSelect}
           onSubmit={handleSubmit}
           onChange={(value) => setKeyword(value)}

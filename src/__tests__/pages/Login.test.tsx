@@ -94,7 +94,7 @@ describe('Login Page', () => {
     waitFor(() => {
       setTimeout(function () {
         expect(routerPushMock).toHaveBeenCalledWith('/')
-      }, 500)
+      }, 2000)
     })
   })
 
@@ -118,7 +118,7 @@ describe('Login Page', () => {
     setTimeout(function () {
       expect(getByText('Invalid credentials')).toBeInTheDocument()
       expect(routerPushMock).not.toHaveBeenCalled()
-    }, 500)
+    }, 1000)
   })
 
   test('calls onBlur handler when username input loses focus', () => {

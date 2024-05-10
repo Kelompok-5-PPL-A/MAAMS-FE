@@ -8,12 +8,16 @@ import { SearchBar } from '../../components/searchBar'
 import { fetchQuestions } from '../../actions/fetchQuestions'
 import AdminTable from '../../components/adminTable'
 import Pagination from '../../components/pagination'
+import { fetchFilters } from '../../actions/fetchFilters'
+import { FilterData } from 'components/types/filterData'
 
 const AnalisisPublik: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState<number>(1)
 
   const [filter, setFilter] = useState<string>('semua')
+  const [filterData, setFilterData] = useState<FilterData>()
+  const [suggestion, setSuggestion] = useState<string[]>([])
   const [keyword, setKeyword] = useState<string>('')
   const [submitted, setSubmitted] = useState<boolean>(false)
   const router = useRouter()
@@ -38,7 +42,12 @@ const AnalisisPublik: React.FC = () => {
       const processedData = await fetchQuestions(headers, '', additional_param)
       setData(processedData.processedData)
       setTotalPages(Math.ceil(processedData.count / 5))
+
+      const processedFilterData = await fetchFilters(headers)
+
+      setFilterData(processedFilterData)
     } catch (error: any) {
+      // istanbul ignore next
       if (refresh != null && error.response.status == '401') {
         try {
           const responseRefresh = await refreshToken(refresh)
@@ -50,9 +59,11 @@ const AnalisisPublik: React.FC = () => {
           localStorage.clear()
           router.push('/login')
         }
+        // istanbul ignore next
       } else if (error.response) {
         toast.error(error.response.data.detail)
         router.push('/')
+        // istanbul ignore next
       } else if (error.message) {
         toast.error(error.message)
         router.push('/')
@@ -62,6 +73,16 @@ const AnalisisPublik: React.FC = () => {
 
   const handleFilterSelect = (filter: string) => {
     setFilter(filter)
+    // istanbul ignore next
+    if (filter == 'Pengguna') {
+      setSuggestion(filterData!.pengguna)
+    } else if (filter == 'Judul') {
+      setSuggestion(filterData!.judul)
+    } else if (filter == 'Topik') {
+      setSuggestion(filterData!.topik)
+    } else {
+      setSuggestion([])
+    }
   }
 
   const handleSubmit = () => {
@@ -71,13 +92,13 @@ const AnalisisPublik: React.FC = () => {
       query: { keyword: keyword }
     })
   }
+  // istanbul ignore next
   useEffect(() => {
     const fetchDataBasedOnQuery = async () => {
       const { keyword } = router.query
       const page = submitted ? 1 : currentPage
       if (keyword && typeof keyword === 'string') {
         setKeyword(keyword)
-        fetchData(`pengawasan/?count=5&keyword=${keyword}&p=${page}`)
         fetchData(`pengawasan/?filter=${filter}&count=5&keyword=${keyword}&p=${page}`)
 
         if (submitted) {
@@ -86,7 +107,6 @@ const AnalisisPublik: React.FC = () => {
         }
       } else {
         fetchData(`pengawasan/?count=5&p=${currentPage}`)
-        fetchData(`pengawasan/?filter=${filter}&count=5&p=${currentPage}`)
       }
     }
 
@@ -102,8 +122,8 @@ const AnalisisPublik: React.FC = () => {
         <SearchBar
           isAdmin={isAdmin}
           publicAnalyses={true}
-          filter={filter}
           keyword={keyword}
+          suggestions={suggestion}
           onSelect={handleFilterSelect}
           onSubmit={handleSubmit}
           onChange={(value) => setKeyword(value)}

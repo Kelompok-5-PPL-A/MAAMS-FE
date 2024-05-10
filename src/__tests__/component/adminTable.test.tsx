@@ -2,6 +2,7 @@ import React from 'react'
 import { render, fireEvent } from '@testing-library/react'
 import AdminTable from '../../components/adminTable'
 import '@testing-library/jest-dom'
+import { Item } from 'components/types/adminTable'
 
 jest.mock('next/router', () => ({
   useRouter: jest.fn().mockReturnValue({
@@ -37,5 +38,38 @@ describe('AdminTable Component', () => {
     fireEvent.click(getByTestId('view-button-1'))
 
     expect(require('next/router').useRouter().push).toHaveBeenCalledWith('/validator/1')
+  })
+  it('triggers navigation on row click', () => {
+    const { getAllByRole } = render(<AdminTable data={mockData} />)
+    const rows = getAllByRole('row')
+
+    rows.forEach((row, index) => {
+      if (index > 0) {
+        fireEvent.click(row)
+        const expectedId = mockData[index - 1].id
+        expect(require('next/router').useRouter().push).toHaveBeenCalledWith(`/validator/${expectedId}`)
+        require('next/router').useRouter().push.mockClear()
+      }
+    })
+  })
+  it('renders non-empty data correctly', () => {
+    const mockData = [
+      {
+        id: '1',
+        title: 'Test Title 1',
+        displayed_title: 'Displayed Title 1',
+        user: 'Test User 1',
+        tags: ['tag1', 'tag2'],
+        timestamp: '2024-04-29'
+      }
+    ]
+    const { getByText } = render(<AdminTable data={mockData} />)
+    expect(getByText('Displayed Title 1')).toBeInTheDocument()
+  })
+
+  it('handles empty data correctly', () => {
+    const emptyData: Item[] = []
+    const { queryByText } = render(<AdminTable data={emptyData} />)
+    expect(queryByText('Test Title 1')).not.toBeInTheDocument()
   })
 })

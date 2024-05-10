@@ -26,6 +26,12 @@ const QuestionAddPage: React.FC = () => {
     }
   }, [])
 
+  useEffect(() => {
+    if (router.query.question) {
+      setQuestion(router.query.question as string)
+    }
+  }, [router.query])
+
   const handleModeChange = (newMode: Mode) => {
     setMode(newMode)
   }
@@ -38,6 +44,10 @@ const QuestionAddPage: React.FC = () => {
       }
       if (newTag.length > 10) {
         toast.error('Kategori maksimal 10 karakter.')
+        return
+      }
+      if (tags.includes(newTag.trim())) {
+        toast.error('Kategori sudah ada. Masukan kategori lain')
         return
       }
       setTags((prevCategories) => [...prevCategories, newTag.trim()])

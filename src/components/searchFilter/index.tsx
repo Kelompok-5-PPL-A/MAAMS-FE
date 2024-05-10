@@ -17,9 +17,10 @@ const NoSSRSearchFilter: React.FC<SearchFilterProps> = ({ isAdmin, updateFilter,
   }
 
   return (
-    <div className='max-md:flex-wrap max-md:px-5 '>
+    <div className='max-md:flex-wrap'>
       <div className='h-full flex gap-0 self-stretch shadow-lg rounded-tl-[10px] bg-yellow-400 rounded-bl-[10px]'>
         <select
+          data-testid='filter-select'
           role='combobox'
           className='rounded-bl-[10px] rounded-tl-[10px] px-4 py-3.5 flex bg-inherit justify-center items-center mr-3'
           onChange={handleChange}
@@ -39,6 +40,7 @@ const NoSSRSearchFilter: React.FC<SearchFilterProps> = ({ isAdmin, updateFilter,
           })}
         </select>
       </div>
+      <div data-testid='suggestion-list'></div>
     </div>
   )
 }
