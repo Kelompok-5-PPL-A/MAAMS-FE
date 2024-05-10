@@ -10,7 +10,7 @@
     "prepare": "husky",
     "postinstall": "husky install",
     "test": "jest",
-    "test:ci": "npm run test -- --testResultsProcessor=\"jest-junit\" --watchAll=false --ci --coverage",
+    "test:ci": "npm run test -- --testResultsProcessor=\"jest-junit\" --watchAll=false --ci --coverage --coverageReporters lcov",
     "jest-test": "npx jest --coverage"
   },
   "dependencies": {
