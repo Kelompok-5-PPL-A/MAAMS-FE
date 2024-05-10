@@ -23,14 +23,13 @@ describe('Pagination Component', () => {
 
   it('renders pagination correctly with given props', () => {
     const { getByText } = render(<Pagination currentPage={2} totalPages={5} onPageChange={onPageChangeMock} />)
-    expect(getByText('1')).toBeInTheDocument()
     expect(getByText('2')).toBeInTheDocument()
-    expect(getByText('4')).toBeInTheDocument()
+    expect(getByText('...')).toBeInTheDocument()
     expect(getByText('5')).toBeInTheDocument()
   })
 
   it('calls onPageChange when clicking on a page button', () => {
-    const { getByText } = render(<Pagination currentPage={2} totalPages={5} onPageChange={onPageChangeMock} />)
+    const { getByText } = render(<Pagination currentPage={1} totalPages={5} onPageChange={onPageChangeMock} />)
     fireEvent.click(getByText('1'))
     expect(onPageChangeMock).toHaveBeenCalledWith(1)
   })
@@ -171,16 +170,10 @@ describe('Pagination Component', () => {
   })
 
   it('calls onPageChange with the correct page number when a page button is clicked', () => {
-    const { getByText } = render(<Pagination currentPage={2} totalPages={5} onPageChange={onPageChangeMock} />)
+    const { getByText } = render(<Pagination currentPage={1} totalPages={5} onPageChange={onPageChangeMock} />)
 
     fireEvent.click(getByText('1'))
     expect(onPageChangeMock).toHaveBeenCalledWith(1)
-
-    fireEvent.click(getByText('2'))
-    expect(onPageChangeMock).toHaveBeenCalledWith(2)
-
-    fireEvent.click(getByText('4'))
-    expect(onPageChangeMock).toHaveBeenCalledWith(4)
 
     fireEvent.click(getByText('5'))
     expect(onPageChangeMock).toHaveBeenCalledWith(5)

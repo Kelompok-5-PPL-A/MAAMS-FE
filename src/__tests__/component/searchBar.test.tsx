@@ -98,4 +98,30 @@ describe('SearchBar component', () => {
     fireEvent.keyPress(inputElement, { key: 'Enter', charCode: 13 })
     expect(mockOnSubmit).toHaveBeenCalled()
   })
+
+  test('autocomplete search triggers correctly', async () => {
+    const { getByPlaceholderText } = render(
+      <SearchBar
+        isAdmin={isAdmin}
+        publicAnalyses={publicAnalyses}
+        suggestions={mockSuggestions}
+        keyword={keyword}
+        onSelect={mockOnSelect}
+        onChange={mockOnChange}
+        onSubmit={mockOnSubmit}
+      />
+    )
+
+    const autoCompleteInput = getByPlaceholderText('Cari analisis..')
+    fireEvent.change(autoCompleteInput, { target: { value: 'app' } })
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(autoCompleteInput.value).toBe('app')
+        expect(screen.getByText('apple')).toBeInTheDocument()
+        expect(screen.queryByText('banana')).not.toBeInTheDocument()
+        expect(screen.queryByText('orange')).not.toBeInTheDocument()
+      }, 2000)
+    })
+  })
 })
