@@ -6,6 +6,7 @@ import * as authModule from '../../actions/auth'
 import { AxiosRequestHeaders } from 'axios'
 import { Item } from 'components/types/historyPage'
 import { useRouter } from 'next/router'
+import { fetchQuestions } from '../../actions/fetchQuestions'
 
 const refreshTokenMock = jest.spyOn(authModule, 'refreshToken')
 const fetchQuestionsMock = jest.spyOn(fetchQuestionsModule, 'fetchQuestions')
@@ -17,6 +18,10 @@ jest.mock('next/router', () => ({
     push: mockPush,
     reload: mockReload
   })
+}))
+jest.mock('../../actions/auth', () => ({
+  ...jest.requireActual('../../actions/auth'),
+  refreshToken: jest.fn()
 }))
 
 beforeEach(() => {
@@ -67,6 +72,65 @@ global.localStorage = new LocalStorageMock()
 describe('History Component', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+  })
+
+  it('handleSubmit function is called correctly with the provided keyword and filter', async () => {
+    const keyword = 'example keyword'
+    const filter = 'Pengguna'
+
+    const fetchQuestionsMock = fetchQuestions as jest.MockedFunction<typeof fetchQuestions>
+    fetchQuestionsMock.mockResolvedValueOnce({
+      count: 0,
+      processedData: []
+    })
+
+    const { getByPlaceholderText, getByTestId } = render(<History />)
+
+    const inputElement = getByPlaceholderText('Cari analisis..')
+    fireEvent.change(inputElement, { target: { value: keyword } })
+
+    const filterSelect = screen.getByRole('combobox')
+    fireEvent.change(filterSelect, { target: { value: filter } })
+
+    const submitButton = getByTestId('search-button')
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      expect(fetchQuestions).toHaveBeenCalledWith({ Authorization: 'Bearer null' }, 'last_week', '?count=4')
+      expect(fetchQuestions).toHaveBeenCalledWith(
+        { Authorization: 'Bearer null' },
+        'last_week',
+        'search/?filter=semua&count=4&keyword=Pengguna'
+      )
+      expect(fetchQuestions).toHaveBeenCalledWith({ Authorization: 'Bearer null' }, 'older', '?count=4')
+    })
+  })
+
+  test('Submit form triggers fetchData with correct parameters', async () => {
+    const mockFetchData = jest.fn()
+
+    jest.spyOn(React, 'useState').mockImplementation(() => ['', mockFetchData])
+
+    const { getAllByPlaceholderText, getByTestId } = render(<History />)
+
+    const searchInputElements = getAllByPlaceholderText('Cari analisis..')
+    const searchInputElement = searchInputElements[0]
+
+    fireEvent.change(searchInputElement, {
+      target: { value: 'searchKeyword' }
+    })
+
+    const submitButton = getByTestId('search-button')
+    fireEvent.click(submitButton)
+
+    expect(fetchQuestions).toHaveBeenCalledTimes(2)
+
+    expect(fetchQuestions).toHaveBeenCalledWith({ Authorization: 'Bearer null' }, 'last_week', '?count=4')
+    expect(fetchQuestions).toHaveBeenCalledWith(
+      { Authorization: 'Bearer null' },
+      'last_week',
+      'search/?filter=semua&count=4&keyword=searchKeyword'
+    )
   })
 
   test('fetches and displays data for last week', async () => {
