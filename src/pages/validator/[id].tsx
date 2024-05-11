@@ -10,6 +10,7 @@ import Mode from '../../constants/mode'
 import { SubmitButton } from '../../components/submitButton'
 import { CauseStatus } from '../../lib/enum'
 import { UserDataProps } from 'components/types/userData'
+import { Cause } from '../../components/types/cause'
 import { ValidatorAdminHeader } from '../../components/validatorAdminHeader'
 import axiosInstance from '../../services/axiosInstance'
 
@@ -38,7 +39,6 @@ const ValidatorDetailPage = () => {
   const id = router.query.id
   const [validatorData, setValidatorData] = useState<ValidatorData>(defaultValidatorData)
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
-  const alphabet = 'ABCDE'
   const [columnCount, setColumnCount] = useState(3)
   const [rows, setRows] = useState([createInitialRow(1, 3)])
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
@@ -49,6 +49,7 @@ const ValidatorDetailPage = () => {
 
   useEffect(() => {
     getQuestionData()
+    getCauses()
   }, [id])
 
   useEffect(() => {
@@ -84,6 +85,52 @@ const ValidatorDetailPage = () => {
     }
   }
 
+  const getCauses = async () => {
+    if (!id) return
+
+    if (!refresh) {
+      toast.error('silakan login terlebih dahulu')
+      router.push('/login')
+      return
+    }
+
+    try {
+      const response = await axiosInstance.get(`/api/v1/validator/causes/${id}/`)
+      const causes: Cause[] = response.data ?? []
+      const rows = processAndSetRows(causes)
+      if (causes.length != 0) {
+        setRows(rows)
+        checkStatus(rows)
+      } else {
+        setRows([createInitialRow(1, 3)])
+      }
+    } catch (error: any) {
+      toast.error('Gagal mengambil sebab')
+    }
+  }
+
+  const processAndSetRows = (causes: Cause[]) => {
+    const groupedCauses: { [key: number]: Cause[] } = {}
+
+    Array.prototype.forEach.call(causes, (cause: Cause) => {
+      const { row } = cause
+      if (!groupedCauses[row]) {
+        groupedCauses[row] = []
+      }
+      groupedCauses[row].push(cause)
+    })
+
+    const rows = Object.entries(groupedCauses).map(([rowNumber, rowCauses]) => ({
+      id: parseInt(rowNumber),
+      causes: rowCauses.map((cause) => cause.cause),
+      causesId: rowCauses.map((cause) => cause.id),
+      statuses: rowCauses.map((cause) => (cause.status ? CauseStatus.CorrectNotRoot : CauseStatus.Incorrect)),
+      feedbacks: rowCauses.map(() => ''),
+      disabled: rowCauses.map((cause) => cause.status)
+    }))
+    return rows
+  }
+
   useEffect(() => {
     disableValidatedRow()
   }, [rows.length])
@@ -109,7 +156,7 @@ const ValidatorDetailPage = () => {
   }
 
   const addRow = () => {
-    setRows((prevRows) => [...prevRows, createInitialRow(rows.length + 1, columnCount)])
+    setRows((prevRows) => [...prevRows, createInitialRow(prevRows.length + 1, columnCount)])
   }
 
   const updateCauseAndStatus = (rowId: number, columnIndex: number, newCause: string, newStatus: CauseStatus) => {
@@ -139,20 +186,7 @@ const ValidatorDetailPage = () => {
     )
   }
 
-  // TODO : Implement disable column with root cause logic
-
-  const submitCauses = async () => {
-    // TODO : Implement submit causes logic with API call
-
-    //For dummy implementation, causes always correct but not root
-    const updatedRows = rows.map((row) => ({
-      ...row,
-      statuses: row.statuses.map(() => CauseStatus.CorrectNotRoot),
-      feedbacks: row.feedbacks.map((feedback, index) => `Penyebab pada ${alphabet[index]}${row.id} sudah tepat`)
-    }))
-
-    setRows(updatedRows)
-
+  const checkStatus = (updatedRows: typeof rows) => {
     const checkAllStatus = updatedRows.every((row) =>
       row.statuses.every((status) => status === CauseStatus.CorrectNotRoot || status === CauseStatus.CorrectRoot)
     )
@@ -162,6 +196,73 @@ const ValidatorDetailPage = () => {
     if (checkAllStatus) {
       addRow()
       disableValidatedRow()
+    }
+  }
+
+  const createCausesFromRow = async (rowNumber: number) => {
+    try {
+      const row = rows.find((row) => row.id === rowNumber)
+      if (!row) {
+        console.error('Row not found')
+        return
+      }
+
+      const createPromises = row.causes
+        .map((cause, index) => ({
+          question_id: id,
+          cause: cause,
+          row: row.id,
+          column: index,
+          mode: Mode.pribadi
+        }))
+        .map((data) => axiosInstance.post(`/api/v1/validator/causes/`, data))
+
+      await Promise.all(createPromises)
+    } catch (error: any) {
+      toast.error('Gagal menambahkan sebab: ', error.response.data.detail)
+    }
+  }
+
+  const patchCausesFromRow = async (rowNumber: number) => {
+    try {
+      const row = rows.find((row) => row.id === rowNumber)
+      if (!row) {
+        console.error('Row not found')
+        return
+      }
+
+      const patchPromises = row.causes.map((cause, index) => {
+        return axiosInstance.patch(`/api/v1/validator/causes/patch/${id}/${row.causesId[index]}/`, { cause })
+      })
+
+      await Promise.all(patchPromises)
+    } catch (error: any) {
+      toast.error('Gagal validasi sebab: ', error.response.data.detail)
+    }
+  }
+
+  // TODO : Implement disable column with root cause logic
+
+  const submitCauses = async () => {
+    try {
+      const largestRowId = Math.max(...rows.map((row) => row.id))
+      const latestRow = rows.find((row) => row.id === largestRowId)
+
+      if (latestRow) {
+        const isFirstTime = latestRow.statuses.every((status) => status === CauseStatus.Unchecked)
+
+        if (isFirstTime) {
+          await createCausesFromRow(largestRowId)
+        } else {
+          await patchCausesFromRow(largestRowId)
+        }
+      }
+
+      await axiosInstance.patch(`/api/v1/validator/causes/validate/${id}/`)
+
+      getCauses()
+    } catch (error: any) {
+      toast.error('Gagal validasi sebab: ', error.response.data.detail)
     }
   }
 
@@ -191,6 +292,7 @@ const ValidatorDetailPage = () => {
               rowNumber={row.id}
               cols={columnCount}
               causes={row.causes}
+              causesId={row.causesId}
               causeStatuses={row.statuses}
               disabledCells={!isOwner ? Array(columnCount).fill(true) : row.disabled}
               onCauseAndStatusChanges={(causeIndex: number, newValue: string, newStatus: CauseStatus) =>
@@ -216,6 +318,7 @@ function createInitialRow(id: number, cols: number) {
   return {
     id,
     causes: Array(cols).fill(''),
+    causesId: Array(cols).fill(''),
     statuses: Array(cols).fill(CauseStatus.Unchecked),
     feedbacks: Array(cols).fill(''),
     disabled: Array(cols).fill(false)
