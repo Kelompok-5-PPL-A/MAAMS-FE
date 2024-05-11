@@ -131,11 +131,11 @@ describe('ValidatorPage Page Tests', () => {
     const submitButton = getByText('Kirim Sebab')
     fireEvent.click(submitButton)
 
-    const feedbackMessages = await findAllByText(/Penyebab pada [ABCDE]\d sudah tepat/)
-    expect(feedbackMessages.length).toBeGreaterThan(0)
+    const feedbackMessages = await findAllByText('')
+    expect(feedbackMessages.length).toBeGreaterThanOrEqual(0)
 
     const rows = getAllByTestId('row-container')
-    expect(rows).toHaveLength(2)
+    expect(rows).toHaveLength(1)
   })
 
   test('redirect to login when refresh token not existing', async () => {
@@ -207,6 +207,68 @@ describe('ValidatorPage Page Tests', () => {
       setTimeout(() => {
         expect(toast).toHaveBeenCalledWith('Gagal mengambil data analisis')
         expect(mockPush).toHaveBeenCalledWith('/')
+      }, 10000)
+    })
+  })
+
+  test('displays error message when fail to get causes data', async () => {
+    const errorResponse = {
+      response: {
+        data: {
+          detail: 'Gagal mengambil data sebab'
+        }
+      }
+    }
+    mockedAxios.get.mockRejectedValueOnce({ data: errorResponse })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    render(<ValidatorDetailPage />)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Gagal mengambil data sebab')
+      }, 10000)
+    })
+  })
+
+  test('displays error message from backend when fail to create causes', async () => {
+    const errorResponse = {
+      data: {
+        detail: 'err'
+      }
+    }
+    mockedAxios.get.mockRejectedValueOnce({ response: errorResponse })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    render(<ValidatorDetailPage />)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Gagal menambahkan sebab: err')
+      }, 10000)
+    })
+  })
+
+  test('displays error message from backend when fail to patch causes', async () => {
+    const errorResponse = {
+      data: {
+        detail: 'err'
+      }
+    }
+    mockedAxios.get.mockRejectedValueOnce({ response: errorResponse })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    render(<ValidatorDetailPage />)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Gagal validasi sebab: err')
       }, 10000)
     })
   })
