@@ -278,4 +278,24 @@ describe('ValidatorPage Page Tests', () => {
 
     render(<ValidatorDetailPage />)
   })
+
+  test('calls validateCauses and displays success toast on success', async () => {
+    const mockResponseData = {}
+
+    const { getByText, getAllByTestId } = render(<ValidatorDetailPage />)
+
+    const cells = getAllByTestId('cell')
+    for (const cell of cells) {
+      const input = within(cell).getByPlaceholderText('Isi sebab..') as HTMLInputElement
+      fireEvent.change(input, { target: { value: 'Some cause' } })
+    }
+    const submitButton = getByText('Kirim Sebab')
+    fireEvent.click(submitButton)
+
+    mockedAxios.patch.mockResolvedValueOnce({ data: mockResponseData })
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('Sebab selesai divalidasi')
+    })
+  })
 })
