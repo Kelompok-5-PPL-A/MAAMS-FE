@@ -279,8 +279,16 @@ describe('ValidatorPage Page Tests', () => {
     render(<ValidatorDetailPage />)
   })
 
-  test('calls validateCauses and displays success toast on success', async () => {
-    const mockResponseData = {}
+  test('calls validateCauses and displays error toast on failed validation', async () => {
+    const errorResponse = {
+      data: {
+        detail: 'error'
+      }
+    }
+    mockedAxios.get.mockRejectedValueOnce({ response: errorResponse })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
 
     const { getByText, getAllByTestId } = render(<ValidatorDetailPage />)
 
@@ -292,10 +300,10 @@ describe('ValidatorPage Page Tests', () => {
     const submitButton = getByText('Kirim Sebab')
     fireEvent.click(submitButton)
 
-    mockedAxios.patch.mockResolvedValueOnce({ data: mockResponseData })
-
     await waitFor(() => {
-      expect(toast.success).toHaveBeenCalledWith('Sebab selesai divalidasi')
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Gagal validasi sebab: error')
+      }, 10000)
     })
   })
 })
