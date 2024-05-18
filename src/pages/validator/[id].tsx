@@ -42,7 +42,7 @@ const ValidatorDetailPage = () => {
   const [columnCount, setColumnCount] = useState(3)
   const [rows, setRows] = useState([createInitialRow(1, 3)])
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
-
+  const [isLoading, setIsLoading] = useState(false)
   const [isStaff, setIsStaff] = useState(false)
   const [isOwner, setIsOwner] = useState(false)
   const [userData, setUserData] = useState<UserDataProps>(defaultUserData)
@@ -272,6 +272,7 @@ const ValidatorDetailPage = () => {
 
   const submitCauses = async () => {
     try {
+      setIsLoading(true)
       const largestRowId = Math.max(...rows.map((row) => row.id))
       const latestRow = rows.find((row) => row.id === largestRowId)
 
@@ -287,8 +288,10 @@ const ValidatorDetailPage = () => {
 
       await validateCauses()
       await getCauses()
+      setIsLoading(false)
     } catch (error: any) {
       toast.error('Gagal validasi sebab: ', error.response.data.detail)
+      setIsLoading(false)
     }
   }
 
@@ -330,7 +333,7 @@ const ValidatorDetailPage = () => {
         ))}
         {isOwner ? (
           <div className='flex justify-center mt-4'>
-            <SubmitButton onClick={() => submitCauses()} disabled={isSubmitDisabled} label='Kirim Sebab' />
+            <SubmitButton onClick={() => submitCauses()} disabled={isSubmitDisabled || isLoading} label='Kirim Sebab' />
           </div>
         ) : (
           <></>
