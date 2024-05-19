@@ -273,6 +273,7 @@ const ValidatorDetailPage = () => {
   const submitCauses = async () => {
     try {
       setIsLoading(true)
+      const loadID = toast.loading('Melakukan Analisis, Mohon Tunggu...')
       const largestRowId = Math.max(...rows.map((row) => row.id))
       const latestRow = rows.find((row) => row.id === largestRowId)
 
@@ -289,9 +290,11 @@ const ValidatorDetailPage = () => {
       await validateCauses()
       await getCauses()
       setIsLoading(false)
+      toast.dismiss(loadID)
     } catch (error: any) {
       toast.error('Gagal validasi sebab: ', error.response.data.detail)
       setIsLoading(false)
+      toast.dismiss()
     }
   }
 
