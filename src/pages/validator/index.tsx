@@ -15,6 +15,7 @@ const QuestionAddPage: React.FC = () => {
   const [title, setTitle] = useState<string>('')
   const [question, setQuestion] = useState<string>('')
   const [newTag, setNewTag] = useState<string>('')
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [tags, setTags] = useState<string[]>([])
 
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
@@ -60,17 +61,22 @@ const QuestionAddPage: React.FC = () => {
   }
 
   const handleSubmit = async () => {
+    setIsLoading(true)
     if (!title) {
       toast.error('Judul harus diisi')
+      setIsLoading(false)
       return
     } else if (!question) {
       toast.error('Pertanyaan harus diisi')
+      setIsLoading(false)
       return
     } else if (tags.length == 0) {
       toast.error('Minimal mengisi 1 kategori')
+      setIsLoading(false)
       return
     } else if (title.length > 40) {
       toast.error('Judul maksimal 40 karakter. Berikan judul yang lebih singkat')
+      setIsLoading(false)
       return
     }
 
@@ -86,8 +92,10 @@ const QuestionAddPage: React.FC = () => {
     } catch (error: any) {
       if (error.response) {
         toast.error(error.response.data.detail)
+        setIsLoading(false)
       } else {
         toast.error('Gagal menambahkan analisis')
+        setIsLoading(false)
       }
     }
   }
@@ -138,6 +146,7 @@ const QuestionAddPage: React.FC = () => {
                 type='button'
                 onClick={handleSubmit}
                 className='bg-gradient-to-b from-yellow-400 to-yellow-600 text-l text-white font-bold py-2 px-12 rounded-xl'
+                disabled={isLoading}
               >
                 Kirim
               </button>
