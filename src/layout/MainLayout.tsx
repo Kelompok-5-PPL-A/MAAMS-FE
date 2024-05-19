@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react'
 import Navbar from '../components/navbar/navbar'
 import Footer from '../components/footer/footer'
+import Head from 'next/head'
 
 type MainLayoutProps = {
   children: ReactNode
@@ -10,6 +11,11 @@ type MainLayoutProps = {
 const MainLayout = ({ children, marginOverride = 'm-10' }: MainLayoutProps) => {
   return (
     <div>
+      <Head>
+        <title>MAAMS</title>
+        <meta name='MAAMS' content='Metode Analisis Akar Masalah dan Solusi' />
+        <link rel='icon' href='/icons/maams-footer.svg' />
+      </Head>
       <Navbar />
       <div className={`min-h-screen ${marginOverride}`}>{children}</div>
       <Footer />
