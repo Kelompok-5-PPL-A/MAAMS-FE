@@ -14,7 +14,7 @@ const MainLayout = ({ children, marginOverride = 'm-10' }: MainLayoutProps) => {
       <Head>
         <title>MAAMS</title>
         <meta name='MAAMS' content='Metode Analisis Akar Masalah dan Solusi' />
-        <link rel='icon' href='/icons/maams-footer.svg' />
+        <link rel='icon' href='/icons/meta-icon.svg' />
       </Head>
       <Navbar />
       <div className={`min-h-screen ${marginOverride}`}>{children}</div>
