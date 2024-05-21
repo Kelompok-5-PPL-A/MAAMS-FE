@@ -12,6 +12,9 @@ import { Icon, Modal, ModalOverlay, ModalContent, ModalFooter, ModalBody, ModalC
 import axiosInstance from '../../services/axiosInstance'
 import { EditableTitleForm } from '../../components/editableTitleForm'
 import { TagsGroup } from '../../components/tagsGroup'
+import { BiPencil } from 'react-icons/bi'
+import { Badge } from '../../components/badge'
+import { HiOutlineInformationCircle } from 'react-icons/hi'
 
 export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id, validatorData }) => {
   const [question, setQuestion] = useState<string>(validatorData?.question || '')
@@ -20,9 +23,18 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
   const [isModeChangeModalOpen, setIsModeChangeModalOpen] = useState<boolean>(false)
   const [pendingMode, setPendingMode] = useState(mode)
   const [title, setTitle] = useState<string | undefined>(validatorData?.title || validatorData?.question)
+  const [isTagsChangeModalOpen, setIsTagsChangeModalOpen] = useState<boolean>(false)
+  const [tags, setTags] = useState<string[]>([])
+  const [tagsModal, setTagsModals] = useState<string[]>([])
+  const [newTag, setNewTag] = useState<string>('')
 
   const handleTitleChange = (newTitle: string) => {
     setTitle(newTitle)
+  }
+
+  const handleTagsReset = () => {
+    setTagsModals(tags)
+    setIsTagsChangeModalOpen(false)
   }
 
   const handleModeChange = (newMode: Mode) => {
@@ -35,6 +47,8 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
       setMode(validatorData?.mode ?? Mode.pribadi)
     }
     setTitle(validatorData?.title || validatorData?.question)
+    setTags(validatorData?.tags ?? [])
+    setTagsModals(validatorData?.tags ?? [])
   }, [validatorData])
 
   const handleModeChangeConfirm = async () => {
@@ -82,6 +96,67 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
     }
   }
 
+  const handleTagsChangeConfirm = async () => {
+    if (arraysAreEqual(tagsModal, tags)) {
+      toast('Kategori sama dengan sebelumnya', {
+        icon: <HiOutlineInformationCircle className='text-blue-500 w-6 h-6' />
+      })
+      return
+    }
+
+    if (tagsModal?.length == 0) {
+      toast.error('Minimal mengisi 1 kategori')
+      return
+    }
+
+    try {
+      const { data } = await axiosInstance.patch(`/api/v1/validator/ubah/tags/${id}/`, {
+        tags: tagsModal
+      })
+      setTags(data.tags)
+      setTagsModals(data.tags)
+      setIsTagsChangeModalOpen(false)
+      toast.success('Berhasil mengubah kategori')
+    } catch (error: any) {
+      if (error.response) {
+        toast.error(error.response.data.detail)
+      } else {
+        toast.error('Gagal mengubah kategori')
+      }
+    }
+  }
+
+  const arraysAreEqual = (arr1: string[] | undefined, arr2: string[] | undefined) => {
+    if (!arr1 || !arr2) return arr1 === arr2
+    if (arr1.length !== arr2.length) return false
+    const sortedArr1 = [...arr1].sort()
+    const sortedArr2 = [...arr2].sort()
+    return sortedArr1.every((value, index) => value === sortedArr2[index])
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && newTag.trim() !== '') {
+      if (tagsModal?.length == 3) {
+        toast.error('Kategori sudah ada 3')
+        return
+      }
+      if (newTag.length > 10) {
+        toast.error('Kategori maksimal 10 karakter.')
+        return
+      }
+      if (tagsModal?.includes(newTag.trim())) {
+        toast.error('Kategori sudah ada. Masukan kategori lain')
+        return
+      }
+      setTagsModals((prevCategories = []) => [...prevCategories, newTag.trim()])
+      setNewTag('')
+    }
+  }
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTagsModals(tagsModal?.filter((tag) => tag !== tagToRemove))
+  }
+
   return (
     <>
       <div className='flex flex-col w-full gap-8'>
@@ -94,7 +169,20 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
 
         {id && <EditableTitleForm title={title} onTitleChange={handleTitleChange} id={id} />}
 
-        <TagsGroup tags={validatorData?.tags} />
+        <div className='flex flex-col gap-2'>
+          <h2 className='text-md'>Kategori Analisis:</h2>
+          <div className='flex flex-row gap-2'>
+            <TagsGroup tags={tags} />
+            <button
+              className='rounded-full px-3 py-1 flex item-center bg-amber-500 radius-xl flex-row gap-1 hover:bg-amber-400'
+              onClick={() => setIsTagsChangeModalOpen(!isTagsChangeModalOpen)}
+              data-testid='toggle-tags-button'
+            >
+              <BiPencil className='h-6' />
+              Ubah Kategori
+            </button>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} data-testid='question-form'>
           <>
@@ -140,6 +228,47 @@ export const ValidatorQuestionForm: React.FC<ValidatorQuestionFormProps> = ({ id
                 onClick={handleModeChangeConfirm}
               >
                 Simpan
+              </button>
+            </div>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <Modal size='xl' isOpen={isTagsChangeModalOpen} onClose={() => handleTagsReset()}>
+        <ModalOverlay />
+        <ModalContent className='py-8'>
+          <ModalCloseButton />
+          <ModalBody className='items-center mt-8'>
+            <div className='flex flex-col lg:justify-center lg:w-full gap-2'>
+              <div className='font-bold'>Kategori Analisis</div>
+              <CustomInput
+                value={newTag}
+                placeholder='Berikan maksimal 3 kategori ...'
+                onChange={(e) => setNewTag(e.target.value)}
+                onKeyDown={handleKeyDown}
+              ></CustomInput>
+              <div className='flex flex-wrap gap-2'>
+                {tagsModal?.map((tag, index) => (
+                  <div key={index}>
+                    <Badge text={tag} isRemovable={true} handleRemove={() => handleRemoveTag(tag)}></Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <div className='flex flex-row gap-4'>
+              <button
+                className='w-full px-6 py-2 border-2 border-yellow-400 rounded-2xl justify-center items-center text-black text-lg'
+                onClick={() => handleTagsReset()}
+              >
+                Batal
+              </button>
+              <button
+                className='w-full px-6 py-2 bg-gradient-to-t from-yellow-500 to-yellow-500 text-white rounded-2xl justify-center items-center gap-2 inline-flex'
+                onClick={handleTagsChangeConfirm}
+              >
+                Kirim
               </button>
             </div>
           </ModalFooter>
