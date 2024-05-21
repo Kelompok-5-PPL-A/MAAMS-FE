@@ -13,7 +13,12 @@ const MainLayout = ({ children, marginOverride = 'm-10' }: MainLayoutProps) => {
     <div>
       <Head>
         <title>MAAMS</title>
-        <meta name='MAAMS' content='Metode Analisis Akar Masalah dan Solusi' />
+        <meta
+          name='description'
+          content='MAAMS menggunakan algoritma analisis untuk memvalidasi sebab-sebab masalah yang diinput oleh pengguna, membantu menemukan akar masalah dengan lebih tepat.'
+        />
+        <meta name='author' content='Ari Harsono'></meta>
+        <meta name='keywords' content='Akar, Masalah, Analisis, Validasi, '></meta>
         <link rel='icon' href='/icons/meta-icon.svg' />
       </Head>
       <Navbar />
