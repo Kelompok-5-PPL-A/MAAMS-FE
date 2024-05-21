@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { ValidatorQuestionForm } from '../../components/validatorQuestionForm'
-import { render, fireEvent, waitFor } from '@testing-library/react'
+import { render, fireEvent, waitFor, screen, queryByText } from '@testing-library/react'
 import React from 'react'
 import '@testing-library/jest-dom'
 import Mode from '../../constants/mode'
@@ -353,5 +353,325 @@ describe('ValidatorQuestionForm Component', () => {
         expect(queryByText('Apakah Anda yakin ingin menampilkan analisis ini kepada Admin?')).not.toBeInTheDocument()
       }, 10000)
     })
+  })
+
+  test('updates tags successfully with API call', async () => {
+    const mockResponseData = {
+      tags: ['analisis']
+    }
+    mockedAxios.patch.mockResolvedValue({ data: mockResponseData })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    const validatorData = {
+      mode: Mode.pribadi,
+      question: 'Contoh pertanyaan',
+      username: 'test',
+      created_at: 'test',
+      title: 'test',
+      tags: ['example tag']
+    }
+
+    const { getByText, getByTestId, getByPlaceholderText } = render(
+      <ValidatorQuestionForm id={'id-test'} validatorData={validatorData} />
+    )
+
+    const editTagButton = getByTestId('toggle-tags-button')
+    fireEvent.click(editTagButton)
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+    fireEvent.change(newTagInput, { target: { value: 'Sample Tag' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    fireEvent.click(getByText('Kirim'))
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.success).toHaveBeenCalledWith('Berhasil mengubah kategori')
+      }, 10000)
+    })
+  })
+
+  test('updates tags with duplicate', async () => {
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    const validatorData = {
+      mode: Mode.pribadi,
+      question: 'Contoh pertanyaan',
+      username: 'test',
+      created_at: 'test',
+      title: 'test',
+      tags: ['kategori']
+    }
+
+    const { getByTestId, getByPlaceholderText } = render(
+      <ValidatorQuestionForm id={'id-test'} validatorData={validatorData} />
+    )
+
+    const editTagButton = getByTestId('toggle-tags-button')
+    fireEvent.click(editTagButton)
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+    fireEvent.change(newTagInput, { target: { value: 'kategori' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Kategori sudah ada. Masukan kategori lain')
+      }, 10000)
+    })
+  })
+
+  test('updates tags with 4 value total', async () => {
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    const validatorData = {
+      mode: Mode.pribadi,
+      question: 'Contoh pertanyaan',
+      username: 'test',
+      created_at: 'test',
+      title: 'test',
+      tags: ['kategori']
+    }
+
+    const { getByTestId, getByPlaceholderText } = render(
+      <ValidatorQuestionForm id={'id-test'} validatorData={validatorData} />
+    )
+
+    const editTagButton = getByTestId('toggle-tags-button')
+    fireEvent.click(editTagButton)
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+    fireEvent.change(newTagInput, { target: { value: '2' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+    fireEvent.change(newTagInput, { target: { value: '3' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+    fireEvent.change(newTagInput, { target: { value: '4' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Kategori sudah ada 3')
+      }, 10000)
+    })
+  })
+
+  test('updates tags with long category', async () => {
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    const validatorData = {
+      mode: Mode.pribadi,
+      question: 'Contoh pertanyaan',
+      username: 'test',
+      created_at: 'test',
+      title: 'test',
+      tags: ['kategori']
+    }
+
+    const { getByTestId, getByPlaceholderText } = render(
+      <ValidatorQuestionForm id={'id-test'} validatorData={validatorData} />
+    )
+
+    const editTagButton = getByTestId('toggle-tags-button')
+    fireEvent.click(editTagButton)
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+    fireEvent.change(newTagInput, { target: { value: 'Kategori yang panjang aaaaa' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Kategori maksimal 10 karakter.')
+      }, 10000)
+    })
+  })
+
+  test('display error when missing tags on submission', async () => {
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    const validatorData = {
+      mode: Mode.pribadi,
+      question: 'Contoh pertanyaan',
+      username: 'test',
+      created_at: 'test',
+      title: 'test',
+      tags: ['example tag']
+    }
+
+    const { getByText, getByTestId } = render(<ValidatorQuestionForm id={'id-test'} validatorData={validatorData} />)
+
+    const editTagButton = getByTestId('toggle-tags-button')
+    fireEvent.click(editTagButton)
+
+    const removeButton = getByTestId('remove-tag-button')
+    fireEvent.click(removeButton)
+
+    fireEvent.click(getByText('Kirim'))
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Minimal mengisi 1 kategori')
+      }, 10000)
+    })
+  })
+
+  test('display error when value of tags not updated', async () => {
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+    const validatorData = {
+      mode: Mode.pribadi,
+      question: 'Contoh pertanyaan',
+      username: 'test',
+      created_at: 'test',
+      title: 'test',
+      tags: ['example tag']
+    }
+
+    const { getByText, getByTestId } = render(<ValidatorQuestionForm id={'id-test'} validatorData={validatorData} />)
+    const editTagButton = getByTestId('toggle-tags-button')
+    fireEvent.click(editTagButton)
+
+    fireEvent.click(getByText('Kirim'))
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Kategori sama dengan sebelumnya')
+      }, 10000)
+    })
+  })
+
+  test('reset tags input when modal is closed', async () => {
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+    const validatorData = {
+      mode: Mode.pribadi,
+      question: 'Contoh pertanyaan',
+      username: 'test',
+      created_at: 'test',
+      title: 'test',
+      tags: ['example tag']
+    }
+
+    const { getByText, queryByText, getByTestId, getByPlaceholderText } = render(
+      <ValidatorQuestionForm id={'id-test'} validatorData={validatorData} />
+    )
+    const editTagButton = getByTestId('toggle-tags-button')
+    fireEvent.click(editTagButton)
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+    fireEvent.change(newTagInput, { target: { value: 'hilang' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    fireEvent.click(getByText('Batal'))
+    fireEvent.click(editTagButton)
+
+    expect(queryByText('hilang')).not.toBeInTheDocument
+  })
+
+  test('failed update tags from backend, should show error from backend', async () => {
+    const errorResponse = {
+      data: {
+        detail: 'Backend Error Message'
+      }
+    }
+    mockedAxios.patch.mockRejectedValueOnce({ response: errorResponse })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    const validatorData = {
+      mode: Mode.pribadi,
+      question: 'Contoh pertanyaan',
+      username: 'test',
+      created_at: 'test',
+      title: 'test',
+      tags: ['example tag']
+    }
+
+    const { getByText, getByTestId, getByPlaceholderText } = render(
+      <ValidatorQuestionForm id={'id-test'} validatorData={validatorData} />
+    )
+
+    const editTagButton = getByTestId('toggle-tags-button')
+    fireEvent.click(editTagButton)
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+    fireEvent.change(newTagInput, { target: { value: 'Sample Tag' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    fireEvent.click(getByText('Kirim'))
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Backend Error Message')
+      }, 10000)
+    })
+  })
+
+  test('should show error on unsuccessful update tags', async () => {
+    const errorResponse = {
+      response: {
+        request: {
+          responseText: 'Gagal mengubah kategori'
+        }
+      }
+    }
+    mockedAxios.patch.mockRejectedValueOnce({ data: errorResponse })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    const validatorData = {
+      mode: Mode.pribadi,
+      question: 'Contoh pertanyaan',
+      username: 'test',
+      created_at: 'test',
+      title: 'test',
+      tags: ['example tag']
+    }
+
+    const { getByText, getByTestId, getByPlaceholderText } = render(
+      <ValidatorQuestionForm id={'id-test'} validatorData={validatorData} />
+    )
+
+    const editTagButton = getByTestId('toggle-tags-button')
+    fireEvent.click(editTagButton)
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+    fireEvent.change(newTagInput, { target: { value: 'Sample Tag' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    fireEvent.click(getByText('Kirim'))
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Gagal mengubah kategori')
+      }, 10000)
+    })
+  })
+
+  test('closes the update tags modal when the close icon is clicked', async () => {
+    const validatorData = {
+      mode: Mode.pribadi,
+      question: 'Contoh pertanyaan',
+      username: 'test',
+      created_at: 'test',
+      title: 'test',
+      tags: ['example tag']
+    }
+
+    const { getByLabelText, queryByText, getByTestId, getByPlaceholderText } = render(
+      <ValidatorQuestionForm id={'id-test'} validatorData={validatorData} />
+    )
+
+    const editTagButton = getByTestId('toggle-tags-button')
+    fireEvent.click(editTagButton)
+
+    const newTagInput = getByPlaceholderText('Berikan maksimal 3 kategori ...')
+    fireEvent.change(newTagInput, { target: { value: 'hilang' } })
+    fireEvent.keyDown(newTagInput, { key: 'Enter', code: 'Enter' })
+
+    const closeIcon = getByLabelText('Close')
+    fireEvent.click(closeIcon)
+
+    expect(queryByText('hilang')).not.toBeInTheDocument
   })
 })
