@@ -284,7 +284,8 @@ const ValidatorDetailPage = () => {
       setIsLoading(false)
       toast.dismiss(loadID)
     } catch (error: any) {
-      toast.error('Gagal validasi sebab: ', error.response.data.detail)
+      const errorMessage = error.response?.data?.detail || 'An unexpected error occurred'
+      toast.error('Gagal validasi sebab: ', errorMessage)
       setIsLoading(false)
       toast.dismiss()
     }
