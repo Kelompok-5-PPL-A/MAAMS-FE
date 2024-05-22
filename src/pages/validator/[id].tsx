@@ -42,7 +42,7 @@ const ValidatorDetailPage = () => {
   const [columnCount, setColumnCount] = useState(3)
   const [rows, setRows] = useState([createInitialRow(1, 3)])
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
-
+  const [isLoading, setIsLoading] = useState(false)
   const [isStaff, setIsStaff] = useState(false)
   const [isOwner, setIsOwner] = useState(false)
   const [userData, setUserData] = useState<UserDataProps>(defaultUserData)
@@ -263,21 +263,31 @@ const ValidatorDetailPage = () => {
   // TODO : Implement disable column with root cause logic
 
   const submitCauses = async () => {
-    const largestRowId = Math.max(...rows.map((row) => row.id))
-    const latestRow = rows.find((row) => row.id === largestRowId)
+    try {
+      setIsLoading(true)
+      const loadID = toast.loading('Melakukan Analisis, Mohon Tunggu...')
+      const largestRowId = Math.max(...rows.map((row) => row.id))
+      const latestRow = rows.find((row) => row.id === largestRowId)
 
-    if (latestRow) {
-      const isFirstTime = latestRow.statuses.every((status) => status === CauseStatus.Unchecked)
+      if (latestRow) {
+        const isFirstTime = latestRow.statuses.every((status) => status === CauseStatus.Unchecked)
 
-      if (isFirstTime) {
-        await createCausesFromRow(largestRowId)
-      } else {
-        await patchCausesFromRow(largestRowId)
+        if (isFirstTime) {
+          await createCausesFromRow(largestRowId)
+        } else {
+          await patchCausesFromRow(largestRowId)
+        }
       }
-    }
 
-    await validateCauses()
-    await getCauses()
+      await validateCauses()
+      await getCauses()
+      setIsLoading(false)
+      toast.dismiss(loadID)
+    } catch (error: any) {
+      toast.error('Gagal validasi sebab: ', error.response.data.detail)
+      setIsLoading(false)
+      toast.dismiss()
+    }
   }
 
   const isSubmitDisabled = rows.some((row) => row.causes.some((cause) => cause.trim() === ''))
@@ -318,7 +328,7 @@ const ValidatorDetailPage = () => {
         ))}
         {isOwner ? (
           <div className='flex justify-center mt-4'>
-            <SubmitButton onClick={() => submitCauses()} disabled={isSubmitDisabled} label='Kirim Sebab' />
+            <SubmitButton onClick={() => submitCauses()} disabled={isSubmitDisabled || isLoading} label='Kirim Sebab' />
           </div>
         ) : (
           <></>
