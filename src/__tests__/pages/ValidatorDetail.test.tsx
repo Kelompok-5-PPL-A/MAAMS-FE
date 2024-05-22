@@ -25,8 +25,10 @@ jest.mock('next/router', () => ({
 }))
 
 jest.mock('react-hot-toast', () => ({
+  error: jest.fn(),
   success: jest.fn(),
-  error: jest.fn()
+  dismiss: jest.fn(),
+  loading: jest.fn()
 }))
 
 beforeEach(() => {
@@ -226,7 +228,7 @@ describe('ValidatorPage Page Tests', () => {
 
     await waitFor(() => {
       setTimeout(() => {
-        expect(toast).toHaveBeenCalledWith('Gagal mengambil sebab')
+        expect(toast.error).toHaveBeenCalledWith('Gagal mengambil sebab')
       }, 10000)
     })
   })
@@ -240,26 +242,6 @@ describe('ValidatorPage Page Tests', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Sebab:')).toBeInTheDocument
-    })
-  })
-
-  test('displays error message from backend when fail to create causes', async () => {
-    const errorResponse = {
-      data: {
-        detail: 'err'
-      }
-    }
-    mockedAxios.get.mockRejectedValueOnce({ response: errorResponse })
-
-    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
-    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
-
-    render(<ValidatorDetailPage />)
-
-    await waitFor(() => {
-      setTimeout(() => {
-        expect(toast).toHaveBeenCalledWith('Gagal menambahkan sebab: err')
-      }, 10000)
     })
   })
 
@@ -283,26 +265,6 @@ describe('ValidatorPage Page Tests', () => {
     })
   })
 
-  test('displays error message from backend when fail to patch causes', async () => {
-    const errorResponse = {
-      data: {
-        detail: 'err'
-      }
-    }
-    mockedAxios.get.mockRejectedValueOnce({ response: errorResponse })
-
-    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
-    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
-
-    render(<ValidatorDetailPage />)
-
-    await waitFor(() => {
-      setTimeout(() => {
-        expect(toast).toHaveBeenCalledWith('Gagal validasi sebab: err')
-      }, 10000)
-    })
-  })
-
   test('handle missing ID return nothing', () => {
     routerContext.query = { id: '' }
 
@@ -315,7 +277,7 @@ describe('ValidatorPage Page Tests', () => {
         detail: 'error'
       }
     }
-    mockedAxios.get.mockRejectedValueOnce({ response: errorResponse })
+    mockedAxios.post.mockRejectedValueOnce({ response: errorResponse })
 
     jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
     jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
@@ -332,7 +294,8 @@ describe('ValidatorPage Page Tests', () => {
 
     await waitFor(() => {
       setTimeout(() => {
-        expect(toast).toHaveBeenCalledWith('Gagal validasi sebab: error')
+        expect(toast.error).toHaveBeenCalledWith('Gagal validasi sebab: error')
+        expect(toast.dismiss).toHaveBeenCalled()
       }, 10000)
     })
   })
@@ -376,39 +339,6 @@ describe('ValidatorPage Page Tests', () => {
     })
   })
 
-  // test('creates causes for the second row', async () => {
-  //   const { getAllByPlaceholderText, getAllByTestId, getByTestId, getByText } = render(<ValidatorDetailPage />)
-
-  //   const inputFields = await getAllByPlaceholderText('Isi sebab..')
-  //   fireEvent.change(inputFields[0], { target: { value: 'First Cause' } })
-  //   fireEvent.change(inputFields[1], { target: { value: 'Second Cause' } })
-  //   fireEvent.change(inputFields[2], { target: { value: 'Third Cause' } })
-
-  //   mockedAxios.post.mockResolvedValueOnce({ data: { success: true } })
-  //   fireEvent.click(getByText('Kirim Sebab'))
-
-  //   await waitFor(() => {
-  //     const rows = getAllByTestId('row-container')
-  //     expect(getAllByTestId('row-container')).toHaveLength(2)
-  //   })
-  //   const rows = getAllByTestId('row-container')
-
-  //   const inputFieldsRow2 = within(rows[1]).getAllByPlaceholderText('Isi sebab..')
-  //   fireEvent.change(inputFieldsRow2[0], { target: { value: 'Fourth Cause' } })
-  //   fireEvent.change(inputFieldsRow2[1], { target: { value: 'Fifth Cause' } })
-  //   fireEvent.change(inputFieldsRow2[2], { target: { value: 'Sixth Cause' } })
-
-  //   mockedAxios.post.mockResolvedValueOnce({ data: { success: true } })
-  //   fireEvent.click(getByText('Kirim Sebab'))
-
-  //   await waitFor(() => {
-  //     setTimeout(() => {
-  //       expect(mockedAxios.post).toHaveBeenCalledWith('/api/causes', expect.any(Object))
-  //       expect(toast.success).toHaveBeenCalledWith('Causes saved successfully!')
-  //     }, 10000)
-  //   })
-  // })
-
   test('shows a toast and redirects if backend error on getting causes', async () => {
     const errorResponse = {
       response: {
@@ -430,6 +360,7 @@ describe('ValidatorPage Page Tests', () => {
 
     await waitFor(() => {
       setTimeout(() => {
+        expect(mockedAxios.post).toHaveBeenCalledWith('/api/v1/validator/causes/', expect.any(Object))
         expect(toast.error).toHaveBeenCalledWith('Gagal menambahkan sebab: Backend Error')
       }, 10000)
     })
