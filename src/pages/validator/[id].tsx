@@ -42,7 +42,7 @@ const ValidatorDetailPage = () => {
   const [columnCount, setColumnCount] = useState(3)
   const [rows, setRows] = useState([createInitialRow(1, 3)])
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
-
+  const [isLoading, setIsLoading] = useState(false)
   const [isStaff, setIsStaff] = useState(false)
   const [isOwner, setIsOwner] = useState(false)
   const [userData, setUserData] = useState<UserDataProps>(defaultUserData)
@@ -120,14 +120,32 @@ const ValidatorDetailPage = () => {
       groupedCauses[row].push(cause)
     })
 
-    const rows = Object.entries(groupedCauses).map(([rowNumber, rowCauses]) => ({
-      id: parseInt(rowNumber),
-      causes: rowCauses.map((cause) => cause.cause),
-      causesId: rowCauses.map((cause) => cause.id),
-      statuses: rowCauses.map((cause) => (cause.status ? CauseStatus.CorrectNotRoot : CauseStatus.Incorrect)),
-      feedbacks: rowCauses.map(() => ''),
-      disabled: rowCauses.map((cause) => cause.status)
-    }))
+    const rows = Object.entries(groupedCauses).map(([rowNumber, rowCauses]) => {
+      const maxColumn = Math.max(...rowCauses.map((cause) => cause.column))
+
+      const causes = Array(maxColumn + 1).fill(null)
+      const causesId = Array(maxColumn + 1).fill(null)
+      const statuses = Array(maxColumn + 1).fill(null)
+      const feedbacks = Array(maxColumn + 1).fill('')
+      const disabled = Array(maxColumn + 1).fill(null)
+
+      rowCauses.forEach((cause) => {
+        const colIndex = cause.column
+        causes[colIndex] = cause.cause
+        causesId[colIndex] = cause.id
+        statuses[colIndex] = cause.status ? CauseStatus.CorrectNotRoot : CauseStatus.Incorrect
+        disabled[colIndex] = cause.status
+      })
+
+      return {
+        id: parseInt(rowNumber),
+        causes,
+        causesId,
+        statuses,
+        feedbacks,
+        disabled
+      }
+    })
     return rows
   }
 
@@ -241,10 +259,21 @@ const ValidatorDetailPage = () => {
     }
   }
 
+  const validateCauses = async () => {
+    try {
+      await axiosInstance.patch(`/api/v1/validator/causes/validate/${id}/`)
+      toast.success('Sebab selesai divalidasi')
+    } catch (error: any) {
+      toast.error('Gagal mendapat respon validasi: ' + error.response.data.detail)
+    }
+  }
+
   // TODO : Implement disable column with root cause logic
 
   const submitCauses = async () => {
     try {
+      setIsLoading(true)
+      const loadID = toast.loading('Melakukan Analisis, Mohon Tunggu...')
       const largestRowId = Math.max(...rows.map((row) => row.id))
       const latestRow = rows.find((row) => row.id === largestRowId)
 
@@ -258,11 +287,14 @@ const ValidatorDetailPage = () => {
         }
       }
 
-      await axiosInstance.patch(`/api/v1/validator/causes/validate/${id}/`)
-
-      getCauses()
+      await validateCauses()
+      await getCauses()
+      setIsLoading(false)
+      toast.dismiss(loadID)
     } catch (error: any) {
       toast.error('Gagal validasi sebab: ', error.response.data.detail)
+      setIsLoading(false)
+      toast.dismiss()
     }
   }
 
@@ -304,7 +336,7 @@ const ValidatorDetailPage = () => {
         ))}
         {isOwner ? (
           <div className='flex justify-center mt-4'>
-            <SubmitButton onClick={() => submitCauses()} disabled={isSubmitDisabled} label='Kirim Sebab' />
+            <SubmitButton onClick={() => submitCauses()} disabled={isSubmitDisabled || isLoading} label='Kirim Sebab' />
           </div>
         ) : (
           <></>

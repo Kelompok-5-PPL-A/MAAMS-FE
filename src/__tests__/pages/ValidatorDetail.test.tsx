@@ -278,4 +278,32 @@ describe('ValidatorPage Page Tests', () => {
 
     render(<ValidatorDetailPage />)
   })
+
+  test('calls validateCauses and displays error toast on failed validation', async () => {
+    const errorResponse = {
+      data: {
+        detail: 'error'
+      }
+    }
+    mockedAxios.get.mockRejectedValueOnce({ response: errorResponse })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    const { getByText, getAllByTestId } = render(<ValidatorDetailPage />)
+
+    const cells = getAllByTestId('cell')
+    for (const cell of cells) {
+      const input = within(cell).getByPlaceholderText('Isi sebab..') as HTMLInputElement
+      fireEvent.change(input, { target: { value: 'Some cause' } })
+    }
+    const submitButton = getByText('Kirim Sebab')
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast).toHaveBeenCalledWith('Gagal validasi sebab: error')
+      }, 10000)
+    })
+  })
 })
