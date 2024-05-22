@@ -219,11 +219,7 @@ const ValidatorDetailPage = () => {
 
   const createCausesFromRow = async (rowNumber: number) => {
     try {
-      const row = rows.find((row) => row.id === rowNumber)
-      if (!row) {
-        console.error('Row not found')
-        return
-      }
+      const row = rows.find((row) => row.id === rowNumber)!
 
       const createPromises = row.causes
         .map((cause, index) => ({
@@ -231,7 +227,7 @@ const ValidatorDetailPage = () => {
           cause: cause,
           row: row.id,
           column: index,
-          mode: Mode.pribadi
+          mode: validatorData.mode
         }))
         .map((data) => axiosInstance.post(`/api/v1/validator/causes/`, data))
 
@@ -243,11 +239,7 @@ const ValidatorDetailPage = () => {
 
   const patchCausesFromRow = async (rowNumber: number) => {
     try {
-      const row = rows.find((row) => row.id === rowNumber)
-      if (!row) {
-        console.error('Row not found')
-        return
-      }
+      const row = rows.find((row) => row.id === rowNumber)!
 
       const patchPromises = row.causes.map((cause, index) => {
         return axiosInstance.patch(`/api/v1/validator/causes/patch/${id}/${row.causesId[index]}/`, { cause })
@@ -271,25 +263,21 @@ const ValidatorDetailPage = () => {
   // TODO : Implement disable column with root cause logic
 
   const submitCauses = async () => {
-    try {
-      const largestRowId = Math.max(...rows.map((row) => row.id))
-      const latestRow = rows.find((row) => row.id === largestRowId)
+    const largestRowId = Math.max(...rows.map((row) => row.id))
+    const latestRow = rows.find((row) => row.id === largestRowId)
 
-      if (latestRow) {
-        const isFirstTime = latestRow.statuses.every((status) => status === CauseStatus.Unchecked)
+    if (latestRow) {
+      const isFirstTime = latestRow.statuses.every((status) => status === CauseStatus.Unchecked)
 
-        if (isFirstTime) {
-          await createCausesFromRow(largestRowId)
-        } else {
-          await patchCausesFromRow(largestRowId)
-        }
+      if (isFirstTime) {
+        await createCausesFromRow(largestRowId)
+      } else {
+        await patchCausesFromRow(largestRowId)
       }
-
-      await validateCauses()
-      await getCauses()
-    } catch (error: any) {
-      toast.error('Gagal validasi sebab: ', error.response.data.detail)
     }
+
+    await validateCauses()
+    await getCauses()
   }
 
   const isSubmitDisabled = rows.some((row) => row.causes.some((cause) => cause.trim() === ''))
