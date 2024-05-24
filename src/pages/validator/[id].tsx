@@ -219,11 +219,7 @@ const ValidatorDetailPage = () => {
 
   const createCausesFromRow = async (rowNumber: number) => {
     try {
-      const row = rows.find((row) => row.id === rowNumber)
-      if (!row) {
-        console.error('Row not found')
-        return
-      }
+      const row = rows.find((row) => row.id === rowNumber)!
 
       const createPromises = row.causes
         .map((cause, index) => ({
@@ -231,7 +227,7 @@ const ValidatorDetailPage = () => {
           cause: cause,
           row: row.id,
           column: index,
-          mode: Mode.pribadi
+          mode: validatorData.mode
         }))
         .map((data) => axiosInstance.post(`/api/v1/validator/causes/`, data))
 
@@ -243,11 +239,7 @@ const ValidatorDetailPage = () => {
 
   const patchCausesFromRow = async (rowNumber: number) => {
     try {
-      const row = rows.find((row) => row.id === rowNumber)
-      if (!row) {
-        console.error('Row not found')
-        return
-      }
+      const row = rows.find((row) => row.id === rowNumber)!
 
       const patchPromises = row.causes.map((cause, index) => {
         return axiosInstance.patch(`/api/v1/validator/causes/patch/${id}/${row.causesId[index]}/`, { cause })
@@ -292,7 +284,8 @@ const ValidatorDetailPage = () => {
       setIsLoading(false)
       toast.dismiss(loadID)
     } catch (error: any) {
-      toast.error('Gagal validasi sebab: ', error.response.data.detail)
+      const errorMessage = error.response?.data?.detail || 'An unexpected error occurred'
+      toast.error('Gagal validasi sebab: ', errorMessage)
       setIsLoading(false)
       toast.dismiss()
     }
