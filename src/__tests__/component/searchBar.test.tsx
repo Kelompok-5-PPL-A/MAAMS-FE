@@ -35,8 +35,9 @@ describe('SearchBar component', () => {
   })
 
   test('handles input change and suggestion filtering', async () => {
-    const suggestions = ['apple', 'BAnana', 'orAnge']
-    const { getByPlaceholderText } = render(
+    const suggestions = ['apple', 'BAnana', 'orAnge', 'storeApp']
+
+    render(
       <SearchBar
         isAdmin={isAdmin}
         publicAnalyses={publicAnalyses}
@@ -48,18 +49,55 @@ describe('SearchBar component', () => {
       />
     )
 
-    const inputElement = await waitFor(() => getByPlaceholderText('Cari analisis..'))
+    const inputElement = screen.getByPlaceholderText('Cari analisis..')
 
     fireEvent.change(inputElement, { target: { value: 'app' } })
 
     expect(mockOnChange).toHaveBeenCalledWith('app')
 
     await waitFor(() => {
-      setTimeout(() => {
-        expect(screen.getByText('apple')).toBeInTheDocument()
-        expect(screen.queryByText('banana')).not.toBeInTheDocument()
-        expect(screen.queryByText('orange')).not.toBeInTheDocument()
-      }, 2000)
+      expect(screen.getByText('apple')).toBeInTheDocument()
+      expect(screen.getByText('storeApp')).toBeInTheDocument()
+      expect(screen.queryByText('BAnana')).not.toBeInTheDocument()
+      expect(screen.queryByText('orAnge')).not.toBeInTheDocument()
+    })
+  })
+
+  test('handles two times input change and suggestion filtering', async () => {
+    const suggestions = ['apple', 'BAnana', 'orAnge', 'storeApp']
+
+    render(
+      <SearchBar
+        isAdmin={isAdmin}
+        publicAnalyses={publicAnalyses}
+        suggestions={suggestions}
+        keyword={keyword}
+        onSelect={mockOnSelect}
+        onChange={mockOnChange}
+        onSubmit={mockOnSubmit}
+      />
+    )
+
+    const inputElement = screen.getByPlaceholderText('Cari analisis..')
+
+    fireEvent.change(inputElement, { target: { value: 'app' } })
+    expect(mockOnChange).toHaveBeenCalledWith('app')
+
+    await waitFor(() => {
+      expect(screen.getByText('apple')).toBeInTheDocument()
+      expect(screen.getByText('storeApp')).toBeInTheDocument()
+      expect(screen.queryByText('BAnana')).not.toBeInTheDocument()
+      expect(screen.queryByText('orAnge')).not.toBeInTheDocument()
+    })
+
+    fireEvent.change(inputElement, { target: { value: 'an' } })
+    expect(mockOnChange).toHaveBeenCalledWith('an')
+
+    await waitFor(() => {
+      expect(screen.getByText('BAnana')).toBeInTheDocument()
+      expect(screen.getByText('orAnge')).toBeInTheDocument()
+      expect(screen.queryByText('apple')).not.toBeInTheDocument()
+      expect(screen.queryByText('storeApp')).not.toBeInTheDocument()
     })
   })
 
@@ -112,7 +150,7 @@ describe('SearchBar component', () => {
       />
     )
 
-    const autoCompleteInput = getByPlaceholderText('Cari analisis..')
+    const autoCompleteInput = getByPlaceholderText('Cari analisis..') as HTMLInputElement
     fireEvent.change(autoCompleteInput, { target: { value: 'app' } })
 
     await waitFor(() => {
