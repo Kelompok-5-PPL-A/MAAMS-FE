@@ -1,4 +1,5 @@
 export interface Cause {
+  root_status: boolean
   id: string
   problem: string
   row: number

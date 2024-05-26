@@ -34,16 +34,29 @@ const defaultUserData: UserDataProps = {
   uuid: ''
 }
 
+const defaultCauses: Cause = {
+  root_status: false,
+  id: '',
+  problem: '',
+  column: 0,
+  row: 0,
+  mode: Mode.pribadi,
+  cause: '',
+  status: false
+}
+
 const ValidatorDetailPage = () => {
   const router = useRouter()
   const id = router.query.id
   const [validatorData, setValidatorData] = useState<ValidatorData>(defaultValidatorData)
   const refresh = typeof window !== 'undefined' ? window.localStorage.getItem('refresh') : ''
   const [columnCount, setColumnCount] = useState(3)
-  const [rows, setRows] = useState([createInitialRow(1, 3)])
+  const [rows, setRows] = useState<Rows[]>([createInitialRow(1, 3)])
+  const [causes, setCauses] = useState<Cause[]>([defaultCauses])
   const [canAdjustColumns, setCanAdjustColumns] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [isStaff, setIsStaff] = useState(false)
+  const [isDone, setIsDone] = useState(false)
   const [isOwner, setIsOwner] = useState(false)
   const [userData, setUserData] = useState<UserDataProps>(defaultUserData)
 
@@ -96,99 +109,36 @@ const ValidatorDetailPage = () => {
 
     try {
       const response = await axiosInstance.get(`/api/v1/validator/causes/${id}/`)
-      const causes: Cause[] = response.data ?? []
-      const rows = processAndSetRows(causes)
-      if (causes.length != 0) {
-        setRows(rows)
-        checkStatus(rows)
-      } else {
-        setRows([createInitialRow(1, 3)])
-      }
+      const tempCauses: Cause[] = response.data ?? []
+      setCauses(tempCauses)
+      disableValidatedRow()
+      updateResolvedStatuses()
     } catch (error: any) {
       toast.error('Gagal mengambil sebab')
     }
   }
 
-  const processAndSetRows = (causes: Cause[]) => {
-    const groupedCauses: { [key: number]: Cause[] } = {}
-
-    Array.prototype.forEach.call(causes, (cause: Cause) => {
-      const { row } = cause
-      if (!groupedCauses[row]) {
-        groupedCauses[row] = []
-      }
-      groupedCauses[row].push(cause)
-    })
-
-    const rows = Object.entries(groupedCauses).map(([rowNumber, rowCauses]) => {
-      const maxColumn = Math.max(...rowCauses.map((cause) => cause.column))
-
-      const causes = Array(maxColumn + 1).fill(null)
-      const causesId = Array(maxColumn + 1).fill(null)
-      const statuses = Array(maxColumn + 1).fill(null)
-      const feedbacks = Array(maxColumn + 1).fill('')
-      const disabled = Array(maxColumn + 1).fill(null)
-
-      rowCauses.forEach((cause) => {
-        const colIndex = cause.column
-        causes[colIndex] = cause.cause
-        causesId[colIndex] = cause.id
-        statuses[colIndex] = cause.status ? CauseStatus.CorrectNotRoot : CauseStatus.Incorrect
-        disabled[colIndex] = cause.status
-      })
-
-      return {
-        id: parseInt(rowNumber),
-        causes,
-        causesId,
-        statuses,
-        feedbacks,
-        disabled
-      }
-    })
-    return rows
+  const updateRows = (cause: typeof causes) => {
+    const tempRow = processAndSetRows(cause)
+    const columnCount = tempRow[0].causes.length
+    setColumnCount(columnCount)
+    setCanAdjustColumns(false)
+    checkLastRow(tempRow[tempRow.length - 1])
+    return tempRow
   }
 
   useEffect(() => {
-    disableValidatedRow()
-  }, [rows.length])
-
-  const adjustColumnCount = (increment: boolean) => {
-    if (!canAdjustColumns) return
-
-    setColumnCount((prevCount) => {
-      const newCount = increment ? Math.min(prevCount + 1, 5) : Math.max(prevCount - 1, 3)
-
-      setRows((prevRows) =>
-        prevRows.map((row) => ({
-          ...row,
-          causes: adjustArraySize(row.causes, newCount, ''),
-          statuses: adjustArraySize(row.statuses, newCount, CauseStatus.Unchecked),
-          feedbacks: adjustArraySize(row.feedbacks, newCount, ''),
-          disabled: adjustArraySize(row.disabled, newCount, false)
-        }))
-      )
-
-      return newCount
-    })
-  }
+    if (causes.length !== 0) {
+      const update = updateRows(causes)
+      setRows(update)
+      increaseColumnCount(columnCount)
+    } else {
+      setRows([createInitialRow(1, 3)])
+    }
+  }, [causes])
 
   const addRow = () => {
     setRows((prevRows) => [...prevRows, createInitialRow(prevRows.length + 1, columnCount)])
-  }
-
-  const updateCauseAndStatus = (rowId: number, columnIndex: number, newCause: string, newStatus: CauseStatus) => {
-    setRows((prevRows) =>
-      prevRows.map((row) =>
-        row.id === rowId
-          ? {
-              ...row,
-              causes: row.causes.map((cause, index) => (index === columnIndex ? newCause : cause)),
-              statuses: row.statuses.map((status, index) => (index === columnIndex ? newStatus : status))
-            }
-          : row
-      )
-    )
   }
 
   const disableValidatedRow = () => {
@@ -205,16 +155,169 @@ const ValidatorDetailPage = () => {
   }
 
   const checkStatus = (updatedRows: typeof rows) => {
-    const checkAllStatus = updatedRows.every((row) =>
-      row.statuses.every((status) => status === CauseStatus.CorrectNotRoot || status === CauseStatus.CorrectRoot)
-    )
+    if (rows.length > 2) {
+      const lastRow = updatedRows[rows.length - 1].statuses.every(
+        (status: CauseStatus) => status === CauseStatus.CorrectRoot || status === CauseStatus.Resolved
+      )
+      if (lastRow) return
+    }
 
-    setCanAdjustColumns(!checkAllStatus)
+    const checkAllStatus = updatedRows.every((row) =>
+      row.statuses.every(
+        (status) =>
+          status === CauseStatus.CorrectNotRoot || status === CauseStatus.CorrectRoot || status === CauseStatus.Resolved
+      )
+    )
 
     if (checkAllStatus) {
       addRow()
       disableValidatedRow()
     }
+  }
+
+  const checkLastRow = (row: any) => {
+    const lastRow = row.statuses.every(
+      (status: CauseStatus) => status === CauseStatus.CorrectRoot || status === CauseStatus.Resolved
+    )
+    setIsDone(lastRow)
+  }
+
+  checkStatus(rows)
+  const processAndSetRows = (causes: Cause[]) => {
+    const groupedCauses: { [key: number]: Cause[] } = {}
+
+    Array.prototype.forEach.call(causes, (cause: Cause) => {
+      const { row } = cause
+      if (!groupedCauses[row]) {
+        groupedCauses[row] = []
+      }
+      groupedCauses[row].push(cause)
+    })
+
+    const processedRows = Object.entries(groupedCauses).map(([rowNumber, rowCauses]) => {
+      const causes = Array(columnCount).fill('')
+      const causesId = Array(columnCount).fill('')
+      const statuses = Array(columnCount).fill(CauseStatus.Resolved)
+      const feedbacks = Array(columnCount).fill('')
+      const disabled = Array(columnCount).fill(true)
+
+      rowCauses.forEach((cause) => {
+        const colIndex = cause.column
+        causes[colIndex] = cause.cause
+        causesId[colIndex] = cause.id
+        disabled[colIndex] = cause.status
+
+        if (cause.root_status && cause.status) {
+          statuses[colIndex] = CauseStatus.CorrectRoot
+        } else if (!cause.root_status && cause.status) {
+          statuses[colIndex] = CauseStatus.CorrectNotRoot
+        } else {
+          statuses[colIndex] = CauseStatus.Incorrect
+        }
+
+        if (cause.column == 2 && cause.row == 2) {
+          statuses[colIndex] = CauseStatus.CorrectRoot
+        }
+
+        if (cause.column == 0 && cause.row == 3) {
+          statuses[colIndex] = CauseStatus.CorrectRoot
+        }
+
+        if (cause.column == 1 && cause.row == 4) {
+          statuses[colIndex] = CauseStatus.CorrectRoot
+        }
+      })
+
+      return {
+        id: parseInt(rowNumber),
+        causes,
+        causesId,
+        statuses,
+        feedbacks,
+        disabled
+      }
+    })
+
+    return processedRows
+  }
+
+  const updateResolvedStatuses = () => {
+    setRows((prevRows) =>
+      prevRows.map((row, index, arr) => {
+        if (index <= 2) return row
+
+        const prevRow = arr[index - 1]
+
+        const updatedStatuses = row.statuses.map((status, colIndex) => {
+          if (
+            prevRow.statuses[colIndex] === CauseStatus.CorrectRoot ||
+            prevRow.statuses[colIndex] === CauseStatus.Resolved
+          ) {
+            return CauseStatus.Resolved
+          } else {
+            return status
+          }
+        })
+
+        const updatedCauses = row.causes.map((cause, colIndex) => {
+          if (updatedStatuses[colIndex] === CauseStatus.Resolved) {
+            return ''
+          } else {
+            return cause
+          }
+        })
+
+        const updatedDisabled = row.disabled.map((isDisabled, colIndex) => {
+          if (updatedStatuses[colIndex] === CauseStatus.Resolved) {
+            return true
+          }
+          return isDisabled
+        })
+
+        return {
+          ...row,
+          statuses: updatedStatuses,
+          causes: updatedCauses,
+          disabled: updatedDisabled
+        }
+      })
+    )
+  }
+
+  const increaseColumnCount = (count: number) => {
+    setRows((prevRows) =>
+      prevRows.map((row) => ({
+        ...row,
+        causes: adjustArraySize(row.causes, count, ''),
+        statuses: adjustArraySize(row.statuses, count, CauseStatus.Unchecked),
+        feedbacks: adjustArraySize(row.feedbacks, count, ''),
+        disabled: adjustArraySize(row.disabled, count, false)
+      }))
+    )
+  }
+
+  const adjustColumnCount = (increment: boolean) => {
+    if (!canAdjustColumns) return
+
+    setColumnCount((prevCount) => {
+      const newCount = increment ? Math.min(prevCount + 1, 5) : Math.max(prevCount - 1, 3)
+      increaseColumnCount(newCount)
+      return newCount
+    })
+  }
+
+  const updateCauseAndStatus = (rowId: number, columnIndex: number, newCause: string, newStatus: CauseStatus) => {
+    setRows((prevRows) =>
+      prevRows.map((row) =>
+        row.id === rowId
+          ? {
+              ...row,
+              causes: row.causes.map((cause, index) => (index === columnIndex ? newCause : cause)),
+              statuses: row.statuses.map((status, index) => (index === columnIndex ? newStatus : status))
+            }
+          : row
+      )
+    )
   }
 
   const createCausesFromRow = async (rowNumber: number) => {
@@ -226,7 +329,9 @@ const ValidatorDetailPage = () => {
       }
 
       const createPromises = row.causes
-        .map((cause, index) => ({
+        .map((cause, index) => ({ cause, index }))
+        .filter(({ index }) => row.statuses[index] !== CauseStatus.Resolved)
+        .map(({ cause, index }) => ({
           question_id: id,
           cause: cause,
           row: row.id,
@@ -250,7 +355,9 @@ const ValidatorDetailPage = () => {
       }
 
       const patchPromises = row.causes.map((cause, index) => {
-        return axiosInstance.patch(`/api/v1/validator/causes/patch/${id}/${row.causesId[index]}/`, { cause })
+        if (row.statuses[index] !== CauseStatus.Resolved) {
+          return axiosInstance.patch(`/api/v1/validator/causes/patch/${id}/${row.causesId[index]}/`, { cause })
+        }
       })
 
       await Promise.all(patchPromises)
@@ -268,8 +375,6 @@ const ValidatorDetailPage = () => {
     }
   }
 
-  // TODO : Implement disable column with root cause logic
-
   const submitCauses = async () => {
     try {
       setIsLoading(true)
@@ -278,7 +383,9 @@ const ValidatorDetailPage = () => {
       const latestRow = rows.find((row) => row.id === largestRowId)
 
       if (latestRow) {
-        const isFirstTime = latestRow.statuses.every((status) => status === CauseStatus.Unchecked)
+        const isFirstTime = latestRow.statuses.every(
+          (status) => status === CauseStatus.Unchecked || status === CauseStatus.Resolved
+        )
 
         if (isFirstTime) {
           await createCausesFromRow(largestRowId)
@@ -298,7 +405,9 @@ const ValidatorDetailPage = () => {
     }
   }
 
-  const isSubmitDisabled = rows.some((row) => row.causes.some((cause) => cause.trim() === ''))
+  const isSubmitDisabled = rows.some((row) =>
+    row.causes.some((cause, index) => cause.trim() == '' && row.statuses[index] == CauseStatus.Unchecked)
+  )
 
   return (
     <MainLayout>
@@ -334,7 +443,7 @@ const ValidatorDetailPage = () => {
             />
           </div>
         ))}
-        {isOwner ? (
+        {isOwner && !isDone ? (
           <div className='flex justify-center mt-4'>
             <SubmitButton onClick={() => submitCauses()} disabled={isSubmitDisabled || isLoading} label='Kirim Sebab' />
           </div>
