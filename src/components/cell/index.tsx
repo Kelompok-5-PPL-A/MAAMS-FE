@@ -20,7 +20,7 @@ export const Cell: React.FC<CellProps> = ({
       case CauseStatus.CorrectRoot:
         return 'border-purple-500'
       case CauseStatus.Resolved:
-        return 'border-gray-800'
+        return 'border-gray-200'
       case CauseStatus.Unchecked:
       default:
         return 'border-black'
