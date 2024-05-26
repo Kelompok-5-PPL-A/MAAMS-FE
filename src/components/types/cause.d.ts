@@ -6,4 +6,6 @@ export interface Cause {
   mode: string
   cause: string
   status: boolean
+  feedback: string
+  root_status: boolean
 }

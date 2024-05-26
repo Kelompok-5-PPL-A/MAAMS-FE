@@ -133,8 +133,13 @@ const ValidatorDetailPage = () => {
         const colIndex = cause.column
         causes[colIndex] = cause.cause
         causesId[colIndex] = cause.id
-        statuses[colIndex] = cause.status ? CauseStatus.CorrectNotRoot : CauseStatus.Incorrect
+        statuses[colIndex] = cause.root_status
+          ? CauseStatus.CorrectRoot
+          : cause.status
+            ? CauseStatus.CorrectNotRoot
+            : CauseStatus.Incorrect
         disabled[colIndex] = cause.status
+        feedbacks[colIndex] = cause.feedback
       })
 
       return {
