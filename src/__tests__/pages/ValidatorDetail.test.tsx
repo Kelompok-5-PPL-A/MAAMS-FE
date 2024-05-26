@@ -10,18 +10,25 @@ jest.mock('../../services/axiosInstance')
 const mockedAxios = axiosInstance as jest.Mocked<typeof axiosInstance>
 
 const mockPush = jest.fn()
-const mockReload = jest.fn()
 
-const routerContext = {
-  query: { id: '123' }
-}
+const useRouterMock = jest.spyOn(require('next/router'), 'useRouter')
 
-jest.mock('next/router', () => ({
-  useRouter: () => ({
-    push: mockPush,
-    reload: mockReload,
-    query: routerContext.query
-  })
+useRouterMock.mockImplementation(() => ({
+  route: '/',
+  pathname: '',
+  query: { id: '123' },
+  asPath: '',
+  push: jest.fn(),
+  replace: jest.fn(),
+  reload: jest.fn(),
+  back: jest.fn(),
+  prefetch: jest.fn(),
+  beforePopState: jest.fn(),
+  events: {
+    on: jest.fn(),
+    off: jest.fn(),
+    emit: jest.fn()
+  }
 }))
 
 jest.mock('react-hot-toast', () => ({
@@ -266,7 +273,23 @@ describe('ValidatorPage Page Tests', () => {
   })
 
   test('handle missing ID return nothing', () => {
-    routerContext.query = { id: '' }
+    useRouterMock.mockImplementationOnce(() => ({
+      route: '/',
+      pathname: '',
+      query: { id: '' },
+      asPath: '',
+      push: jest.fn(),
+      replace: jest.fn(),
+      reload: jest.fn(),
+      back: jest.fn(),
+      prefetch: jest.fn(),
+      beforePopState: jest.fn(),
+      events: {
+        on: jest.fn(),
+        off: jest.fn(),
+        emit: jest.fn()
+      }
+    }))
 
     render(<ValidatorDetailPage />)
   })
@@ -308,7 +331,8 @@ describe('ValidatorPage Page Tests', () => {
         }
       }
     }
-    mockedAxios.get.mockRejectedValueOnce({ response: errorResponse })
+
+    mockedAxios.get.mockRejectedValueOnce(errorResponse)
 
     render(<ValidatorDetailPage />)
 
@@ -347,7 +371,7 @@ describe('ValidatorPage Page Tests', () => {
         }
       }
     }
-    mockedAxios.get.mockRejectedValueOnce({ response: errorResponse })
+    mockedAxios.get.mockRejectedValueOnce(errorResponse)
     const { getAllByPlaceholderText, getByText } = render(<ValidatorDetailPage />)
 
     const inputFields = await getAllByPlaceholderText('Isi sebab..')
@@ -374,7 +398,7 @@ describe('ValidatorPage Page Tests', () => {
         }
       }
     }
-    mockedAxios.get.mockRejectedValueOnce({ response: errorResponse })
+    mockedAxios.get.mockRejectedValueOnce(errorResponse)
 
     render(<ValidatorDetailPage />)
 
@@ -383,6 +407,44 @@ describe('ValidatorPage Page Tests', () => {
         expect(toast.error).toHaveBeenCalledWith('Backend Error')
         expect(mockPush).toHaveBeenCalledWith('/')
       }, 10000)
+    })
+  })
+
+  test('Test initial row when causes data empty', async () => {
+    const responseData = {
+      response: {
+        status: 200,
+        data: []
+      }
+    }
+    mockedAxios.get.mockResolvedValueOnce(responseData)
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    const { getAllByPlaceholderText } = render(<ValidatorDetailPage />)
+
+    await waitFor(() => {
+      expect(getAllByPlaceholderText('Isi sebab..')).toBeInTheDocument
+    })
+  })
+
+  test('shows a toast if backend error on getting causes', async () => {
+    const errorResponse = {
+      response: {
+        status: 404,
+        data: {
+          detail: 'Backend Error'
+        }
+      }
+    }
+    mockedAxios.get.mockRejectedValueOnce(errorResponse)
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+    render(<ValidatorDetailPage />)
+
+    await waitFor(() => {
+      expect(mockedAxios.get).toHaveBeenCalledWith(expect.stringContaining(`/api/v1/validator/causes/123/`))
     })
   })
 })
