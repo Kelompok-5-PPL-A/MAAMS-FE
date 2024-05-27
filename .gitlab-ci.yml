@@ -4,7 +4,7 @@ variables:
 
 stages:
   - test
-  - sonarqube-check
+  - sonarcloud-check
   - deploy
 
 default:
@@ -29,6 +29,7 @@ test:
     - runner-randi
 
 sonarcloud-check:
+ stage: sonarcloud-check
  image:
    name: sonarsource/sonar-scanner-cli:latest
    entrypoint: [""]
