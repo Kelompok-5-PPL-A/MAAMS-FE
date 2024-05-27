@@ -105,6 +105,7 @@ describe('Cell Component', () => {
     { status: CauseStatus.Incorrect, expectedClass: 'border-red-500' },
     { status: CauseStatus.CorrectNotRoot, expectedClass: 'border-green-500' },
     { status: CauseStatus.CorrectRoot, expectedClass: 'border-purple-500' },
+    { status: CauseStatus.Resolved, expectedClass: 'border-gray-200' },
     { status: CauseStatus.Unchecked, expectedClass: 'border-black' }
   ])('applies correct outline class based on causeStatus', ({ status, expectedClass }) => {
     const component = (

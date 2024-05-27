@@ -447,4 +447,44 @@ describe('ValidatorPage Page Tests', () => {
       expect(mockedAxios.get).toHaveBeenCalledWith(expect.stringContaining(`/api/v1/validator/causes/123/`))
     })
   })
+
+  test('calls patchCausesFromRow when latest row has incorrect status', async () => {
+    const causesData = [
+      { id: '1', cause: 'Cause 1', row: 1, column: 0, status: CauseStatus.Incorrect, feedback: 'test' },
+      { id: '2', cause: 'Cause 2', row: 1, column: 1, status: CauseStatus.CorrectRoot, feedback: 'test' },
+      { id: '3', cause: 'Cause 3', row: 1, column: 2, status: CauseStatus.CorrectRoot, feedback: 'test' }
+    ]
+
+    mockedAxios.get.mockResolvedValueOnce({ data: causesData })
+    mockedAxios.patch.mockResolvedValueOnce({ data: { success: true } })
+
+    const getItemSpy = jest
+      .spyOn(Object.getPrototypeOf(window.localStorage), 'getItem')
+      .mockReturnValueOnce('mockAccessToken')
+    const setItemSpy = jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    render(<ValidatorDetailPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Kirim Sebab')).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+      const cells = screen.getAllByTestId('cell')
+      for (const cell of cells) {
+        const input = within(cell).queryByDisplayValue('Cause 1') as HTMLInputElement
+        if (input) {
+          fireEvent.change(input, { target: { value: 'Some cause' } })
+        }
+      }
+    })
+
+    const submitButton = screen.getByText('Kirim Sebab')
+    fireEvent.click(submitButton)
+
+    // TODO: Check if the patch request was made
+
+    getItemSpy.mockRestore()
+    setItemSpy.mockRestore()
+  })
 })
