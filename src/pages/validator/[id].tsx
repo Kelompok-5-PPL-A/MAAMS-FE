@@ -136,7 +136,7 @@ const ValidatorDetailPage = () => {
   }, [causes])
 
   const checkStatus = (updatedRows: typeof rows) => {
-    if (updatedRows.length > 2) {
+    if (updatedRows.length >= 2) {
       const lastRow = updatedRows[updatedRows.length - 1].statuses.every(
         (status) => status === CauseStatus.CorrectRoot || status === CauseStatus.Resolved
       )
