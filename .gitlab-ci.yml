@@ -45,7 +45,7 @@ sonarcloud-check:
 deploy_staging:
   stage: deploy
   only:
-    - ci-cd
+    - staging
   script:
     - npm install --global vercel
     - vercel pull --yes --environment=production --token=$VERCEL_TOKEN_STAGING
