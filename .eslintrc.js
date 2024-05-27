@@ -13,13 +13,29 @@ module.exports = {
       parserOptions: {
         sourceType: 'script'
       }
+    },
+    {
+      files: ['src/pages/api/sentry-example-api.js', 'src/pages/_error.jsx'],
+      rules: {
+        'react/prop-types': 'off'
+      }
     }
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaVersion: 'latest',
+    ecmaVersion: 'detect',
     sourceType: 'module'
   },
   plugins: ['@typescript-eslint', 'react'],
-  rules: {}
+  settings: {
+    react: {
+      version: 'detect'
+    }
+  },
+  rules: {
+    'react/react-in-jsx-scope': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-var-requires': 'off',
+    'no-unreachable': 'off'
+  }
 }

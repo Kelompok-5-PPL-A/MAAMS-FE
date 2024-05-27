@@ -1,5 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# environment
+.env
+
 # dependencies
 /node_modules
 /.pnp
@@ -8,6 +11,8 @@
 
 # testing
 /coverage
+.scannerwork
+junit.xml
 
 # next.js
 /.next/
@@ -34,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Sentry Config File
+.sentryclirc

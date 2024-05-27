@@ -1,5 +1,52 @@
+stages:
+  - test
+  - sonarqube-check
+  - deploy
+
 default:
   image: node:20.11.0
+
+test:
+  image: node:latest
+  stage: test
+  before_script:
+    - npm install
+  script:
+    - npm run test:ci
+  coverage: /All files\s*\|\s*[\d.]+\s*\|\s*[\d.]+\s*\|\s*[\d.]+\s*\|\s*([\d.]+)\s*\|/
+  artifacts:
+    paths:
+      - coverage/
+    when: always
+    reports:
+      junit:
+        - junit.xml
+  tags:
+    - runner-randi
+
+sonarqube-check:
+  image:
+    name: sonarsource/sonar-scanner-cli:latest
+    entrypoint: [""]
+  only:
+    - staging
+  stage: sonarqube-check
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+    GIT_DEPTH: "0"
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  tags:
+    - runner-randi
+  script:
+    - chmod +x /opt/sonar-scanner/bin/sonar-scanner
+    - sonar-scanner
+      -Dsonar.projectKey=$SONAR_PROJECT 
+      -Dsonar.sources=. 
+      -Dsonar.host.url=$SONAR_HOST_URL 
+      -Dsonar.login=$SONAR_TOKEN
 
 deploy_staging:
   stage: deploy
@@ -7,9 +54,9 @@ deploy_staging:
     - staging
   script:
     - npm install --global vercel
-    - vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
-    - vercel build --token=$VERCEL_TOKEN
-    - vercel deploy --prebuilt  --token=$VERCEL_TOKEN
+    - vercel pull --yes --environment=production --token=$VERCEL_TOKEN_STAGING
+    - vercel build --prod --token=$VERCEL_TOKEN_STAGING
+    - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN_STAGING --scope=$VERCEL_ORG_ID
 
 deploy_production:
   stage: deploy

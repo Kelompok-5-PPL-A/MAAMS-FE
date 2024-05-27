@@ -1,0 +1,42 @@
+import React from 'react'
+import { render, fireEvent } from '@testing-library/react'
+import { ValidatorAdminHeader } from '../../components/validatorAdminHeader'
+import Mode from '../../constants/mode'
+
+const validatorData = {
+  title: 'Sample Title',
+  question: 'Sample question',
+  mode: Mode.pribadi,
+  username: 'JohnDoe',
+  created_at: '2022-04-27',
+  tags: ['example tag']
+}
+
+describe('ValidatorAdminHeader component', () => {
+  it('renders with correct title, username, tags, and question', () => {
+    const { getByText, getByRole } = render(<ValidatorAdminHeader id={'123'} validatorData={validatorData} />)
+    const inputElement = getByRole('textbox') as HTMLInputElement
+
+    expect(getByText(`${validatorData.title}`)).toBeInTheDocument
+    expect(getByText(`oleh ${validatorData.username}`)).toBeInTheDocument
+    expect(inputElement.getAttribute('value')).toBe(validatorData.question)
+    expect(getByText(`${validatorData.tags[0]}`)).toBeInTheDocument
+  })
+
+  it('displays disabled input field with correct value', () => {
+    const { getByRole } = render(<ValidatorAdminHeader id={'123'} validatorData={validatorData} />)
+
+    const inputElement = getByRole('textbox') as HTMLInputElement
+    expect(inputElement.getAttribute('value')).toBe(validatorData.question)
+    expect(inputElement).toBeDisabled
+  })
+
+  it('question state is disabled to be changed', () => {
+    const { getByRole } = render(<ValidatorAdminHeader id={'123'} validatorData={validatorData} />)
+
+    const inputElement = getByRole('textbox') as HTMLInputElement
+    fireEvent.change(inputElement, { target: { value: 'New question' } })
+
+    expect(inputElement.getAttribute('value')).toBe(validatorData.question)
+  })
+})
