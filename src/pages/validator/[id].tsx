@@ -111,9 +111,14 @@ const ValidatorDetailPage = () => {
     try {
       const response = await axiosInstance.get(`/api/v1/validator/causes/${id}/`)
       const tempCauses: Cause[] = response.data ?? []
-      setCauses(tempCauses)
-      disableValidatedRow()
-      updateResolvedStatuses()
+      if (tempCauses.length > 0) {
+        setCauses(tempCauses)
+        disableValidatedRow()
+        updateResolvedStatuses()
+        setCanAdjustColumns(false)
+      } else {
+        setRows([createInitialRow(1, 3)])
+      }
     } catch (error: any) {
       toast.error('Gagal mengambil sebab')
     }
@@ -123,19 +128,14 @@ const ValidatorDetailPage = () => {
     const tempRow = processAndSetRows(cause)
     const columnCount = tempRow[0].causes.length
     setColumnCount(columnCount)
-    setCanAdjustColumns(false)
     checkLastRow(tempRow[tempRow.length - 1])
     return tempRow
   }
 
   useEffect(() => {
-    if (causes.length !== 0) {
-      const update = updateRows(causes)
-      setRows(update)
-      increaseColumnCount(columnCount)
-    } else {
-      setRows([createInitialRow(1, 3)])
-    }
+    const update = updateRows(causes)
+    setRows(update)
+    increaseColumnCount(columnCount)
   }, [causes])
 
   const addRow = () => {
@@ -156,13 +156,6 @@ const ValidatorDetailPage = () => {
   }
 
   const checkStatus = (updatedRows: typeof rows) => {
-    if (rows.length > 2) {
-      const lastRow = updatedRows[rows.length - 1].statuses.every(
-        (status: CauseStatus) => status === CauseStatus.CorrectRoot || status === CauseStatus.Resolved
-      )
-      if (lastRow) return
-    }
-
     const checkAllStatus = updatedRows.every((row) =>
       row.statuses.every(
         (status) =>
@@ -198,9 +191,9 @@ const ValidatorDetailPage = () => {
     const processedRows = Object.entries(groupedCauses).map(([rowNumber, rowCauses]) => {
       const causes = Array(columnCount).fill('')
       const causesId = Array(columnCount).fill('')
-      const statuses = Array(columnCount).fill(CauseStatus.Resolved)
+      const statuses = Array(columnCount).fill(CauseStatus.Unchecked)
       const feedbacks = Array(columnCount).fill('')
-      const disabled = Array(columnCount).fill(true)
+      const disabled = Array(columnCount).fill(false)
 
       rowCauses.forEach((cause) => {
         const colIndex = cause.column
