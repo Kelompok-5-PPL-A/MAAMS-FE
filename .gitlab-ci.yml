@@ -1,3 +1,7 @@
+variables:
+ SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+ GIT_DEPTH: "0"
+
 stages:
   - test
   - sonarqube-check
@@ -24,29 +28,18 @@ test:
   tags:
     - runner-randi
 
-sonarqube-check:
-  image:
-    name: sonarsource/sonar-scanner-cli:latest
-    entrypoint: [""]
-  only:
-    - staging
-  stage: sonarqube-check
-  variables:
-    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
-    GIT_DEPTH: "0"
-  cache:
-    key: "${CI_JOB_NAME}"
-    paths:
-      - .sonar/cache
-  tags:
+sonarcloud-check:
+ image:
+   name: sonarsource/sonar-scanner-cli:latest
+   entrypoint: [""]
+ cache:
+   key: "${CI_JOB_NAME}"
+   paths:
+     - .sonar/cache
+ script:
+   - sonar-scanner
+ tags:
     - runner-randi
-  script:
-    - chmod +x /opt/sonar-scanner/bin/sonar-scanner
-    - sonar-scanner
-      -Dsonar.projectKey=$SONAR_PROJECT 
-      -Dsonar.sources=. 
-      -Dsonar.host.url=$SONAR_HOST_URL 
-      -Dsonar.login=$SONAR_TOKEN
 
 deploy_staging:
   stage: deploy
