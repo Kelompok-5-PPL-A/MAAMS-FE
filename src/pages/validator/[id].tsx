@@ -208,17 +208,6 @@ const ValidatorDetailPage = () => {
             : CauseStatus.Incorrect
         disabled[colIndex] = cause.status
         feedbacks[colIndex] = cause.feedback
-        if (cause.column == 2 && cause.row == 2) {
-          statuses[colIndex] = CauseStatus.CorrectRoot
-        }
-
-        if (cause.column == 0 && cause.row == 3) {
-          statuses[colIndex] = CauseStatus.CorrectRoot
-        }
-
-        if (cause.column == 1 && cause.row == 4) {
-          statuses[colIndex] = CauseStatus.CorrectRoot
-        }
       })
 
       return {
