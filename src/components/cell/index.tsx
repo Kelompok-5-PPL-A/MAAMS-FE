@@ -51,7 +51,7 @@ export const Cell: React.FC<CellProps> = ({
 
     return (
       <div className='feedback-text mt-4' style={{ color: color }}>
-        {emoji} {feedback}
+        {emoji} {feedback ? feedback : ' '}
       </div>
     )
   }
@@ -72,7 +72,7 @@ export const Cell: React.FC<CellProps> = ({
         placeholder={placeholder}
         disabled={disabled}
       ></textarea>
-      {feedback && renderFeedback()}
+      {renderFeedback()}
     </div>
   )
 }
