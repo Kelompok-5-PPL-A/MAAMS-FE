@@ -19,6 +19,8 @@ export const Cell: React.FC<CellProps> = ({
         return 'border-green-500'
       case CauseStatus.CorrectRoot:
         return 'border-purple-500'
+      case CauseStatus.Resolved:
+        return 'border-gray-200'
       case CauseStatus.Unchecked:
       default:
         return 'border-black'
@@ -44,7 +46,7 @@ export const Cell: React.FC<CellProps> = ({
         color = 'red'
         break
       default:
-        return null // No feedback for unchecked or default status
+        return null // No feedback for resolved, unchecked, or default status
     }
 
     return (
