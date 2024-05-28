@@ -413,7 +413,7 @@ const ValidatorDetailPage = () => {
           </div>
         ))}
         {isOwner && !isDone ? (
-          <div className='flex justify-center mt-4'>
+          <div className='flex justify-center'>
             <SubmitButton onClick={() => submitCauses()} disabled={isSubmitDisabled || isLoading} label='Kirim Sebab' />
           </div>
         ) : (
