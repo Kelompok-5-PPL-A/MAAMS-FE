@@ -113,8 +113,6 @@ const ValidatorDetailPage = () => {
       const tempCauses: Cause[] = response.data ?? []
       if (tempCauses.length > 0) {
         setCauses(tempCauses)
-        disableValidatedRow()
-        updateResolvedStatuses()
         setCanAdjustColumns(false)
       } else {
         setRows([createInitialRow(1, 3)])
@@ -125,11 +123,10 @@ const ValidatorDetailPage = () => {
   }
 
   const updateRows = (cause: typeof causes) => {
-    const tempRow = processAndSetRows(cause)
+    const tempRow = updateResolvedStatuses(processAndSetRows(cause))
     const columnCount = tempRow[0].causes.length
     setColumnCount(columnCount)
-    checkLastRow(tempRow[tempRow.length - 1])
-    return tempRow
+    return checkStatus(tempRow)
   }
 
   useEffect(() => {
@@ -138,45 +135,51 @@ const ValidatorDetailPage = () => {
     increaseColumnCount(columnCount)
   }, [causes])
 
-  const addRow = () => {
-    setRows((prevRows) => [...prevRows, createInitialRow(prevRows.length + 1, columnCount)])
-  }
-
-  const disableValidatedRow = () => {
-    setRows((prevRows) =>
-      prevRows.map((row, index, arr) =>
-        index < arr.length - 1
-          ? {
-              ...row,
-              disabled: row.disabled.fill(true)
-            }
-          : row
-      )
-    )
-  }
-
   const checkStatus = (updatedRows: typeof rows) => {
+    if (updatedRows.length >= 2) {
+      const lastRow = updatedRows[updatedRows.length - 1].statuses.every(
+        (status) => status === CauseStatus.CorrectRoot || status === CauseStatus.Resolved
+      )
+      /* istanbul ignore if */
+      if (lastRow) {
+        setIsDone(true)
+        return updatedRows
+      }
+    }
+
     const checkAllStatus = updatedRows.every((row) =>
       row.statuses.every(
         (status) =>
           status === CauseStatus.CorrectNotRoot || status === CauseStatus.CorrectRoot || status === CauseStatus.Resolved
       )
     )
-
     if (checkAllStatus) {
-      addRow()
-      disableValidatedRow()
+      updatedRows = addRow(updatedRows)
+      updatedRows = disableValidatedRow(updatedRows)
     }
+
+    return updatedRows
   }
 
-  const checkLastRow = (row: any) => {
-    const lastRow = row.statuses.every(
-      (status: CauseStatus) => status === CauseStatus.CorrectRoot || status === CauseStatus.Resolved
+  const addRow = (updatedRows: typeof rows) => {
+    return [...updatedRows, createInitialRow(updatedRows.length + 1, columnCount)]
+  }
+
+  const disableValidatedRow = (updatedRows: typeof rows) => {
+    return updatedRows.map((row, index, arr) =>
+      index < arr.length - 1
+        ? {
+            ...row,
+            disabled: row.disabled.fill(true)
+          }
+        : row
     )
-    setIsDone(lastRow)
   }
 
-  checkStatus(rows)
+  useEffect(() => {
+    setRows(updateResolvedStatuses(rows))
+  }, [rows.length])
+
   const processAndSetRows = (causes: Cause[]) => {
     const groupedCauses: { [key: number]: Cause[] } = {}
 
@@ -221,47 +224,48 @@ const ValidatorDetailPage = () => {
     return processedRows
   }
 
-  const updateResolvedStatuses = () => {
-    setRows((prevRows) =>
-      prevRows.map((row, index, arr) => {
-        if (index <= 2) return row
+  const updateResolvedStatuses = (updatedRows: typeof rows) => {
+    const newRows = [...updatedRows]
 
-        const prevRow = arr[index - 1]
+    for (let index = 1; index < newRows.length; index++) {
+      const prevRow = newRows[index - 1]
+      const currentRow = newRows[index]
 
-        const updatedStatuses = row.statuses.map((status, colIndex) => {
-          if (
-            prevRow.statuses[colIndex] === CauseStatus.CorrectRoot ||
-            prevRow.statuses[colIndex] === CauseStatus.Resolved
-          ) {
-            return CauseStatus.Resolved
-          } else {
-            return status
-          }
-        })
-
-        const updatedCauses = row.causes.map((cause, colIndex) => {
-          if (updatedStatuses[colIndex] === CauseStatus.Resolved) {
-            return ''
-          } else {
-            return cause
-          }
-        })
-
-        const updatedDisabled = row.disabled.map((isDisabled, colIndex) => {
-          if (updatedStatuses[colIndex] === CauseStatus.Resolved) {
-            return true
-          }
-          return isDisabled
-        })
-
-        return {
-          ...row,
-          statuses: updatedStatuses,
-          causes: updatedCauses,
-          disabled: updatedDisabled
+      const updatedStatuses = currentRow.statuses.map((status, colIndex) => {
+        if (
+          prevRow.statuses[colIndex] === CauseStatus.CorrectRoot ||
+          prevRow.statuses[colIndex] === CauseStatus.Resolved
+        ) {
+          return CauseStatus.Resolved
+        } else {
+          return status
         }
       })
-    )
+
+      const updatedCauses = currentRow.causes.map((cause, colIndex) => {
+        if (updatedStatuses[colIndex] === CauseStatus.Resolved) {
+          return ''
+        } else {
+          return cause
+        }
+      })
+
+      const updatedDisabled = currentRow.disabled.map((isDisabled, colIndex) => {
+        if (updatedStatuses[colIndex] === CauseStatus.Resolved) {
+          return true
+        }
+        return isDisabled
+      })
+
+      newRows[index] = {
+        ...currentRow,
+        statuses: updatedStatuses,
+        causes: updatedCauses,
+        disabled: updatedDisabled
+      }
+    }
+
+    return newRows
   }
 
   const increaseColumnCount = (count: number) => {
@@ -323,28 +327,20 @@ const ValidatorDetailPage = () => {
   }
 
   const patchCausesFromRow = async (rowNumber: number) => {
-    try {
-      const row = rows.find((row) => row.id === rowNumber)!
+    const row = rows.find((row) => row.id === rowNumber)!
 
-      const patchPromises = row.causes.map((cause, index) => {
-        if (row.statuses[index] !== CauseStatus.Resolved) {
-          return axiosInstance.patch(`/api/v1/validator/causes/patch/${id}/${row.causesId[index]}/`, { cause })
-        }
-      })
+    const patchPromises = row.causes.map((cause, index) => {
+      if (row.statuses[index] !== CauseStatus.Resolved) {
+        return axiosInstance.patch(`/api/v1/validator/causes/patch/${id}/${row.causesId[index]}/`, { cause })
+      }
+    })
 
-      await Promise.all(patchPromises)
-    } catch (error: any) {
-      toast.error('Gagal validasi sebab: ', error.response.data.detail)
-    }
+    await Promise.all(patchPromises)
   }
 
   const validateCauses = async () => {
-    try {
-      await axiosInstance.patch(`/api/v1/validator/causes/validate/${id}/`)
-      toast.success('Sebab selesai divalidasi')
-    } catch (error: any) {
-      toast.error('Gagal mendapat respon validasi: ' + error.response.data.detail)
-    }
+    await axiosInstance.patch(`/api/v1/validator/causes/validate/${id}/`)
+    toast.success('Sebab selesai divalidasi')
   }
 
   const submitCauses = async () => {
@@ -417,7 +413,7 @@ const ValidatorDetailPage = () => {
           </div>
         ))}
         {isOwner && !isDone ? (
-          <div className='flex justify-center mt-4'>
+          <div className='flex justify-center'>
             <SubmitButton onClick={() => submitCauses()} disabled={isSubmitDisabled || isLoading} label='Kirim Sebab' />
           </div>
         ) : (
