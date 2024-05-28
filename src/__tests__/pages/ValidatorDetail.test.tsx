@@ -448,20 +448,45 @@ describe('ValidatorPage Page Tests', () => {
     })
   })
 
-  test('calls patchCausesFromRow when latest row has incorrect status', async () => {
+  test('remove button and disable all cells upon the entire validation completion', async () => {
     const causesData = [
-      { id: '1', cause: 'Cause 1', row: 1, column: 0, status: CauseStatus.Incorrect, feedback: 'test' },
-      { id: '2', cause: 'Cause 2', row: 1, column: 1, status: CauseStatus.CorrectRoot, feedback: 'test' },
-      { id: '3', cause: 'Cause 3', row: 1, column: 2, status: CauseStatus.CorrectRoot, feedback: 'test' }
+      { id: '1', cause: 'Cause 1', row: 0, column: 0, status: true, feedback: 'test', root_status: false },
+      { id: '2', cause: 'Cause 2', row: 0, column: 1, status: true, feedback: 'test', root_status: true },
+      { id: '3', cause: 'Cause 3', row: 0, column: 2, status: true, feedback: 'test', root_status: true },
+      { id: '4', cause: 'Cause 4', row: 1, column: 0, status: true, feedback: 'test', root_status: true }
     ]
 
     mockedAxios.get.mockResolvedValueOnce({ data: causesData })
-    mockedAxios.patch.mockResolvedValueOnce({ data: { success: true } })
 
-    const getItemSpy = jest
-      .spyOn(Object.getPrototypeOf(window.localStorage), 'getItem')
-      .mockReturnValueOnce('mockAccessToken')
-    const setItemSpy = jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    render(<ValidatorDetailPage />)
+
+    await waitFor(() => {
+      expect(screen.queryByText('Kirim Sebab')).not.toBeInTheDocument()
+
+      const cells = screen.getAllByTestId('cell')
+      cells.forEach((cell) => {
+        const textarea = within(cell).getByRole('textbox') as HTMLTextAreaElement
+        expect(textarea).toBeDisabled()
+      })
+    })
+  })
+
+  test('invalid patchCausesFromRow call', async () => {
+    const causesData = [
+      { id: '1', cause: 'Cause 1', row: 0, column: 0, status: true, feedback: 'test', root_status: false },
+      { id: '2', cause: 'Cause 2', row: 0, column: 1, status: true, feedback: 'test', root_status: true },
+      { id: '3', cause: 'Cause 3', row: 0, column: 2, status: true, feedback: 'test', root_status: true },
+      { id: '4', cause: 'Cause 4', row: 1, column: 0, status: false, feedback: 'test', root_status: false }
+    ]
+
+    mockedAxios.get.mockResolvedValueOnce({ data: causesData })
+    mockedAxios.patch.mockRejectedValueOnce({ response: { data: { detail: 'failed' } } })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
 
     render(<ValidatorDetailPage />)
 
@@ -472,7 +497,44 @@ describe('ValidatorPage Page Tests', () => {
     await waitFor(() => {
       const cells = screen.getAllByTestId('cell')
       for (const cell of cells) {
-        const input = within(cell).queryByDisplayValue('Cause 1') as HTMLInputElement
+        const input = within(cell).queryByDisplayValue('Cause 4') as HTMLInputElement
+        if (input) {
+          fireEvent.change(input, { target: { value: 'Some cause' } })
+        }
+      }
+    })
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Gagal memperbarui sebab: ', 'failed')
+      }, 10000)
+    })
+  })
+
+  test('calls patchCausesFromRow when latest row has incorrect status', async () => {
+    const causesData = [
+      { id: '1', cause: 'Cause 1', row: 0, column: 0, status: true, feedback: 'test', root_status: false },
+      { id: '2', cause: 'Cause 2', row: 0, column: 1, status: true, feedback: 'test', root_status: true },
+      { id: '3', cause: 'Cause 3', row: 0, column: 2, status: true, feedback: 'test', root_status: true },
+      { id: '4', cause: 'Cause 4', row: 1, column: 0, status: false, feedback: 'test', root_status: false }
+    ]
+
+    mockedAxios.get.mockResolvedValueOnce({ data: causesData })
+    mockedAxios.patch.mockResolvedValueOnce({ data: { success: true } })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    render(<ValidatorDetailPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Kirim Sebab')).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+      const cells = screen.getAllByTestId('cell')
+      for (const cell of cells) {
+        const input = within(cell).queryByDisplayValue('Cause 4') as HTMLInputElement
         if (input) {
           fireEvent.change(input, { target: { value: 'Some cause' } })
         }
@@ -482,9 +544,61 @@ describe('ValidatorPage Page Tests', () => {
     const submitButton = screen.getByText('Kirim Sebab')
     fireEvent.click(submitButton)
 
-    // TODO: Check if the patch request was made
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(mockedAxios.patch).toHaveBeenCalledWith('/api/v1/validator/causes/patch/123/4/', { cause: 'Some cause' })
+        expect(mockedAxios.patch).toHaveBeenCalledWith('/api/v1/validator/causes/validate/123/')
+        expect(toast.success).toHaveBeenCalledWith('Sebab selesai divalidasi')
+      }, 10000)
+    })
+  })
 
-    getItemSpy.mockRestore()
-    setItemSpy.mockRestore()
+  test('calls patchCausesFromRow when latest row has incorrect status, failed upon validation', async () => {
+    const causesData = [
+      { id: '1', cause: 'Cause 1', row: 0, column: 0, status: true, feedback: 'test', root_status: false },
+      { id: '2', cause: 'Cause 2', row: 0, column: 1, status: true, feedback: 'test', root_status: true },
+      { id: '3', cause: 'Cause 3', row: 0, column: 2, status: true, feedback: 'test', root_status: true },
+      { id: '4', cause: 'Cause 4', row: 1, column: 0, status: false, feedback: 'test', root_status: false }
+    ]
+
+    mockedAxios.get.mockResolvedValueOnce({ data: causesData })
+    mockedAxios.patch
+      .mockResolvedValueOnce({ data: { success: true } })
+      .mockRejectedValueOnce({ response: { data: { detail: 'Validation failed' } } })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    render(<ValidatorDetailPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Kirim Sebab')).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+      const cells = screen.getAllByTestId('cell')
+      for (const cell of cells) {
+        const input = within(cell).queryByDisplayValue('Cause 4') as HTMLInputElement
+        if (input) {
+          fireEvent.change(input, { target: { value: 'Some cause' } })
+        }
+      }
+    })
+
+    const submitButton = screen.getByText('Kirim Sebab')
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(mockedAxios.patch).toHaveBeenCalledWith('/api/v1/validator/causes/patch/123/4/', { cause: 'Some cause' })
+      }, 10000)
+    })
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(toast.error).toHaveBeenCalledWith('Gagal validasi sebab: ', 'Validation failed')
+        expect(toast.dismiss).toHaveBeenCalled()
+      }, 10000)
+    })
   })
 })
