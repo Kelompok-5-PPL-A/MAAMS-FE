@@ -52,7 +52,7 @@ export const Cell: React.FC<CellProps> = ({
 
     return (
       <div className='feedback-text mt-4' style={{ color: color }}>
-        {emoji} {feedback ?? ' '}
+        {emoji} {feedback ?? ' '} {color === 'purple' && `Akar Masalah Kolom ${cellName[0]} ditemukan`}
       </div>
     )
   }
