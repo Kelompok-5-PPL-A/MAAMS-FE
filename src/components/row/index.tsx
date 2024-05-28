@@ -37,11 +37,11 @@ export const Row: React.FC<RowProps> = ({
 
   let gridClass = ''
   if (cols === 3) {
-    gridClass = 'grid grid-cols-3 gap-0 items-center my-8'
+    gridClass = 'grid grid-cols-3 gap-0 items-stretch my-8'
   } else if (cols === 4) {
-    gridClass = 'grid grid-cols-4 gap-0 items-center my-8'
+    gridClass = 'grid grid-cols-4 gap-0 items-stretch my-8'
   } else {
-    gridClass = 'grid grid-cols-5 gap-0 items-center my-8'
+    gridClass = 'grid grid-cols-5 gap-0 items-stretch my-8'
   }
 
   return (
