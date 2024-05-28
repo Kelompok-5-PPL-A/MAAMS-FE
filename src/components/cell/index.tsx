@@ -33,20 +33,20 @@ export const Cell: React.FC<CellProps> = ({
     let emoji = ''
     let color = ''
     switch (causeStatus) {
-      case CauseStatus.CorrectRoot:
-        emoji = '☑️'
-        color = 'purple'
-        break
-      case CauseStatus.CorrectNotRoot:
-        emoji = '✅'
-        color = 'green'
-        break
+      // case CauseStatus.CorrectRoot:
+      //   emoji = '☑️'
+      //   color = 'purple'
+      //   break
+      // case CauseStatus.CorrectNotRoot:
+      //   emoji = '✅'
+      //   color = 'green'
+      //   break
       case CauseStatus.Incorrect:
         emoji = '❌'
         color = 'red'
         break
       default:
-        emoji = '➖'
+        emoji = '\u00A0'
         color = 'black'
     }
 
