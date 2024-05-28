@@ -46,12 +46,13 @@ export const Cell: React.FC<CellProps> = ({
         color = 'red'
         break
       default:
-        return null // No feedback for resolved, unchecked, or default status
+        emoji = '\u00A0'
+        color = 'black'
     }
 
     return (
       <div className='feedback-text mt-4' style={{ color: color }}>
-        {emoji} {feedback ? feedback : ' '}
+        {emoji} {feedback ?? ' '}
       </div>
     )
   }
