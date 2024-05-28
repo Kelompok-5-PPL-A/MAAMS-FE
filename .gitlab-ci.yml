@@ -56,7 +56,6 @@ deploy_production:
   stage: deploy
   only:
     - main
-    - hotfix
   script:
     - npm install --global vercel
     - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
