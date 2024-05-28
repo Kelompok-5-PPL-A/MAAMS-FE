@@ -36,6 +36,7 @@ export const Cell: React.FC<CellProps> = ({
       case CauseStatus.CorrectRoot:
         emoji = '☑️'
         color = 'purple'
+        feedback = `Akar Masalah Kolom ${cellName[0]} ditemukan`
         break
       case CauseStatus.CorrectNotRoot:
         emoji = '✅'
