@@ -448,33 +448,29 @@ describe('ValidatorPage Page Tests', () => {
     })
   })
 
-  test('calls patchCausesFromRow when latest row has incorrect status', async () => {
+  test('calls patchCausesFromRow when latest row has incorrect status failed upon validation', async () => {
     const causesData = [
-      { id: '1', cause: 'Cause 1', row: 1, column: 0, status: CauseStatus.Incorrect, feedback: 'test' },
-      { id: '2', cause: 'Cause 2', row: 1, column: 1, status: CauseStatus.CorrectRoot, feedback: 'test' },
-      { id: '3', cause: 'Cause 3', row: 1, column: 2, status: CauseStatus.CorrectRoot, feedback: 'test' }
+      { id: '5', cause: 'Cause 1', row: 0, column: 0, status: true, feedback: 'test', root_status: false },
+      { id: '6', cause: 'Cause 2', row: 0, column: 1, status: true, feedback: 'test', root_status: true },
+      { id: '7', cause: 'Cause 3', row: 0, column: 2, status: true, feedback: 'test', root_status: true },
+      { id: '8', cause: 'Cause 4', row: 1, column: 0, status: false, feedback: 'test', root_status: false }
     ]
 
     mockedAxios.get.mockResolvedValueOnce({ data: causesData })
-    mockedAxios.patch.mockResolvedValueOnce({ data: { success: true } })
+    mockedAxios.patch.mockRejectedValueOnce({ response: { data: { detail: 'Validation failed' } } })
 
-    const getItemSpy = jest
-      .spyOn(Object.getPrototypeOf(window.localStorage), 'getItem')
-      .mockReturnValueOnce('mockAccessToken')
-    const setItemSpy = jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
 
     render(<ValidatorDetailPage />)
 
     await waitFor(() => {
-      expect(screen.getByText('Kirim Sebab')).toBeInTheDocument()
-    })
-
-    await waitFor(() => {
       const cells = screen.getAllByTestId('cell')
+      console.log(cells.length)
       for (const cell of cells) {
-        const input = within(cell).queryByDisplayValue('Cause 1') as HTMLInputElement
+        const input = within(cell).queryByDisplayValue('Cause 4') as HTMLInputElement
         if (input) {
-          fireEvent.change(input, { target: { value: 'Some cause' } })
+          fireEvent.change(input, { target: { value: 'Cause 4' } })
         }
       }
     })
@@ -482,9 +478,52 @@ describe('ValidatorPage Page Tests', () => {
     const submitButton = screen.getByText('Kirim Sebab')
     fireEvent.click(submitButton)
 
-    // TODO: Check if the patch request was made
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(mockedAxios.patch).toHaveBeenCalledWith('/api/v1/validator/causes/patch/123/8/', expect.any(Object))
+        expect(toast.error).toHaveBeenCalledWith('Gagal validasi sebab: ', 'Validation failed')
+        expect(toast.dismiss).toHaveBeenCalled()
+      }, 10000)
+    })
+  })
 
-    getItemSpy.mockRestore()
-    setItemSpy.mockRestore()
+  test('calls patchCausesFromRow when latest row has incorrect status', async () => {
+    const causesData = [
+      { id: '1', cause: 'Cause 1', row: 0, column: 0, status: true, feedback: 'test', root_status: false },
+      { id: '2', cause: 'Cause 2', row: 0, column: 1, status: true, feedback: 'test', root_status: true },
+      { id: '3', cause: 'Cause 3', row: 0, column: 2, status: true, feedback: 'test', root_status: true },
+      { id: '4', cause: 'Cause 4', row: 1, column: 0, status: false, feedback: 'test', root_status: false }
+    ]
+
+    mockedAxios.get.mockResolvedValueOnce({ data: causesData })
+    mockedAxios.patch.mockResolvedValueOnce({ data: { success: true } })
+
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'getItem').mockReturnValueOnce('mockAccessToken')
+    jest.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem')
+
+    render(<ValidatorDetailPage />)
+
+    expect(screen.getByText('Kirim Sebab')).toBeInTheDocument()
+
+    await waitFor(() => {
+      const cells = screen.getAllByTestId('cell')
+      console.log(cells.length)
+      for (const cell of cells) {
+        const input = within(cell).queryByDisplayValue('Cause 4') as HTMLInputElement
+        if (input) {
+          fireEvent.change(input, { target: { value: 'Cause 4' } })
+        }
+      }
+    })
+
+    const submitButton = screen.getByText('Kirim Sebab')
+    fireEvent.click(submitButton)
+
+    await waitFor(() => {
+      setTimeout(() => {
+        expect(mockedAxios.patch).toHaveBeenCalledWith('/api/v1/validator/causes/patch/123/4/', { cause: 'Cause 4' })
+        expect(mockedAxios.patch).toHaveBeenCalledWith('/api/v1/validator/causes/validate/123/')
+      }, 10000)
+    })
   })
 })
