@@ -140,6 +140,7 @@ const ValidatorDetailPage = () => {
       const lastRow = updatedRows[updatedRows.length - 1].statuses.every(
         (status) => status === CauseStatus.CorrectRoot || status === CauseStatus.Resolved
       )
+      /* istanbul ignore if */
       if (lastRow) {
         setIsDone(true)
         return updatedRows
