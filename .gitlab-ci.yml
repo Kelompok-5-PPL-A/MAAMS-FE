@@ -61,4 +61,4 @@ deploy_production:
     - npm install --global vercel
     - vercel pull --yes --debug --environment=production --token=$VERCEL_TOKEN
     - vercel build --prod --debug --token=$VERCEL_TOKEN
-    - vercel deploy --prebuilt --prod --debug --token=$VERCEL_TOKEN --scope=$VERCEL_MAIN_ORG
+    - vercel deploy --prebuilt --prod --debug --token=$VERCEL_TOKEN
