@@ -37,7 +37,7 @@ const LastWeek: React.FC = () => {
     try {
       const lastWeekData = await fetchQuestions(headers, 'last_week', additional_param)
       setLastWeek(lastWeekData.processedData)
-      setTotalPages(Math.ceil(lastWeekData.count / 5))
+      setTotalPages(Math.ceil(lastWeekData.count / 4))
 
       const processedFilterData = await fetchFilters(headers)
       setFilterData(processedFilterData)
