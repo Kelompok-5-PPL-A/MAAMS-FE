@@ -326,28 +326,20 @@ const ValidatorDetailPage = () => {
   }
 
   const patchCausesFromRow = async (rowNumber: number) => {
-    try {
-      const row = rows.find((row) => row.id === rowNumber)!
+    const row = rows.find((row) => row.id === rowNumber)!
 
-      const patchPromises = row.causes.map((cause, index) => {
-        if (row.statuses[index] !== CauseStatus.Resolved) {
-          return axiosInstance.patch(`/api/v1/validator/causes/patch/${id}/${row.causesId[index]}/`, { cause })
-        }
-      })
+    const patchPromises = row.causes.map((cause, index) => {
+      if (row.statuses[index] !== CauseStatus.Resolved) {
+        return axiosInstance.patch(`/api/v1/validator/causes/patch/${id}/${row.causesId[index]}/`, { cause })
+      }
+    })
 
-      await Promise.all(patchPromises)
-    } catch (error: any) {
-      toast.error('Gagal validasi sebab: ', error.response.data.detail)
-    }
+    await Promise.all(patchPromises)
   }
 
   const validateCauses = async () => {
-    try {
-      await axiosInstance.patch(`/api/v1/validator/causes/validate/${id}/`)
-      toast.success('Sebab selesai divalidasi')
-    } catch (error: any) {
-      toast.error('Gagal mendapat respon validasi: ' + error.response.data.detail)
-    }
+    await axiosInstance.patch(`/api/v1/validator/causes/validate/${id}/`)
+    toast.success('Sebab selesai divalidasi')
   }
 
   const submitCauses = async () => {
