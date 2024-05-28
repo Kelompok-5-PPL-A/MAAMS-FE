@@ -56,9 +56,8 @@ deploy_production:
   stage: deploy
   only:
     - main
-    - hotfix
   script:
     - npm install --global vercel
-    - vercel pull --yes --debug --environment=production --token=$VERCEL_TOKEN
-    - vercel build --prod --debug --token=$VERCEL_TOKEN
-    - vercel deploy --prebuilt --prod --debug --token=$VERCEL_TOKEN
+    - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+    - vercel build --prod --token=$VERCEL_TOKEN
+    - vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
